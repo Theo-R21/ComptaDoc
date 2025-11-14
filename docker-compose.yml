@@ -1,0 +1,48 @@
+services:
+  db:
+    image: mariadb:11
+    container_name: mariadb_db_simplylux
+    restart: always
+    environment:
+      MARIADB_ROOT_PASSWORD: ${MARIADB_ROOT_PASSWORD}
+      MARIADB_DATABASE: ${MARIADB_DATABASE}
+      MARIADB_USER: ${MARIADB_USER}
+      MARIADB_PASSWORD: ${MARIADB_PASSWORD}
+    ports:
+      - "3306:3306"
+    volumes:
+      - mariadb_data_simplylux:/var/lib/mysql
+
+  backend:
+    build: ./backend
+    container_name: django_backend_simplylux
+    command: >
+      sh -c "./wait-for-it.sh db &&
+             python manage.py makemigrations &&
+             python manage.py migrate &&
+             python manage.py runserver 0.0.0.0:8000"
+    volumes:
+      - ./backend:/app
+    ports:
+      - "8000:8000"
+    env_file:
+      - ./backend/django.env
+    depends_on:
+      - db
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "3000:3000"
+    environment:
+      NEXT_PUBLIC_API_URL: http://localhost:8000
+      WATCHPACK_POLL: "true"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    command: npm run dev -- -H 0.0.0.0 -p 3000
+    depends_on:
+      - backend
+
+volumes:
+  mariadb_data_simplylux:
