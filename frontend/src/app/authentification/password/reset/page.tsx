@@ -4,6 +4,7 @@ import Link from "next/link";
 import Button from "@/src/app/components/button";
 import {useRouter} from "next/navigation";
 import {useState} from "react";
+import {apiFetch} from "@/src/hook/userRefresh";
 
 export default function ResetPasswordPage() {
     const router = useRouter();
@@ -16,25 +17,34 @@ export default function ResetPasswordPage() {
         setError("");
 
         const formData = new FormData(e.currentTarget);
-        const username = formData.get("email");
+        const password1 = formData.get("password1") as string;
+        const password2 = formData.get("password2") as string;
+        const resetToken = localStorage.getItem("resetToken");
+
+        if (!password1 || !password2 || password1 !== password2) {
+            setError("Les mots de passe ne correspondent pas.");
+            setLoading(false);
+            return;
+        }
+
+        if (!resetToken) {
+            setError("Token manquant. Veuillez recommencer la procédure.");
+            setLoading(false);
+            return;
+        }
 
         try {
-            // const res = await apiFetch(`/auth/login/`, {
-            //     method: "POST",
-            //     headers: {
-            //         "Content-Type": "application/json",
-            //     },
-            //     body: JSON.stringify({username, password}),
-            //     credentials: "include",
-            // })
-            // if (res.ok) {
-            //     refreshCurrentUser()
-            //     router.push("/dashboard");
-            // } else {
-            //     throw new Error("Identifiants invalides");
-            // }
-            router.push('/authentification')
-
+            const res = await apiFetch(`/auth/password_reset/change/`, {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({reset_token: resetToken, password1: password1, password2: password2}),
+            });
+            const resData = await res.json();
+            if (res.ok) {
+                router.push("/authentification");
+            } else {
+                throw new Error(resData.message);
+            }
         } catch (err: any) {
             setError(err.message);
         } finally {
@@ -64,6 +74,11 @@ export default function ResetPasswordPage() {
                         required
                     />
                 </div>
+                 {error && (
+                    <p className="text-red-500 text-sm text-left w-full">
+                        {error}
+                    </p>
+                )}
                 <div className="flex flex-col items-start self-start text-primary2">
                     <Link href="/authentification" className="hover:underline">Retour à la connexion</Link>
                 </div>

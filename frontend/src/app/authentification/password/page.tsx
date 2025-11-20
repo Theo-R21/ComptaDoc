@@ -4,6 +4,7 @@ import Link from "next/link";
 import Button from "@/src/app/components/button";
 import {useState} from "react";
 import {useRouter} from "next/navigation";
+import {apiFetch} from "@/src/hook/userRefresh";
 
 export default function PasswordPage() {
     const router = useRouter();
@@ -16,25 +17,24 @@ export default function PasswordPage() {
         setError("");
 
         const formData = new FormData(e.currentTarget);
-        const username = formData.get("email");
+        const email = formData.get("email") as string;
 
         try {
-            // const res = await apiFetch(`/auth/login/`, {
-            //     method: "POST",
-            //     headers: {
-            //         "Content-Type": "application/json",
-            //     },
-            //     body: JSON.stringify({username, password}),
-            //     credentials: "include",
-            // })
-            // if (res.ok) {
-            //     refreshCurrentUser()
-            //     router.push("/dashboard");
-            // } else {
-            //     throw new Error("Identifiants invalides");
-            // }
-            router.push('password/code')
+            const res = await apiFetch(`/auth/password_reset/`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({email}),
+            })
+            const resData = await res.json();
 
+            if (res.ok) {
+                localStorage.setItem("email", email);
+                router.push(`password/code`);
+            } else {
+                throw new Error(resData.message);
+            }
         } catch (err: any) {
             setError(err.message);
         } finally {
@@ -55,6 +55,11 @@ export default function PasswordPage() {
                         required
                     />
                 </div>
+                {error && (
+                    <p className="text-red-500 text-sm text-left w-full">
+                        {error}
+                    </p>
+                )}
                 <div className="flex flex-col items-start self-start text-primary2">
                     <Link href="/authentification" className="hover:underline">Retour à la connexion</Link>
                 </div>

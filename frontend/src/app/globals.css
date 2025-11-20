@@ -8,9 +8,11 @@
 @theme {
   --color-primary1: #1D3557;
   --color-primary2: #3A6EA5;
+  --color-primary3: #DCE6F1;
   --color-secondary2: #9E9E9E;
     --color-calltoaction1: #FBC02D;
     --color-calltoaction2: #F9A825;
+    --color-calltoactionsuccess: #4CAF50;
 }
 
 @theme inline {

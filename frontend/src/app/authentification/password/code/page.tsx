@@ -1,8 +1,9 @@
 'use client'
-import {useState, useRef} from 'react'
+import {useRef, useState} from 'react'
 import Link from 'next/link'
 import Button from "@/src/app/components/button";
 import {useRouter} from "next/navigation";
+import {apiFetch} from "@/src/hook/userRefresh";
 
 export default function CodePage() {
     const router = useRouter();
@@ -35,26 +36,26 @@ export default function CodePage() {
         setLoading(true);
         setError("");
 
-        const formData = new FormData(e.currentTarget);
-        const username = formData.get("email");
+        const otp = code.join("");
+        const email = localStorage.getItem("email");
 
         try {
-            // const res = await apiFetch(`/auth/login/`, {
-            //     method: "POST",
-            //     headers: {
-            //         "Content-Type": "application/json",
-            //     },
-            //     body: JSON.stringify({username, password}),
-            //     credentials: "include",
-            // })
-            // if (res.ok) {
-            //     refreshCurrentUser()
-            //     router.push("/dashboard");
-            // } else {
-            //     throw new Error("Identifiants invalides");
-            // }
-            router.push('reset')
+            const res = await apiFetch(`/auth/password_reset/code/`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({email, code: otp}),
+            })
+            const resData = await res.json();
 
+            if (res.ok) {
+                const data = await res.json();
+                localStorage.setItem("resetToken", data.reset_token);
+                router.push('reset')
+            } else {
+                throw new Error(resData.message);
+            }
         } catch (err: any) {
             setError(err.message);
         } finally {
@@ -95,7 +96,11 @@ export default function CodePage() {
                         ))}
                     </div>
                 </div>
-
+                {error && (
+                    <p className="text-red-500 text-sm text-left w-full">
+                        {error}
+                    </p>
+                )}
                 <div className="flex flex-col items-start self-start text-primary2">
                     <Link
                         href="/authentication/login"

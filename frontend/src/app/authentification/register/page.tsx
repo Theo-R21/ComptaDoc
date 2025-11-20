@@ -4,7 +4,7 @@ import Link from "next/link";
 import Button from "@/src/app/components/button";
 import {useState} from "react";
 import {useRouter} from "next/navigation";
-import {countryPrefixes} from "@/src/data/countries";
+import {apiFetch} from "@/src/hook/userRefresh";
 
 export default function RegisterPage() {
     const router = useRouter();
@@ -18,25 +18,26 @@ export default function RegisterPage() {
         setError("");
 
         const formData = new FormData(e.currentTarget);
-        const username = formData.get("email");
+
+        const data: Record<string, any> = {};
+        formData.forEach((value, key) => {
+            data[key] = value;
+        });
 
         try {
-            // const res = await apiFetch(`/auth/login/`, {
-            //     method: "POST",
-            //     headers: {
-            //         "Content-Type": "application/json",
-            //     },
-            //     body: JSON.stringify({username, password}),
-            //     credentials: "include",
-            // })
-            // if (res.ok) {
-            //     refreshCurrentUser()
-            //     router.push("/dashboard");
-            // } else {
-            //     throw new Error("Identifiants invalides");
-            // }
-            router.push('password/code')
-
+            const res = await apiFetch(`/auth/register/`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(data),
+            })
+            const resData = await res.json();
+            if (res.ok) {
+                router.push("/authentification");
+            } else {
+                throw new Error(resData.message);
+            }
         } catch (err: any) {
             setError(err.message);
         } finally {
@@ -60,7 +61,7 @@ export default function RegisterPage() {
                 <div className="relative w-full">
                     <Input
                         label="Prénom"
-                        name="firstname"
+                        name="first_name"
                         type="text"
                         placeholder="Prénom..."
                         required
@@ -76,20 +77,20 @@ export default function RegisterPage() {
                     />
                 </div>
                 <div className="relative w-full">
-                    <select
-                        name="phone_prefix"
-                        value={prefix}
-                        onChange={(e) => setPrefix(e.target.value)}
-                        className="rounded-md border border-primary2 bg-white px-2 py-3 text-primary1"
-                    >
-                        {countryPrefixes.map((c) => (
-                            <option key={c.iso} value={c.prefix}>
-                                <span className="inline-block w-5">{<c.flag/>}</span>
-                                {c.prefix}
-                            </option>
+                    {/*<select*/}
+                    {/*    name="phone_prefix"*/}
+                    {/*    value={prefix}*/}
+                    {/*    onChange={(e) => setPrefix(e.target.value)}*/}
+                    {/*    className="rounded-md border border-primary2 bg-white px-2 py-3 text-primary1"*/}
+                    {/*>*/}
+                    {/*    {countryPrefixes.map((c) => (*/}
+                    {/*        <option key={c.iso} value={c.prefix}>*/}
+                    {/*            <span className="inline-block w-5">{<c.flag/>}</span>*/}
+                    {/*            {c.prefix}*/}
+                    {/*        </option>*/}
 
-                        ))}
-                    </select>
+                    {/*    ))}*/}
+                    {/*</select>*/}
                     <Input
                         label="Téléphone"
                         name="phone"
@@ -125,11 +126,16 @@ export default function RegisterPage() {
                         required
                     />
                 </div>
+                {error && (
+                    <p className="text-red-500 text-sm text-left w-full">
+                        {error}
+                    </p>
+                )}
                 <div className="flex flex-col items-start self-start text-primary2">
                     <Link href="/authentification" className="hover:underline">Retour à la connexion</Link>
                 </div>
                 <Button variant="calltoaction1" className="w-full rounded-md px-4 py-2">
-                    Recevoir un code
+                    Créer un compte
                 </Button>
             </form>
         </>
