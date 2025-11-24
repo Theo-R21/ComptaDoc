@@ -51,6 +51,7 @@ INSTALLED_APPS = [
     "rest_framework_simplejwt",
     "authentification",
     "user",
+    "societe",
     'drf_yasg',
 ]
 
