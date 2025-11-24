@@ -9,9 +9,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="fr">
-      <body className="min-h-screen bg-neutral-50">
+      <body>
           <UserProvider>
-            <div className="flex h-dvh w-dvw">
+            <div className="flex min-h-screen w-full bg-neutral-50">
               <Navbar/>
               {children}
             </div>
