@@ -8,3 +8,22 @@ from user.models import User
 class Societe(models.Model):
     nom = models.CharField(max_length=100)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
+
+class SocieteMonth(models.Model):
+    STATUS_CHOICES = (
+        ("OPEN", "Ouvert"),
+        ("CLOSED", "Fermé"),
+        ("LOCKED", "Verrouillé"),
+    )
+
+    societe = models.ForeignKey(Societe, on_delete=models.CASCADE)
+    year = models.IntegerField()
+    month = models.IntegerField()
+    status = models.CharField(
+        max_length=10,
+        choices=STATUS_CHOICES,
+        default="OPEN"
+    )
+
+    class Meta:
+        unique_together = ("societe", "year", "month")
