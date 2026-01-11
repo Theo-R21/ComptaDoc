@@ -3,49 +3,226 @@
 import {useRouter} from "next/navigation";
 import {useEffect, useState} from "react";
 import {apiFetch} from "@/src/hook/userRefresh";
+import {FaArrowRight, FaList} from "react-icons/fa";
+import {SocieteInfo} from "@/src/models/societe/societe.model";
+import Searchbar from "@/src/app/components/searchbar";
+import {HiSquares2X2} from "react-icons/hi2";
+import {useDebounce} from "@/src/hook/useDebounce";
 
 
 export default function Documents() {
     const router = useRouter();
-    const [data, setData] = useState<[]>([]);
-    // const [loading, setLoading] = useState(false);
+    const [data, setData] = useState<SocieteInfo[]>([]);
+    const [pageIndex, setPageIndex] = useState(0);
+    const [pageSize] = useState(12);
+    const [totalCount, setTotalCount] = useState(0);
+    const [loading, setLoading] = useState(false);
+    const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+    const [search, setSearch] = useState("");
+    const debouncedSearch = useDebounce(search);
     // const [error, setError] = useState("");
     // const {refreshCurrentUser} = useCurrentUser();
 
     useEffect(() => {
         const fetchData = async () => {
+            setLoading(true);
             try {
-                const res = await apiFetch("/societe/");
+                const url = new URL("/societe/", window.location.origin);
+                url.searchParams.set("page", (pageIndex + 1).toString());
+                url.searchParams.set("page_size", pageSize.toString());
+
+                if (debouncedSearch) {
+                    url.searchParams.set("search", debouncedSearch);
+                }
+
+                const res = await apiFetch(url.pathname + "?" + url.searchParams.toString());
                 const json = await res.json();
-                setData(json);
-                console.log("Données reçues :", json);
+
+                setData(json.results);
+                setTotalCount(json.count);
             } catch (error) {
                 console.error("Erreur API :", error);
+            } finally {
+                setLoading(false);
             }
         };
 
         fetchData();
-    }, []);
+    }, [pageIndex, pageSize, debouncedSearch]);
+
+
+    const totalPages = Math.ceil(totalCount / pageSize);
+
     return (
-        <main className="flex-1 p-8 space-y-8 overflow-auto">
-            <header>
-                <h1 className="text-2xl font-bold text-primary1">Documents</h1>
-                <p className="text-primary2 ">
-                    Gérer et consultez facilement tous vos documents client
-                </p>
-
-                <div className="m-5">
+        <main className="flex-1 p-8 overflow-auto bg-gray-50">
+            <header className="space-y-6">
+                <div>
+                    <h1 className="text-2xl font-bold text-primary1">Documents</h1>
+                    <p className="text-primary2">
+                        Gérer et consultez facilement tous vos documents client
+                    </p>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {data.map((item, index) => (
-                        <div key={index} className="bg-primary1 text-white rounded-xl p-6 space-y-2 relative cursor-pointer hover:shadow-lg transition-shadow">
-                            {JSON.stringify(item)}
+                <div className="flex items-center justify-between gap-4 px-4 py-2 rounded-md">
+                    <div className="flex-1">
+                        <Searchbar
+                            placeholder="Rechercher par nom, société..."
+                            value={search}
+                            onChange={(value) => {
+                                setSearch(value);
+                                setPageIndex(0);
+                            }}
+                        />
+                    </div>
+
+                    <div className="flex items-center gap-3">
+                        <p className="text-sm font-medium text-primary1 whitespace-nowrap">
+                            Affichage :
+                        </p>
+
+                        <div className="flex items-center gap-1 bg-primary1/5 border border-primary1/20 rounded-md p-1">
+
+                            <button
+                                onClick={() => setViewMode("grid")}
+                                className={`p-2 rounded-md transition ${viewMode === "grid" ? "bg-calltoaction1 text-primary1" : "hover:bg-primary1/10 text-primary1"} `}>
+                                <HiSquares2X2 size={18}/>
+                            </button>
+
+                            <button
+                                onClick={() => setViewMode("list")}
+                                className={`p-2 rounded-md transition ${viewMode === "list" ? "bg-calltoaction1 text-primary1" : "hover:bg-primary1/10 text-primary1"}`}>
+                                <FaList size={18}/>
+                            </button>
+
                         </div>
-                    ))}
+
+                    </div>
+
                 </div>
+
+
+                {viewMode === "grid" && (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
+                        {data.map((item, index) => (
+                            <div
+                                key={index}
+                                className="bg-primary1 text-white rounded-2xl p-5 cursor-pointer transition-all hover:shadow-xl hover:-translate-y-1 flex flex-col justify-between">
+                                <div className="flex items-center gap-4">
+                                    <div className="w-12 h-12 rounded-full bg-gray-200 flex-shrink-0"/>
+
+                                    <div>
+                                        <p className="font-semibold text-2xl leading-tight">
+                                            {item.nom}
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <div className="mt-4 space-y-1 text-sm text-gray-200">
+                                    <p>
+                                        Propriétaire : {item.user.last_name} {item.user.first_name}
+                                    </p>
+                                    <p>Numéro de téléphone :</p>
+                                </div>
+
+                                <div className="flex justify-end mt-4">
+                                    <FaArrowRight className="text-calltoaction1 text-lg" onClick={() => router.push(`/documents/societe/${item.id}`)}/>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                )}
+                {viewMode === "list" && (
+                    <div className="flex flex-col gap-2">
+                        {data.map((item, index) => (
+                            <div
+                                key={index}
+                                className="bg-white border border-primary1/50 rounded-lg px-4 py-3 flex items-center justify-between hover:bg-primary1/10 transition cursor-pointer"
+                            >
+                                <div className="flex items-center gap-4">
+                                    <div className="w-10 h-10 rounded-full bg-gray-200 flex-shrink-0"/>
+                                    <div>
+                                        <p className="font-semibold text-primary1">
+                                            {item.nom}
+                                        </p>
+                                        <p className="text-sm text-primary2">
+                                            {item.user.last_name} {item.user.first_name}
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <FaArrowRight className="text-calltoaction1" onClick={() => router.push(`/documents/societe/${item.id}`)}/>
+                            </div>
+                        ))}
+                    </div>
+                )}
+
+                <div className="flex justify-end mt-6">
+                    <div className="flex items-center gap-1 bg-primary1 px-2 py-1 rounded-md shadow-sm">
+
+                        <button
+                            onClick={() => setPageIndex(0)}
+                            disabled={pageIndex === 0}
+                            className="px-2 py-1 rounded  text-calltoaction1 disabled:opacity-40">
+                            «
+                        </button>
+
+                        <button
+                            onClick={() => setPageIndex(p => Math.max(p - 1, 0))}
+                            disabled={pageIndex === 0}
+                            className="px-2 py-1 rounded  text-calltoaction1 disabled:opacity-40">
+                            ‹
+                        </button>
+
+                        <button
+                            onClick={() => setPageIndex(0)}
+                            className={`px-2 py-1 rounded ${pageIndex === 0 ? "bg-calltoaction1 text-primary1 font-semibold" : "bg-primary1 text-white"}`}>
+                            1
+                        </button>
+
+                        {pageIndex > 2 && (
+                            <span className="px-2 text-primary2 select-none">…</span>
+                        )}
+
+                        {pageIndex > 0 && pageIndex < totalPages - 1 && (
+                            <button className="px-2 py-1 rounded bg-calltoaction1 text-primary1 font-semibold">
+                                {pageIndex + 1}
+                            </button>
+                        )}
+
+                        {pageIndex < totalPages - 3 && (
+                            <span className="px-2 text-primary2 select-none">…</span>
+                        )}
+
+                        {totalPages > 1 && (
+                            <button
+                                onClick={() => setPageIndex(totalPages - 1)}
+                                className={`px-2 py-1 rounded ${pageIndex === totalPages - 1 ? "bg-calltoaction1 text-primary1 font-semibold" : " bg-primary1 text-white"}`}>
+                                {totalPages}
+                            </button>
+                        )}
+
+                        <button
+                            onClick={() =>
+                                setPageIndex(p =>
+                                    (p + 1) * pageSize < totalCount ? p + 1 : p
+                                )}
+                            disabled={pageIndex === totalPages - 1}
+                            className="px-2 py-1 rounded  text-calltoaction1 disabled:opacity-40">
+                            ›
+                        </button>
+
+                        <button onClick={() => setPageIndex(totalPages - 1)} disabled={pageIndex === totalPages - 1}
+                                className="px-2 py-1 rounded  text-calltoaction1 disabled:opacity-40">
+                            »
+                        </button>
+
+                    </div>
+                </div>
+
+
             </header>
         </main>
+
 
     );
 }

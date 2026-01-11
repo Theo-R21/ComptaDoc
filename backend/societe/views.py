@@ -1,42 +1,39 @@
 from django.shortcuts import render
-from rest_framework import viewsets, permissions
+from rest_framework import viewsets, permissions,filters
 from rest_framework.response import Response
-
 from societe.models import Societe
-
+from rest_framework.pagination import PageNumberPagination
 from societe.serializers import SocieteSerializer
 
 
 # Create your views here.
 
 
-# class SocietePagination(PageNumberPagination):
-#     page_size = 10
-#     page_size_query_param = "page_size"
-#     max_page_size = 100
+class SocietePagination(PageNumberPagination):
+    page_size = 12
+    page_size_query_param = "page_size"
+    max_page_size = 100
 
 
 class SocieteViewSet(viewsets.ViewSet):
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
     # parser_classes = [MultiPartParser, FormParser]
-    # filter_backends = [filters.SearchFilter]
-    # search_fields = ["username",]
+    filter_backends = [filters.SearchFilter]
+    search_fields = ["user__first_name", "user__last_name","nom"]
 
-    # def filter_queryset(self, queryset, request):
-    #     for backend in list(self.filter_backends):
-    #         queryset = backend().filter_queryset(request, queryset, self)
-    #     return queryset
+    def filter_queryset(self, queryset, request):
+        for backend in list(self.filter_backends):
+            queryset = backend().filter_queryset(request, queryset, self)
+        return queryset
 
     def list(self, request):
-        queryset = Societe.objects.all().order_by("-nom")
-        serializer = SocieteSerializer(queryset, many=True)
-        # queryset = self.filter_queryset(queryset, request)
-        # paginator = UserPagination()
-        # page = paginator.paginate_queryset(queryset, request)
-        # serializer = UserListSerializer(page, many=True)
+        queryset = Societe.objects.all().order_by("nom")
+        queryset = self.filter_queryset(queryset, request)
+        paginator = SocietePagination()
+        page = paginator.paginate_queryset(queryset, request)
+        serializer = SocieteSerializer(page, many=True)
 
-        # return paginator.get_paginated_response(serializer.data)
-        return Response(serializer.data)
+        return paginator.get_paginated_response(serializer.data)
 
     # def retrieve(self, request, pk=None):
     #     try:
