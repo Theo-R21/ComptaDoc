@@ -1,0 +1,16 @@
+export class DocumentsList {
+    id: number;
+    nom: string;
+    type: string;
+    path: string;
+    date_publication: Date;
+
+
+    constructor(id: number, nom: string, type: string, path: string, date_publication: Date) {
+        this.id = id;
+        this.nom = nom;
+        this.type = type;
+        this.path = path;
+        this.date_publication = date_publication;
+    }
+}

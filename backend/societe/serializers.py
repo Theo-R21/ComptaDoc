@@ -18,7 +18,7 @@ class SocieteMonthSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = SocieteMonth
-        fields = ["year", "month", "month_name", "status"]
+        fields = ["id","year", "month", "month_name", "status"]
 
     def get_month_name(self, obj):
         month_name = calendar.month_name[obj.month]

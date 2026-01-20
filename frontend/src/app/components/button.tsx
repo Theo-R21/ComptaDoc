@@ -19,7 +19,7 @@ export default function Button({
     primary1: 'bg-primary1 hover:bg-yellow-600 text-white',
     primary2: 'bg-primary2 hover:bg-yellow-600 text-white',
     primary3: 'bg-yellow-500 hover:bg-yellow-600 text-primary1',
-    secondary1: 'bg-gray-500 hover:bg-gray-600 text-white',
+    secondary1: 'border border-secondary1 hover:bg-grey-900 text-secondary1',
     secondary2: 'bg-gray-500 hover:bg-gray-600 text-white',
     secondary3: 'bg-gray-500 hover:bg-gray-600 text-white',
     calltoaction1: 'bg-calltoaction1 hover:bg-calltoaction2 text-black',

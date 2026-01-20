@@ -53,6 +53,7 @@ INSTALLED_APPS = [
     "user",
     "societe",
     'drf_yasg',
+    'documents',
 ]
 
 MIDDLEWARE = [

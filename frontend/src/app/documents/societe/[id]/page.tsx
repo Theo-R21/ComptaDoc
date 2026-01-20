@@ -3,12 +3,13 @@ import {FaArrowRight, FaLock, FaLockOpen} from "react-icons/fa";
 import {Switch} from "@/src/app/components/ui/switch";
 import {useEffect, useState} from "react";
 import {apiFetch} from "@/src/hook/userRefresh";
-import {useParams} from "next/navigation";
+import {useParams, useRouter} from "next/navigation";
 import {SocieteMonthInfo} from "@/src/models/societe/societe.model";
 
 export default function Societe() {
     const {id} = useParams()
     const [date, setDate] = useState<SocieteMonthInfo[]>([]);
+    const router = useRouter();
 
     useEffect(() => {
         const fetchData = async () => {
@@ -25,7 +26,7 @@ export default function Societe() {
         };
 
         fetchData();
-    }, []);
+    }, [id]);
 
     const handleChange = async (
         monthItem: SocieteMonthInfo,
@@ -95,7 +96,7 @@ export default function Societe() {
                                 />
                                 <FaLockOpen className="text-calltoactionsuccess text-lg"/>
                             </div>
-                            <FaArrowRight className="text-calltoaction1 text-lg"/>
+                            <FaArrowRight className="text-calltoaction1 text-lg" onClick={() => router.push(`/documents/societe/${id}/${item.month_name}?monthId=${item.id}`)}/>
                         </div>
                     </div>
                 ))}
