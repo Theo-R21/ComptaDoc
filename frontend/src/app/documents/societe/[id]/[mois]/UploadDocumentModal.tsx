@@ -1,12 +1,7 @@
 "use client"
 
-import {
-    Dialog,
-    DialogContent,
-    DialogHeader,
-    DialogTitle,
-} from "@/src/app/components/ui/dialog"
-import {X, Upload, Calendar} from "lucide-react"
+import {Dialog, DialogContent, DialogHeader, DialogTitle,} from "@/src/app/components/ui/dialog"
+import {Calendar, Upload} from "lucide-react"
 import Button from "@/src/app/components/button";
 import {useEffect, useState} from "react";
 import {apiFetch} from "@/src/hook/userRefresh";

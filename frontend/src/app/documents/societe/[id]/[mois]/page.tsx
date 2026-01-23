@@ -104,7 +104,7 @@ export default function Page() {
                             Activité mensuelle
                         </h2>
 
-                        <div className="h-44 bg-gray-100 rounded-lg flex items-center justify-center text-gray-400">
+                        <div className="h-auto bg-gray-100 rounded-lg flex items-center justify-center text-gray-400">
                             Graphique barres
                         </div>
                     </div>
@@ -120,14 +120,6 @@ export default function Page() {
 
                         <select className="border border-primary1 rounded-lg text-secondary1 px-3 py-2 text-sm">
                             <option>Type de document</option>
-                        </select>
-
-                        <select className="border border-primary1 rounded-lg text-secondary1 px-3 py-2 text-sm">
-                            <option>Mois</option>
-                        </select>
-
-                        <select className="border border-primary1 rounded-lg text-secondary1 px-3 py-2 text-sm">
-                            <option>Année</option>
                         </select>
                     </div>
 
