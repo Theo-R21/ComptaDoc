@@ -1,11 +1,16 @@
 "use client"
 
-import {Dialog, DialogContent, DialogHeader, DialogTitle,} from "@/src/app/components/ui/dialog"
-import {Calendar, Upload} from "lucide-react"
-import Button from "@/src/app/components/button";
-import {useEffect, useState} from "react";
-import {apiFetch} from "@/src/hook/userRefresh";
-import {TypeDocumentList} from "@/src/models/documents/documents.model";
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+} from "@/src/app/components/ui/dialog"
+import { Calendar, Upload } from "lucide-react"
+import Button from "@/src/app/components/button"
+import { useEffect, useState } from "react"
+import { apiFetch } from "@/src/hook/userRefresh"
+import { TypeDocumentList } from "@/src/models/documents/documents.model"
 
 type UploadDocumentModalProps = {
     open: boolean
@@ -18,7 +23,7 @@ export function UploadDocumentModal({
     open,
     onOpenChange,
     societeId,
-    monthId
+    monthId,
 }: UploadDocumentModalProps) {
     const [types, setTypes] = useState<TypeDocumentList[]>([])
     const [selectedType, setSelectedType] = useState<number | null>(null)
@@ -27,8 +32,7 @@ export function UploadDocumentModal({
     const [docDate, setDocDate] = useState<string>("")
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState<string | null>(null)
-    console.log(societeId)
-    console.log(monthId)
+
     useEffect(() => {
         const fetchTypes = async () => {
             try {
@@ -86,21 +90,42 @@ export function UploadDocumentModal({
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="sm:max-w-md bg-white text-gray-900 border shadow-xl">
-                <DialogHeader className="flex flex-row items-center justify-between">
-                    <DialogTitle>Téléverser un fichier</DialogTitle>
+            <DialogContent
+                className="
+                    sm:max-w-xl
+                    lg:max-w-2xl
+                    p-8
+                    bg-white text-gray-900
+                    border shadow-xl
+                "
+            >
+                <DialogHeader className="mb-6">
+                    <DialogTitle className="text-lg font-semibold">
+                        Téléverser un fichier
+                    </DialogTitle>
                 </DialogHeader>
 
-                <div className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                     <div>
-                        <label className="text-sm font-medium">Type de document</label>
+                        <label className="text-sm font-medium">
+                            Type de document
+                        </label>
                         <select
-                            className="mt-1 w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-primary1"
+                            className="
+                                mt-1 w-full rounded-lg
+                                border border-gray-300
+                                bg-white px-3 py-2.5
+                                text-sm text-primary1
+                            "
                             value={selectedType ?? ""}
-                            onChange={e => setSelectedType(Number(e.target.value))}
+                            onChange={(e) =>
+                                setSelectedType(Number(e.target.value))
+                            }
                         >
                             <option value="" disabled>
-                                {types.length === 0 ? "Aucun type disponible" : "Sélectionnez un type"}
+                                {types.length === 0
+                                    ? "Aucun type disponible"
+                                    : "Sélectionnez un type"}
                             </option>
                             {types.map((item) => (
                                 <option key={item.id} value={item.id}>
@@ -111,65 +136,99 @@ export function UploadDocumentModal({
                     </div>
 
                     <div>
-                        <label className="text-sm font-medium">Nom du fichier</label>
+                        <label className="text-sm font-medium">
+                            Nom du fichier
+                        </label>
                         <input
-                            className="mt-1 w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 placeholder-gray-400"
+                            className="
+                                mt-1 w-full rounded-lg
+                                border border-gray-300
+                                bg-white px-3 py-2.5
+                                text-sm text-gray-900
+                                placeholder-gray-400
+                            "
                             placeholder="Nom du fichier..."
                             value={docName}
-                            onChange={e => setDocName(e.target.value)}
+                            onChange={(e) => setDocName(e.target.value)}
                         />
                     </div>
 
-                    <label
-                        className="border-2 border-dashed rounded-xl p-6 flex flex-col items-center justify-center text-center cursor-pointer hover:bg-gray-50"
-                    >
-                        <Upload className="h-8 w-8 text-gray-400 mb-2"/>
-                        <p className="text-sm">
-                            <span className="font-medium">Glissez votre fichier ici</span>
-                            <br/>
-                            ou cliquez pour parcourir
-                        </p>
-                        <p className="text-xs text-gray-400 mt-2">
-                            PDF, PNG, JPEG – 10 Mo max.
-                        </p>
-                        <input
-                            type="file"
-                            className="hidden"
-                            onChange={e => e.target.files && setFile(e.target.files[0])}
-                        />
-                    </label>
+                    <div className="md:col-span-2">
+                        <label
+                            className="
+                                border-2 border-dashed rounded-xl
+                                p-8
+                                flex flex-col items-center justify-center
+                                text-center cursor-pointer
+                                hover:bg-gray-50
+                                transition
+                            "
+                        >
+                            <Upload className="h-9 w-9 text-gray-400 mb-2" />
+                            <p className="text-sm">
+                                <span className="font-medium">
+                                    Glissez votre fichier ici
+                                </span>
+                                <br />
+                                ou cliquez pour parcourir
+                            </p>
+                            <p className="text-xs text-gray-400 mt-2">
+                                PDF, PNG, JPEG – 10 Mo max.
+                            </p>
+                            <input
+                                type="file"
+                                className="hidden"
+                                onChange={(e) =>
+                                    e.target.files &&
+                                    setFile(e.target.files[0])
+                                }
+                            />
+                        </label>
+                    </div>
 
                     <div>
-                        <label className="text-sm font-medium">Date du document</label>
+                        <label className="text-sm font-medium">
+                            Date du document
+                        </label>
                         <div className="relative mt-1">
-                            <Calendar className="absolute left-3 top-2.5 h-4 w-4 text-gray-400"/>
+                            <Calendar className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                             <input
                                 type="date"
-                                className="w-full border rounded-lg pl-10 pr-3 py-2 text-sm"
+                                className="
+                                    w-full rounded-lg
+                                    border border-gray-300
+                                    pl-10 pr-3 py-2.5
+                                    text-sm
+                                "
                                 value={docDate}
-                                onChange={e => setDocDate(e.target.value)}
+                                onChange={(e) => setDocDate(e.target.value)}
                             />
                         </div>
                     </div>
+                </div>
 
-                    {error && <p className="text-red-500 text-sm">{error}</p>}
+                {error && (
+                    <p className="mt-4 text-sm text-red-500">
+                        {error}
+                    </p>
+                )}
 
-                    <div className="flex justify-between pt-4">
-                        <Button
-                            variant="secondary1"
-                            className="p-2"
-                            onClick={() => onOpenChange(false)}
-                        >
-                            Retour
-                        </Button>
-                        <Button
-                            variant="calltoaction1"
-                            onClick={handleUpload}
-                            disabled={loading}
-                        >
-                            {loading ? "Téléversement..." : "Téléverser"}
-                        </Button>
-                    </div>
+                <div className="flex justify-between pt-6">
+                    <Button
+                        variant="secondary1"
+                        className="px-4 py-2"
+                        onClick={() => onOpenChange(false)}
+                    >
+                        Retour
+                    </Button>
+                    <Button
+                        variant="calltoaction1"
+                        onClick={handleUpload}
+                        disabled={loading}
+                        className="px-6"
+                    >
+                        {loading ? "Téléversement..." : "Téléverser"}
+                    </Button>
                 </div>
             </DialogContent>
         </Dialog>

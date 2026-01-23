@@ -20,8 +20,6 @@ export default function Documents() {
     const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
     const [search, setSearch] = useState("");
     const debouncedSearch = useDebounce(search);
-    // const [error, setError] = useState("");
-    // const {refreshCurrentUser} = useCurrentUser();
 
     useEffect(() => {
         const fetchData = async () => {
@@ -106,31 +104,52 @@ export default function Documents() {
                         {data.map((item, index) => (
                             <div
                                 key={index}
-                                className="bg-primary1 text-white rounded-2xl p-5 cursor-pointer transition-all hover:shadow-xl hover:-translate-y-1 flex flex-col justify-between">
+                                className="
+                                    group relative rounded-xl border border-primary1/20
+                                    bg-primary1 text-white
+                                    p-5 cursor-pointer
+                                    transition-all
+                                    hover:shadow-lg hover:-translate-y-0.5
+                                "
+                                onClick={() => router.push(`/documents/societe/${item.id}`)}
+                            >
                                 <div className="flex items-center gap-4">
-                                    <div className="w-12 h-12 rounded-full bg-gray-200 flex-shrink-0"/>
-
-                                    <div>
-                                        <p className="font-semibold text-2xl leading-tight">
-                                            {item.nom}
-                                        </p>
+                                    <div className="w-11 h-11 rounded-full bg-primary3 flex items-center justify-center flex-shrink-0">
+                                        <span className="text-primary1 font-semibold text-sm">
+                                            {item.nom?.charAt(0)}
+                                        </span>
                                     </div>
-                                </div>
 
-                                <div className="mt-4 space-y-1 text-sm text-gray-200">
-                                    <p>
-                                        Propriétaire : {item.user.last_name} {item.user.first_name}
+                                    <p className="text-lg font-semibold tracking-tight">
+                                        {item.nom}
                                     </p>
-                                    <p>Numéro de téléphone :</p>
                                 </div>
 
-                                <div className="flex justify-end mt-4">
-                                    <FaArrowRight className="text-calltoaction1 text-lg" onClick={() => router.push(`/documents/societe/${item.id}`)}/>
+                                <div className="mt-4 space-y-1 text-sm text-primary3/90">
+                                    <p>
+                                        <span className="opacity-70">Propriétaire :</span>{" "}
+                                        {item.user.last_name} {item.user.first_name}
+                                    </p>
+                                    <p>
+                                        <span className="opacity-70">Téléphone :</span>{" "}
+                                        {item.user.phone || "-"}
+                                    </p>
+                                </div>
+
+                                <div className="flex justify-end mt-5">
+                                    <div
+                                        className="flex items-center justify-center w-9 h-9 rounded-full bg-primary3/10 group-hover:bg-primary3/20 transition"
+                                    >
+                                        <FaArrowRight
+                                            className="text-calltoaction1 group-hover:translate-x-1 transition-transform"
+                                        />
+                                    </div>
                                 </div>
                             </div>
                         ))}
                     </div>
                 )}
+
                 {viewMode === "list" && (
                     <div className="flex flex-col gap-2">
                         {data.map((item, index) => (
@@ -150,7 +169,8 @@ export default function Documents() {
                                     </div>
                                 </div>
 
-                                <FaArrowRight className="text-calltoaction1" onClick={() => router.push(`/documents/societe/${item.id}`)}/>
+                                <FaArrowRight className="text-calltoaction1"
+                                              onClick={() => router.push(`/documents/societe/${item.id}`)}/>
                             </div>
                         ))}
                     </div>

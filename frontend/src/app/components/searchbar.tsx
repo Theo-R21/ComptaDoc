@@ -32,10 +32,11 @@ export default function Searchbar({
           text-sm
           text-primary1
           bg-white
-          border border-primary1
+          border border-primary1/50
           rounded-md
           focus:outline-none
-          focus:ring-2 focus:ring-calltoaction1
+          focus:ring-1 focus:ring-primary1
+          hover:border-primary1
         "
       />
     </div>

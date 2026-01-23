@@ -72,7 +72,7 @@ export default function Page() {
                     <h1 className="text-2xl font-semibold text-gray-900">
                         Documents du client {id}
                     </h1>
-                    <p className="text-sm text-gray-500">
+                    <p className="text-primary2">
                         Vue du mois : {mois}
                     </p>
                 </div>
