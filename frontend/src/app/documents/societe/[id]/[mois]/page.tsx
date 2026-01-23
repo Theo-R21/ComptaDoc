@@ -155,7 +155,7 @@ export default function Page() {
                             </th>
                             <th className="p-3 text-left">Nom du document</th>
                             <th className="p-3 text-left">Type</th>
-                            <th className="p-3 text-left">Date</th>
+                            <th className="p-3 text-left">Date de publication</th>
                             <th className="p-3 text-right">Actions</th>
                         </tr>
                         </thead>

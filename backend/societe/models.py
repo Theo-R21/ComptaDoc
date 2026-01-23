@@ -13,7 +13,6 @@ class SocieteMonth(models.Model):
     STATUS_CHOICES = (
         ("OPEN", "Ouvert"),
         ("CLOSED", "Fermé"),
-        ("LOCKED", "Verrouillé"),
     )
 
     societe = models.ForeignKey(Societe, on_delete=models.CASCADE)
@@ -22,7 +21,7 @@ class SocieteMonth(models.Model):
     status = models.CharField(
         max_length=10,
         choices=STATUS_CHOICES,
-        default="OPEN"
+        default="CLOSED"
     )
 
     class Meta:
