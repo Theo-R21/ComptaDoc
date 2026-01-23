@@ -1,6 +1,6 @@
 from django.db import models
 
-from datetime import timezone
+from django.utils import timezone
 from django.utils.text import slugify
 import uuid
 

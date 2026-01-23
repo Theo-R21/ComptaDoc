@@ -4,7 +4,7 @@ import Link from "next/link";
 import Button from "@/src/app/components/button";
 import {useRouter} from "next/navigation";
 import {useState} from "react";
-import {apiFetch} from "@/src/hook/userRefresh";
+import {apiFetch} from "@/src/hook/userRefreshClient";
 
 export default function ResetPasswordPage() {
     const router = useRouter();

@@ -14,3 +14,14 @@ export class DocumentsList {
         this.date_publication = date_publication;
     }
 }
+
+
+export class TypeDocumentList{
+    id: number;
+    nom: string;
+
+    constructor(id: number, nom: string) {
+        this.id = id;
+        this.nom = nom;
+    }
+}

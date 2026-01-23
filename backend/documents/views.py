@@ -1,10 +1,13 @@
 from django.shortcuts import render
-from rest_framework import viewsets, permissions, filters
+from rest_framework import viewsets, permissions, filters, status
 from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
 
-from documents.models import SocieteDocument
-from documents.serializers import DocumentsSerializer
+from documents.models import SocieteDocument, TypeDocument
+from documents.serializers import DocumentsSerializer, TypeDocumentsSerializer, SocieteDocumentUploadSerializer
+from rest_framework.parsers import MultiPartParser, FormParser
+from rest_framework.response import Response
+
 
 
 class DocumentsPagination(PageNumberPagination):
@@ -15,7 +18,7 @@ class DocumentsPagination(PageNumberPagination):
 # Create your views here.
 class DocumentsViewSet(viewsets.ViewSet):
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
-    # parser_classes = [MultiPartParser, FormParser]
+    parser_classes = [MultiPartParser, FormParser]
     filter_backends = [filters.SearchFilter]
     search_fields = ["nom", "date"]
 
@@ -37,6 +40,23 @@ class DocumentsViewSet(viewsets.ViewSet):
         serializer = DocumentsSerializer(page, many=True)
 
         return paginator.get_paginated_response(serializer.data)
+
+    @action(detail=False,methods=["get"],url_path="types")
+    def type_doc(self, request):
+        queryset = TypeDocument.objects.all().order_by("nom")
+        serializer = TypeDocumentsSerializer(queryset, many=True)
+
+
+        return Response(serializer.data)
+
+    @action(detail=False, methods=["post"], url_path="upload")
+    def upload_document(self, request):
+        serializer = SocieteDocumentUploadSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({"detail": "Fichier téléversé avec succès"}, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
     # @action(detail=False, methods=["get"], url_path="(?P<societe_id>[^/.]+)/months")
     # def months(self, request, societe_id=None):

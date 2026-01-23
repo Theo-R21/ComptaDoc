@@ -4,7 +4,7 @@ import Link from "next/link";
 import Button from "@/src/app/components/button";
 import {useState} from "react";
 import {useRouter} from "next/navigation";
-import {apiFetch} from "@/src/hook/userRefresh";
+import {apiFetch} from "@/src/hook/userRefreshClient";
 
 export default function RegisterPage() {
     const router = useRouter();

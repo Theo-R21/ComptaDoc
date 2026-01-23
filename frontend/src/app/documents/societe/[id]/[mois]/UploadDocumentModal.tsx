@@ -1,0 +1,182 @@
+"use client"
+
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+} from "@/src/app/components/ui/dialog"
+import {X, Upload, Calendar} from "lucide-react"
+import Button from "@/src/app/components/button";
+import {useEffect, useState} from "react";
+import {apiFetch} from "@/src/hook/userRefresh";
+import {TypeDocumentList} from "@/src/models/documents/documents.model";
+
+type UploadDocumentModalProps = {
+    open: boolean
+    onOpenChange: (open: boolean) => void
+    societeId: number
+    monthId: number
+}
+
+export function UploadDocumentModal({
+    open,
+    onOpenChange,
+    societeId,
+    monthId
+}: UploadDocumentModalProps) {
+    const [types, setTypes] = useState<TypeDocumentList[]>([])
+    const [selectedType, setSelectedType] = useState<number | null>(null)
+    const [file, setFile] = useState<File | null>(null)
+    const [docName, setDocName] = useState<string>("")
+    const [docDate, setDocDate] = useState<string>("")
+    const [loading, setLoading] = useState(false)
+    const [error, setError] = useState<string | null>(null)
+    console.log(societeId)
+    console.log(monthId)
+    useEffect(() => {
+        const fetchTypes = async () => {
+            try {
+                const res = await apiFetch("/documents/types/")
+                const json = await res.json()
+                setTypes(Array.isArray(json) ? json : [])
+            } catch (err) {
+                console.error(err)
+                setTypes([])
+            }
+        }
+        fetchTypes()
+    }, [])
+
+    const handleUpload = async () => {
+        if (!file || !selectedType) {
+            setError("Veuillez sélectionner un fichier et un type")
+            return
+        }
+
+        const formData = new FormData()
+        formData.append("path", file)
+        formData.append("type", selectedType.toString())
+        formData.append("societe", societeId.toString())
+        formData.append("mois", monthId.toString())
+        if (docName) formData.append("nom", docName)
+        if (docDate) formData.append("date_publication", docDate)
+
+        setLoading(true)
+        setError(null)
+
+        try {
+            const res = await apiFetch("/documents/upload/", {
+                method: "POST",
+                body: formData,
+            })
+
+            if (!res.ok) {
+                const json = await res.json()
+                throw new Error(json.detail || "Erreur lors de l'upload")
+            }
+
+            setFile(null)
+            setDocName("")
+            setDocDate("")
+            setSelectedType(null)
+            onOpenChange(false)
+        } catch (err: any) {
+            console.error(err)
+            setError(err.message || "Erreur inconnue")
+        } finally {
+            setLoading(false)
+        }
+    }
+
+    return (
+        <Dialog open={open} onOpenChange={onOpenChange}>
+            <DialogContent className="sm:max-w-md bg-white text-gray-900 border shadow-xl">
+                <DialogHeader className="flex flex-row items-center justify-between">
+                    <DialogTitle>Téléverser un fichier</DialogTitle>
+                </DialogHeader>
+
+                <div className="space-y-4">
+                    <div>
+                        <label className="text-sm font-medium">Type de document</label>
+                        <select
+                            className="mt-1 w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-primary1"
+                            value={selectedType ?? ""}
+                            onChange={e => setSelectedType(Number(e.target.value))}
+                        >
+                            <option value="" disabled>
+                                {types.length === 0 ? "Aucun type disponible" : "Sélectionnez un type"}
+                            </option>
+                            {types.map((item) => (
+                                <option key={item.id} value={item.id}>
+                                    {item.nom}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+
+                    <div>
+                        <label className="text-sm font-medium">Nom du fichier</label>
+                        <input
+                            className="mt-1 w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 placeholder-gray-400"
+                            placeholder="Nom du fichier..."
+                            value={docName}
+                            onChange={e => setDocName(e.target.value)}
+                        />
+                    </div>
+
+                    <label
+                        className="border-2 border-dashed rounded-xl p-6 flex flex-col items-center justify-center text-center cursor-pointer hover:bg-gray-50"
+                    >
+                        <Upload className="h-8 w-8 text-gray-400 mb-2"/>
+                        <p className="text-sm">
+                            <span className="font-medium">Glissez votre fichier ici</span>
+                            <br/>
+                            ou cliquez pour parcourir
+                        </p>
+                        <p className="text-xs text-gray-400 mt-2">
+                            PDF, PNG, JPEG – 10 Mo max.
+                        </p>
+                        <input
+                            type="file"
+                            className="hidden"
+                            onChange={e => e.target.files && setFile(e.target.files[0])}
+                        />
+                    </label>
+
+                    <div>
+                        <label className="text-sm font-medium">Date du document</label>
+                        <div className="relative mt-1">
+                            <Calendar className="absolute left-3 top-2.5 h-4 w-4 text-gray-400"/>
+                            <input
+                                type="date"
+                                className="w-full border rounded-lg pl-10 pr-3 py-2 text-sm"
+                                value={docDate}
+                                onChange={e => setDocDate(e.target.value)}
+                            />
+                        </div>
+                    </div>
+
+                    {error && <p className="text-red-500 text-sm">{error}</p>}
+
+                    <div className="flex justify-between pt-4">
+                        <Button
+                            variant="secondary1"
+                            className="p-2"
+                            onClick={() => onOpenChange(false)}
+                        >
+                            Retour
+                        </Button>
+                        <Button
+                            variant="calltoaction1"
+                            onClick={handleUpload}
+                            disabled={loading}
+                        >
+                            {loading ? "Téléversement..." : "Téléverser"}
+                        </Button>
+                    </div>
+                </div>
+            </DialogContent>
+        </Dialog>
+    )
+}
