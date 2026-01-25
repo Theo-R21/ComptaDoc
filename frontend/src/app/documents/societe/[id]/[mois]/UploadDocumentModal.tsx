@@ -1,31 +1,27 @@
 "use client"
 
-import {
-    Dialog,
-    DialogContent,
-    DialogHeader,
-    DialogTitle,
-} from "@/src/app/components/ui/dialog"
-import { Calendar, Upload } from "lucide-react"
+import {Dialog, DialogContent, DialogHeader, DialogTitle,} from "@/src/app/components/ui/dialog"
+import {Calendar, Upload} from "lucide-react"
 import Button from "@/src/app/components/button"
-import { useEffect, useState } from "react"
-import { apiFetch } from "@/src/hook/userRefresh"
-import { TypeDocumentList } from "@/src/models/documents/documents.model"
+import {useState} from "react"
+import {apiFetch} from "@/src/hook/userRefresh"
+import {TypeDocumentList} from "@/src/models/documents/documents.model"
 
 type UploadDocumentModalProps = {
     open: boolean
     onOpenChange: (open: boolean) => void
     societeId: number
     monthId: number
+    types: TypeDocumentList[]
 }
 
 export function UploadDocumentModal({
     open,
     onOpenChange,
     societeId,
+    types,
     monthId,
 }: UploadDocumentModalProps) {
-    const [types, setTypes] = useState<TypeDocumentList[]>([])
     const [selectedType, setSelectedType] = useState<number | null>(null)
     const [file, setFile] = useState<File | null>(null)
     const [docName, setDocName] = useState<string>("")
@@ -33,19 +29,7 @@ export function UploadDocumentModal({
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState<string | null>(null)
 
-    useEffect(() => {
-        const fetchTypes = async () => {
-            try {
-                const res = await apiFetch("/documents/types/")
-                const json = await res.json()
-                setTypes(Array.isArray(json) ? json : [])
-            } catch (err) {
-                console.error(err)
-                setTypes([])
-            }
-        }
-        fetchTypes()
-    }, [])
+
 
     const handleUpload = async () => {
         if (!file || !selectedType) {

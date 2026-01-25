@@ -1,6 +1,8 @@
 import datetime
 
-from rest_framework import viewsets, permissions, filters
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+from rest_framework import viewsets, permissions, filters, status
 from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
@@ -38,14 +40,36 @@ class SocieteViewSet(viewsets.ViewSet):
     def months(self, request, societe_id=None):
         societe = Societe.objects.get(pk=societe_id)
 
-        year = request.query_params.get(
-            "year", datetime.datetime.now().year
+        year = int(
+            request.query_params.get("year", datetime.datetime.now().year)
         )
 
-        months = ensure_company_months(societe, year)
+        status = request.query_params.get("status")
+
+        ensure_company_months(societe, year)
+
+        months = SocieteMonth.objects.filter(
+            societe=societe,
+            year=year
+        ).order_by("month")
+
+        if status in ["OPEN", "CLOSED"]:
+            months = months.filter(status=status)
 
         serializer = SocieteMonthSerializer(months, many=True)
         return Response(serializer.data)
+
+    @action(detail=False, methods=["get"], url_path="(?P<societe_id>[^/.]+)/year")
+    def years(self, request, societe_id=None):
+        years = (
+            SocieteMonth.objects
+            .filter(societe_id=societe_id)
+            .values_list("year", flat=True)
+            .distinct()
+            .order_by("-year")
+        )
+
+        return Response(years)
 
     @action(detail=True, methods=["patch"], url_path="months/(?P<month>\\d+)", )
     def update_month(self, request, pk=None, month=None):
@@ -70,6 +94,13 @@ class SocieteViewSet(viewsets.ViewSet):
 
         return Response(SocieteMonthSerializer(obj).data)
 
+    def create(self, request):
+        nom = request.data.get("nom")
+
+        societe = Societe.objects.create(nom=nom, user=request.user.pk)
+        ensure_company_months(societe)
+
+        return Response({"id": societe.id, "nom": societe.nom}, status=status.HTTP_201_CREATED)
     # def retrieve(self, request, pk=None):
     #     try:
     #         user = User.objects.get(pk=pk)
@@ -110,15 +141,16 @@ def ensure_company_months(company, year=None):
     if year is None:
         year = datetime.now().year
 
-    months = []
-
     for month in range(1, 13):
-        obj, _ = SocieteMonth.objects.get_or_create(
+        SocieteMonth.objects.get_or_create(
             societe=company,
             year=year,
             month=month,
             defaults={"status": "OPEN"},
         )
-        months.append(obj)
 
-    return months
+@receiver(post_save, sender=Societe)
+def create_months_for_new_societe(sender, instance, created, **kwargs):
+    if created:
+        year = datetime.now().year
+        ensure_company_months(instance, year)

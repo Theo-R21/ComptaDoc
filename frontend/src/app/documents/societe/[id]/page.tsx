@@ -9,24 +9,52 @@ import {SocieteMonthInfo} from "@/src/models/societe/societe.model";
 export default function Societe() {
     const {id} = useParams()
     const [date, setDate] = useState<SocieteMonthInfo[]>([]);
+    const [years, setYears] = useState<number[]>([]);
+    const [statusFilter, setStatusFilter] = useState<string>("ALL");
+    const [selectedYear, setSelectedYear] = useState<number | null>(null);
     const router = useRouter();
 
+
     useEffect(() => {
-        const fetchData = async () => {
+        const fetchDataYear = async () => {
             try {
-                const url = new URL(`/societe/${id}/months/`, window.location.origin);
-                const res = await apiFetch(url.pathname);
-                const json = await res.json();
-                setDate(json)
+                const res = await apiFetch(`/societe/${id}/year`);
+                const json: number[] = await res.json();
+
+                setYears(json);
+                if (json.length > 0) {
+                    setSelectedYear(json[0]);
+                }
             } catch (error) {
-                console.error("Erreur API :", error);
-            } finally {
-                return
+                console.error("Erreur API:", error);
             }
         };
 
-        fetchData();
+        fetchDataYear();
     }, [id]);
+
+    useEffect(() => {
+        if (!selectedYear) return;
+
+        const fetchMonths = async () => {
+            try {
+                let url = `/societe/${id}/months/?year=${selectedYear}`;
+
+                if (statusFilter !== "ALL") {
+                    url += `&status=${statusFilter}`;
+                }
+
+                const res = await apiFetch(url);
+                const json = await res.json();
+                setDate(json);
+            } catch (error) {
+                console.error("Erreur API :", error);
+            }
+        };
+
+        fetchMonths();
+    }, [id, selectedYear, statusFilter]);
+
 
     const handleChange = async (
         monthItem: SocieteMonthInfo,
@@ -74,35 +102,38 @@ export default function Societe() {
                     </p>
                 </div>
 
-                {/* Actions */}
                 <div className="flex items-center gap-3">
-                    {/* Sélecteur année */}
                     <div className="flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-3 py-2">
                         <span className="text-sm text-secondary2">Année</span>
                         <select
                             className="bg-transparent text-sm font-medium text-secondary1 focus:outline-none"
+                            value={selectedYear ?? ""}
+                            onChange={(e) => setSelectedYear(Number(e.target.value))}
                         >
-                            <option>2026</option>
-                            <option>2025</option>
-                            <option>2024</option>
+                            {years.map((year) => (
+                                <option key={year} value={year}>
+                                    {year}
+                                </option>
+                            ))}
                         </select>
                     </div>
 
-                    {/* Sélecteur statut */}
                     <div className="flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-3 py-2">
                         <span className="text-sm text-secondary2">Statut</span>
                         <select
                             className="bg-transparent text-sm font-medium text-secondary1 focus:outline-none"
+                            value={statusFilter}
+                            onChange={(e) => setStatusFilter(e.target.value)}
                         >
-                            <option>Tous</option>
-                            <option>Ouvertes</option>
-                            <option>Fermées</option>
+                            <option value="ALL">Tous</option>
+                            <option value="OPEN">Ouverts</option>
+                            <option value="CLOSED">Fermés</option>
                         </select>
+
                     </div>
                 </div>
             </div>
 
-            {/* Divider */}
             <div className="mb-6 h-px w-full bg-gray-200"/>
             <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
                 {date.map((item, index) => {

@@ -4,19 +4,14 @@ import Button from "@/src/app/components/button";
 import {useEffect, useState} from "react";
 import {apiFetch} from "@/src/hook/userRefresh";
 import {useDebounce} from "@/src/hook/useDebounce";
-import {DocumentsList} from "@/src/models/documents/documents.model";
+import {DocumentsList, TypeDocumentList} from "@/src/models/documents/documents.model";
 import {UploadDocumentModal} from "@/src/app/documents/societe/[id]/[mois]/UploadDocumentModal";
 import {useParams, useSearchParams} from "next/navigation";
-
-// type PageProps = {
-//     params: {
-//         id: string
-//         mois: string
-//     }
-//     searchParams: {
-//         monthId: number
-//     }
-// }
+import Pagination from "@/src/app/components/pagination";
+import Searchbar from "@/src/app/components/searchbar";
+import {TbDownload} from "react-icons/tb";
+import {FaRegEye} from "react-icons/fa";
+import {PdfViewerModal} from "@/src/app/documents/societe/[id]/[mois]/PDFViewModal";
 
 export default function Page() {
     const params = useParams()
@@ -35,12 +30,57 @@ export default function Page() {
     const [search, setSearch] = useState("")
     const debouncedSearch = useDebounce(search)
     const [openUpload, setOpenUpload] = useState(false)
+    const [types, setTypes] = useState<TypeDocumentList[]>([])
+    const [open, setOpen] = useState(false);
+    const [pdfUrl, setPdfUrl] = useState<string | null>(null);
+    const [selectedType, setSelectedType] = useState<string | null>(null);
+    const [selectedIds, setSelectedIds] = useState<number[]>([]);
+
+    const allSelected =
+        data.length > 0 &&
+        data.every(item => selectedIds.includes(item.id));
+
+    const toggleAll = () => {
+        if (allSelected) {
+            setSelectedIds([]);
+        } else {
+            setSelectedIds(data.map(item => item.id));
+        }
+    };
+
+    const toggleOne = (id: number) => {
+        setSelectedIds(prev =>
+            prev.includes(id)
+                ? prev.filter(i => i !== id)
+                : [...prev, id]
+        );
+    };
+
+    const openPdf = (url: string) => {
+        setPdfUrl(`${process.env.NEXT_PUBLIC_API_URL}${url}`);
+        setOpen(true);
+    };
+
+    useEffect(() => {
+        const fetchTypes = async () => {
+            try {
+                const res = await apiFetch("/documents/types/")
+                const json = await res.json()
+                setTypes(Array.isArray(json) ? json : [])
+            } catch (err) {
+                console.error(err)
+                setTypes([])
+            }
+        }
+        fetchTypes()
+    }, [])
+
 
     useEffect(() => {
         const fetchData = async () => {
             setLoading(true);
             try {
-                const url = new URL(`/documents/${id}/months/${monthId}/`, window.location.origin);
+                const url = new URL(`/documents/${id}/months/${monthId}/?type=${selectedType}`, window.location.origin);
                 url.searchParams.set("page", (pageIndex + 1).toString());
                 url.searchParams.set("page_size", pageSize.toString());
 
@@ -61,8 +101,7 @@ export default function Page() {
         };
 
         fetchData();
-    }, [pageIndex, pageSize, debouncedSearch, id, monthId]);
-    console.log(data)
+    }, [pageIndex, pageSize, debouncedSearch, id, monthId, selectedType]);
 
     return (
         <>
@@ -111,19 +150,34 @@ export default function Page() {
                 </div>
 
                 <div className="flex flex-col xl:flex-row gap-4 w-full">
-                    <div className="flex flex-wrap gap-3 flex-1">
-                        <input
-                            type="text"
-                            placeholder="Rechercher par nom, date..."
-                            className="flex-1 min-w-[260px] border border-primary1 text-secondary1 rounded-lg px-4 py-2 text-sm"
-                        />
+                    <div className="flex flex-wrap gap-3 flex-1 items-center">
+                        <div className="flex-1 min-w-[220px]">
+                            <Searchbar
+                                placeholder="Rechercher par nom de document, data..."
+                                value={search}
+                                onChange={(value) => {
+                                    setSearch(value);
+                                    setPageIndex(0);
+                                }}
+                            />
+                        </div>
 
-                        <select className="border border-primary1 rounded-lg text-secondary1 px-3 py-2 text-sm">
-                            <option>Type de document</option>
+                        <select
+                            className="border border-primary1 rounded-lg text-secondary1 px-3 py-2 text-sm min-w-[150px]"
+                            value={selectedType ?? ""}
+                            onChange={(e) => setSelectedType(e.target.value)}
+                        >
+                            <option value="null" selected>Tout les types</option>
+                            {types.map((item) => (
+                                <option key={item.id} value={item.id}>
+                                    {item.nom}
+                                </option>
+                            ))}
                         </select>
+
                     </div>
 
-                    <div className="flex gap-2">
+                    <div className="flex gap-2 flex-shrink-0">
                         <Button
                             variant="calltoaction1"
                             className="font-medium text-sm px-4 py-2 rounded-lg"
@@ -132,18 +186,26 @@ export default function Page() {
                             Téléverser un fichier
                         </Button>
 
-                        <Button variant="secondary1" className="font-medium text-sm px-4 py-2 rounded-lg">
+                        <Button
+                            variant="secondary1"
+                            className="font-medium text-sm px-4 py-2 rounded-lg"
+                        >
                             Télécharger la sélection
                         </Button>
                     </div>
                 </div>
+
 
                 <div className="bg-white rounded-xl shadow w-full overflow-x-auto">
                     <table className="w-full min-w-[900px] text-sm">
                         <thead className="bg-primary1 text-white">
                         <tr className="text-calltoaction1">
                             <th className="p-3 w-10">
-                                <input type="checkbox"/>
+                                <input
+                                    type="checkbox"
+                                    checked={allSelected}
+                                    onChange={toggleAll}
+                                />
                             </th>
                             <th className="p-3 text-left">Nom du document</th>
                             <th className="p-3 text-left">Type</th>
@@ -168,7 +230,11 @@ export default function Page() {
                                     className="border-b last:border-none hover:bg-gray-50"
                                 >
                                     <td className="p-3">
-                                        <input type="checkbox"/>
+                                        <input
+                                            type="checkbox"
+                                            checked={selectedIds.includes(item.id)}
+                                            onChange={() => toggleOne(item.id)}
+                                        />
                                     </td>
                                     <td className="p-3">{item.nom}</td>
                                     <td className="p-3">{item.type.nom}</td>
@@ -177,9 +243,10 @@ export default function Page() {
                                             ? new Date(item.date_publication).toLocaleDateString("fr-FR")
                                             : "-"}
                                     </td>
-                                    <td className="p-3 text-right space-x-2">
-                                        <button className="hover:text-black text-gray-500">👁</button>
-                                        <button className="hover:text-black text-gray-500">⬇</button>
+                                    <td className="p-3 text-right space-x-2 text-xl">
+                                        <button className="hover:text-black text-primary2"
+                                                onClick={() => openPdf(item.path)}><FaRegEye/></button>
+                                        <button className="hover:text-black text-primary2"><TbDownload/></button>
                                     </td>
                                 </tr>
                             ))
@@ -188,75 +255,27 @@ export default function Page() {
                         </tbody>
                     </table>
 
-                    <div className="flex justify-end mt-2 p-2">
-                        <div className="flex items-center gap-1 bg-primary1 px-2 py-1 rounded-md shadow-sm">
+                    <Pagination
+                        pageIndex={pageIndex}
+                        totalPages={totalPages}
+                        setPageIndex={setPageIndex}
+                        pageSize={pageSize}
+                        totalCount={totalCount}
+                    />
 
-                            <button
-                                onClick={() => setPageIndex(0)}
-                                disabled={pageIndex === 0}
-                                className="px-2 py-1 rounded  text-calltoaction1 disabled:opacity-40">
-                                «
-                            </button>
-
-                            <button
-                                onClick={() => setPageIndex(p => Math.max(p - 1, 0))}
-                                disabled={pageIndex === 0}
-                                className="px-2 py-1 rounded  text-calltoaction1 disabled:opacity-40">
-                                ‹
-                            </button>
-
-                            <button
-                                onClick={() => setPageIndex(0)}
-                                className={`px-2 py-1 rounded ${pageIndex === 0 ? "bg-calltoaction1 text-primary1 font-semibold" : "bg-primary1 text-white"}`}>
-                                1
-                            </button>
-
-                            {pageIndex > 2 && (
-                                <span className="px-2 text-primary2 select-none">…</span>
-                            )}
-
-                            {pageIndex > 0 && pageIndex < totalPages - 1 && (
-                                <button className="px-2 py-1 rounded bg-calltoaction1 text-primary1 font-semibold">
-                                    {pageIndex + 1}
-                                </button>
-                            )}
-
-                            {pageIndex < totalPages - 3 && (
-                                <span className="px-2 text-primary2 select-none">…</span>
-                            )}
-
-                            {totalPages > 1 && (
-                                <button
-                                    onClick={() => setPageIndex(totalPages - 1)}
-                                    className={`px-2 py-1 rounded ${pageIndex === totalPages - 1 ? "bg-calltoaction1 text-primary1 font-semibold" : " bg-primary1 text-white"}`}>
-                                    {totalPages}
-                                </button>
-                            )}
-
-                            <button
-                                onClick={() =>
-                                    setPageIndex(p =>
-                                        (p + 1) * pageSize < totalCount ? p + 1 : p
-                                    )}
-                                disabled={pageIndex === totalPages - 1}
-                                className="px-2 py-1 rounded  text-calltoaction1 disabled:opacity-40">
-                                ›
-                            </button>
-
-                            <button onClick={() => setPageIndex(totalPages - 1)} disabled={pageIndex === totalPages - 1}
-                                    className="px-2 py-1 rounded  text-calltoaction1 disabled:opacity-40">
-                                »
-                            </button>
-
-                        </div>
-                    </div>
                 </div>
             </div>
             <UploadDocumentModal
                 open={openUpload}
                 onOpenChange={setOpenUpload}
                 societeId={id}
+                types={types}
                 monthId={monthId}
+            />
+            <PdfViewerModal
+                open={open}
+                onOpenChange={setOpen}
+                pdfUrl={pdfUrl}
             />
         </>
     )

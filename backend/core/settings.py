@@ -13,7 +13,6 @@ import os
 from pathlib import Path
 import environ
 
-from django.conf.global_settings import MEDIA_URL
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -35,6 +34,8 @@ CSRF_TRUSTED_ORIGINS = [
     "http://localhost:3000",
 ]
 
+X_FRAME_OPTIONS = "ALLOWALL"
+
 ALLOWED_HOSTS = []
 environ.Env.read_env(os.path.join(BASE_DIR, 'django.env'))
 # Application definition
@@ -55,6 +56,7 @@ INSTALLED_APPS = [
     'drf_yasg',
     'documents',
 ]
+
 
 MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",
@@ -160,8 +162,9 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
 STATIC_URL = 'static/'
-MEDIA_URL = '/media/'
-MEDIA_ROOT = BASE_DIR / 'media'
+MEDIA_URL = "/media/"
+MEDIA_ROOT = BASE_DIR / "media"
+
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
