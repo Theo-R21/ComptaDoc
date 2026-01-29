@@ -14,7 +14,7 @@ export default function Dashboard() {
         <main className="flex-1 p-8 space-y-8 overflow-auto">
             <header>
                 <h1 className="text-2xl font-bold text-primary1">Dashboard</h1>
-                <p className="text-primary2 ">
+                <p className="text-sm text-primary2 ">
                     Gérer et consultez facilement les données de vos client
                 </p>
             </header>

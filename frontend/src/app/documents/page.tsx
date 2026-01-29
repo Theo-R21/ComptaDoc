@@ -54,15 +54,16 @@ export default function Documents() {
 
     return (
         <main className="flex-1 p-8 overflow-auto bg-gray-50">
-            <header className="space-y-6">
+            <header className="mb-8 space-y-6">
                 <div>
                     <h1 className="text-2xl font-bold text-primary1">Documents</h1>
-                    <p className="text-primary2">
+                    <p className="text-sm text-primary2">
                         Gérer et consultez facilement tous vos documents client
                     </p>
                 </div>
+            </header>
 
-                <div className="flex items-center justify-between gap-4 px-4 py-2 rounded-md">
+                <div className="flex items-center justify-between gap-4 px-4 py-2 mb-4 rounded-md">
                     <div className="flex-1">
                         <Searchbar
                             placeholder="Rechercher par nom, société..."
@@ -80,7 +81,6 @@ export default function Documents() {
                         </p>
 
                         <div className="flex items-center gap-1 bg-primary1/5 border border-primary1/20 rounded-md p-1">
-
                             <button
                                 onClick={() => setViewMode("grid")}
                                 className={`p-2 rounded-md transition ${viewMode === "grid" ? "bg-calltoaction1 text-primary1" : "hover:bg-primary1/10 text-primary1"} `}>
@@ -94,12 +94,10 @@ export default function Documents() {
                             </button>
 
                         </div>
-
                     </div>
-
                 </div>
 
-
+                <div className="mb-6 h-px w-full bg-gray-200"/>
                 {viewMode === "grid" && (
                     <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
                         {data.map((item, index) => (
@@ -185,7 +183,6 @@ export default function Documents() {
                         totalCount={totalCount}
                     />
 
-            </header>
         </main>
 
 

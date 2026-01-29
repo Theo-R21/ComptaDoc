@@ -1,10 +1,16 @@
+import io
+import os
+import zipfile
+
 from core import settings
+from django.http import FileResponse, HttpResponse
+from django.shortcuts import get_object_or_404, get_list_or_404
 from documents.models import SocieteDocument, TypeDocument
 from documents.serializers import DocumentsSerializer, TypeDocumentsSerializer, SocieteDocumentUploadSerializer
 from rest_framework import viewsets, permissions, filters, status
 from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
-from rest_framework.parsers import MultiPartParser, FormParser
+from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from rest_framework.response import Response
 
 
@@ -16,7 +22,7 @@ class DocumentsPagination(PageNumberPagination):
 
 class DocumentsViewSet(viewsets.ViewSet):
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
-    parser_classes = [MultiPartParser, FormParser]
+    parser_classes = [JSONParser, MultiPartParser, FormParser]
     filter_backends = [filters.SearchFilter]
     search_fields = ["nom", "date_publication"]
 
@@ -58,17 +64,47 @@ class DocumentsViewSet(viewsets.ViewSet):
             return Response({"detail": "Fichier téléversé avec succès"}, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    # def download_document(self, request, pk):
-    #     document = SocieteDocument.objects.get(pk=pk)
-    #     file_path = os.path.join(settings.MEDIA_ROOT, document.file.name)
-    #
-    #
-    #     # FileResponse en streaming
-    #     return FileResponse(
-    #         open(file_path, 'rb'),
-    #         as_attachment=True,
-    #         filename=os.path.basename(file_path)
-    #     )
+    @action(detail=True, methods=["get"], url_path="download")
+    def download(self, request, pk=None):
+        document = get_object_or_404(SocieteDocument, pk=pk)
+
+        return FileResponse(
+            document.path.open("rb"),
+            as_attachment=True,
+            filename=os.path.basename(document.path.name),
+            content_type="application/pdf",
+        )
+
+    @action(detail=False, methods=["post"], url_path="download-multiple")
+    def download_multiple(self, request):
+        ids = request.data.get("ids", [])
+
+        if not ids:
+            return Response(
+                {"error": "Aucun document sélectionné"},
+                status=400
+            )
+
+        documents = get_list_or_404(SocieteDocument, id__in=ids)
+
+        buffer = io.BytesIO()
+
+        with zipfile.ZipFile(buffer, "w", zipfile.ZIP_DEFLATED) as zip_file:
+            for doc in documents:
+                file_path = doc.path.path
+                filename = os.path.basename(doc.path.name)
+                zip_file.write(file_path, filename)
+
+        buffer.seek(0)
+
+        response = HttpResponse(
+            buffer,
+            content_type="application/zip"
+        )
+        response["Content-Disposition"] = 'attachment; filename="documents.zip"'
+
+        return response
+
     # @action(detail=False, methods=["get"], url_path="(?P<societe_id>[^/.]+)/months")
     # def months(self, request, societe_id=None):
     #     societe = Societe.objects.get(pk=societe_id)

@@ -1,5 +1,5 @@
 "use client";
-import {FaArrowRight, FaLock, FaLockOpen} from "react-icons/fa";
+import {FaArrowLeft, FaArrowRight, FaLock, FaLockOpen} from "react-icons/fa";
 import {Switch} from "@/src/app/components/ui/switch";
 import {useEffect, useState} from "react";
 import {apiFetch} from "@/src/hook/userRefresh";
@@ -94,12 +94,21 @@ export default function Societe() {
 
     return (
         <main className="flex-1 p-8 overflow-auto bg-gray-50">
-            <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <header className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                     <h1 className="text-2xl font-bold text-primary1">Gestion des périodes</h1>
-                    <p className="text-primary2">
+                    <p className="text-sm text-primary2">
                         Année fiscale & statut des mois
                     </p>
+                     <p
+                        onClick={() => router.push(`/documents/`)}
+                        className="flex items-center mt-2 gap-2 cursor-pointer text-primary2 transition-all duration-300
+                   hover:text-primary1 hover:translate-x-1"
+                    >
+                        <FaArrowLeft/>
+                        retour
+                    </p>
+
                 </div>
 
                 <div className="flex items-center gap-3">
@@ -132,7 +141,7 @@ export default function Societe() {
 
                     </div>
                 </div>
-            </div>
+            </header>
 
             <div className="mb-6 h-px w-full bg-gray-200"/>
             <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">

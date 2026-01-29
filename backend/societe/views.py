@@ -101,6 +101,7 @@ class SocieteViewSet(viewsets.ViewSet):
         ensure_company_months(societe)
 
         return Response({"id": societe.id, "nom": societe.nom}, status=status.HTTP_201_CREATED)
+
     # def retrieve(self, request, pk=None):
     #     try:
     #         user = User.objects.get(pk=pk)
