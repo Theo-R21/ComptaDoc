@@ -3,11 +3,13 @@ import {UserModel} from "@/src/models/user/user.model";
 export class SocieteInfo {
     id: number;
     nom: string;
+    ID_SCTE: string;
     user: UserModel
 
-    constructor(id: number, nom: string, user: UserModel) {
+    constructor(id: number, nom: string, ID_SCTE: string,user: UserModel) {
         this.id = id;
         this.nom = nom;
+        this.ID_SCTE = ID_SCTE;
         this.user = user;
     }
 }

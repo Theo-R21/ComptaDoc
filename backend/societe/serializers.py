@@ -11,7 +11,7 @@ class SocieteSerializer(serializers.ModelSerializer):
     user = UserSerializer(read_only=True)
     class Meta:
         model = Societe
-        fields = ["id","nom","user"]
+        fields = ["id","nom","ID_SCTE","user"]
 
 class SocieteMonthSerializer(serializers.ModelSerializer):
     month_name = serializers.SerializerMethodField()

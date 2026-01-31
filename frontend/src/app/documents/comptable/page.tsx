@@ -130,8 +130,8 @@ export default function Documents() {
                                         {item.user.last_name} {item.user.first_name}
                                     </p>
                                     <p>
-                                        <span className="opacity-70">Téléphone :</span>{" "}
-                                        {item.user.phone || "-"}
+                                        <span className="opacity-70">ID Scte :</span>{" "}
+                                        {item.ID_SCTE || "-"}
                                     </p>
                                 </div>
 
