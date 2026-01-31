@@ -16,6 +16,8 @@ from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from .serializers import CustomTokenObtainPairSerializer
 from user.models import User
 
+from societe.models import Societe
+
 
 class CustomTokenObtainPairView(TokenObtainPairView):
     serializer_class = CustomTokenObtainPairSerializer
@@ -89,12 +91,20 @@ class MeView(APIView):
 
     def get(self, request):
         user = request.user
+        societe = Societe.objects.filter(user=user)
+        if societe:
+            societe_id = societe[0].id
+        else :
+            societe_id = None
+
         return Response({
             "id": user.id,
             "username": user.username,
             "first_name": user.first_name,
             "last_name": user.last_name,
             "email": user.email,
+            "is_superuser": user.is_superuser,
+            "societe_id": societe_id
         })
 
 class ForgotPasswordView(APIView):
@@ -106,7 +116,6 @@ class ForgotPasswordView(APIView):
         except User.DoesNotExist:
             return Response({"message": "Email non trouvé"}, status=400)
 
-        # Génération OTP
         code = f"{random.randint(100000, 999999)}"
 
         user.reset_code = code

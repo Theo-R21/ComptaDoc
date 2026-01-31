@@ -10,6 +10,11 @@ class User(AbstractUser):
     reset_code = models.CharField(max_length=6, null=True, blank=True)
     reset_code_expires_at = models.DateTimeField(null=True, blank=True)
     reset_password_token = models.CharField(max_length=255, null=True, blank=True)
+    ROLE_CHOICES = (
+        ('comptable', 'Comptable'),
+        ('client', 'Client'),
+    )
+    role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='client')
 
     def is_reset_code_valid(self, code):
         if not self.reset_code or not self.reset_code_expires_at:

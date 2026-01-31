@@ -1,9 +1,10 @@
-from rest_framework import viewsets, permissions, filters, status
+from core.permission import IsComptable
+from rest_framework import viewsets, filters, status
 from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-
 from user.models import User
 from user.serializers import UserListSerializer, UserActionSerializer
 
@@ -17,8 +18,19 @@ class UserPagination(PageNumberPagination):
     max_page_size = 100
 
 class UserViewSet(viewsets.ViewSet):
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    queryset = User.objects.all()
+    serializer_class = UserListSerializer
+
+    def get_permissions(self):
+        if self.action in ["create", "destroy"]:
+            permission_classes = [IsAuthenticated, IsComptable]
+        else:
+            permission_classes = [IsAuthenticated]
+
+        return [permission() for permission in permission_classes]
+
     parser_classes = [JSONParser, MultiPartParser, FormParser]
+    permission_classes = [IsAuthenticated, IsComptable]
     filter_backends = [filters.SearchFilter]
     search_fields = ["username", "first_name", "last_name", "email"]
 
@@ -71,7 +83,7 @@ class UserViewSet(viewsets.ViewSet):
         user.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
-    @action(detail=True, methods=["patch"], url_path="toggle-actif")
+    @action(detail=True, methods=["patch"], url_path="toggle-actif", permission_classes=[IsAuthenticated, IsComptable])
     def toggle_actif(self, request, pk=None):
         try:
             user = User.objects.get(pk=pk)

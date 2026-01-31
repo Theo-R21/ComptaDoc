@@ -53,7 +53,7 @@ export default function Gestion() {
                     company_name: json.company_name ?? "",
                     phone: json.phone ?? "",
                 });
-            } catch (err: any) {
+            } catch (err: never) {
                 if (err.name !== "AbortError") console.error(err);
             } finally {
                 setLoading(false);
@@ -288,14 +288,6 @@ export default function Gestion() {
         </main>
     );
 
-}
-
-function FieldContainer({children}: { children: React.ReactNode }) {
-    return (
-        <div className="min-h-[76px] flex items-center">
-            <div className="w-full">{children}</div>
-        </div>
-    );
 }
 
 function ReadOnlyField({

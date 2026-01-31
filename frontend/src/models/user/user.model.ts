@@ -31,6 +31,7 @@ export class UserInfoModel {
     date_joined: Date;
     is_active: boolean;
     is_superuser: boolean;
+    role: string;
 
     constructor(
         id: number = 0,
@@ -43,6 +44,7 @@ export class UserInfoModel {
         is_active: boolean = false,
         is_superuser: boolean = false,
         email: string = "",
+        role: string = "",
     ) {
         this.id = id;
         this.first_name = first_name;
@@ -54,6 +56,7 @@ export class UserInfoModel {
         this.is_active = is_active;
         this.is_superuser = is_superuser;
         this.email = email;
+        this.role = role
     }
 }
 

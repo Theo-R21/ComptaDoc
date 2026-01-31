@@ -10,7 +10,7 @@ class UserSerializer(serializers.ModelSerializer):
 class UserListSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['id','first_name', 'last_name','phone', 'last_login','date_joined','is_superuser','username', 'is_active', 'email']
+        fields = ['id','first_name', 'last_name','phone', 'last_login','date_joined','is_superuser','username', 'is_active', 'email', 'role']
 
 class UserActionSerializer(serializers.ModelSerializer):
     class Meta:

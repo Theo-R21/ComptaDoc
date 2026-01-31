@@ -57,13 +57,6 @@ export default function LoginPage() {
                         <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-orange-400">
                           <i className="ri-user-line"></i>
                         </span>
-                    {/*<input*/}
-                    {/*    type="text"*/}
-                    {/*    placeholder="Username"*/}
-                    {/*    name="username"*/}
-                    {/*    className="w-full rounded-lg pl-10 pr-3 py-2 bg-white/20 text-white placeholder-white/70 border border-white/30 focus:outline-none focus:ring-2 focus:ring-blue-400"*/}
-                    {/*    required*/}
-                    {/*/>*/}
                     <Input
                         label="Identifiant"
                         name="username"
@@ -76,13 +69,6 @@ export default function LoginPage() {
                         <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-orange-400">
                           <i className="ri-lock-password-line"></i>
                         </span>
-                    {/*<input*/}
-                    {/*    type="password"*/}
-                    {/*    placeholder="Password"*/}
-                    {/*    name="password"*/}
-                    {/*    className="w-full rounded-lg pl-10 pr-3 py-2 bg-white/20 text-white placeholder-white/70 border border-white/30 focus:outline-none focus:ring-2 focus:ring-blue-400"*/}
-                    {/*    required*/}
-                    {/*/>*/}
                     <Input
                         label="Mot de passe"
                         name="password"

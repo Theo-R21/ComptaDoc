@@ -32,6 +32,7 @@ export function UserProvider({children}: { children: React.ReactNode }) {
             console.error("Erreur logout:", err);
         } finally {
             setUser(null);
+            window.location.href = "/authentication";
         }
     }
 

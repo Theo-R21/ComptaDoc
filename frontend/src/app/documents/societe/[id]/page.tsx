@@ -5,6 +5,8 @@ import {useEffect, useState} from "react";
 import {apiFetch} from "@/src/hook/userRefresh";
 import {useParams, useRouter} from "next/navigation";
 import {SocieteMonthInfo} from "@/src/models/societe/societe.model";
+import {hasRole} from "@/src/lib/permissions";
+import {useCurrentUser} from "@/src/hook/useCurrent";
 
 export default function Societe() {
     const {id} = useParams()
@@ -13,7 +15,7 @@ export default function Societe() {
     const [statusFilter, setStatusFilter] = useState<string>("ALL");
     const [selectedYear, setSelectedYear] = useState<number | null>(null);
     const router = useRouter();
-
+    const {user} = useCurrentUser();
 
     useEffect(() => {
         const fetchDataYear = async () => {
@@ -100,14 +102,16 @@ export default function Societe() {
                     <p className="text-sm text-primary2">
                         Année fiscale & statut des mois
                     </p>
-                     <p
-                        onClick={() => router.push(`/documents/`)}
-                        className="flex items-center mt-2 gap-2 cursor-pointer text-primary2 transition-all duration-300
+                    {hasRole(user, ["comptable"]) && (
+                        <p
+                            onClick={() => router.push(`/documents/comptable`)}
+                            className="flex items-center mt-2 gap-2 cursor-pointer text-primary2 transition-all duration-300
                    hover:text-primary1 hover:translate-x-1"
-                    >
-                        <FaArrowLeft/>
-                        retour
-                    </p>
+                        >
+                            <FaArrowLeft/>
+                            retour
+                        </p>
+                    )}
 
                 </div>
 
@@ -153,7 +157,7 @@ export default function Societe() {
                             key={index}
                             className={`
                                 group relative rounded-xl border p-5
-                                transition-all cursor-pointer
+                                transition-all
                                 ${isOpen
                                 ? "bg-white border-primary2 shadow-md hover:shadow-lg"
                                 : "bg-gray-100 border-gray-200 opacity-80"}
@@ -228,6 +232,7 @@ export default function Societe() {
                                         p-2 rounded-lg
                                         hover:bg-primary3/60
                                         transition
+                                        cursor-pointer
                                     "
                                 >
                                     <FaArrowRight

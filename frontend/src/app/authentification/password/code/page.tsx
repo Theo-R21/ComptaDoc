@@ -3,7 +3,7 @@ import {useRef, useState} from 'react'
 import Link from 'next/link'
 import Button from "@/src/app/components/button";
 import {useRouter} from "next/navigation";
-import {apiFetch} from "@/src/hook/userRefreshClient";
+import {apiFetch} from "@/src/hook/userRefresh";
 
 export default function CodePage() {
     const router = useRouter();
@@ -50,13 +50,12 @@ export default function CodePage() {
             const resData = await res.json();
 
             if (res.ok) {
-                const data = await res.json();
-                localStorage.setItem("resetToken", data.reset_token);
+                localStorage.setItem("resetToken", resData.reset_token);
                 router.push('reset')
             } else {
                 throw new Error(resData.message);
             }
-        } catch (err: any) {
+        } catch (err: never) {
             setError(err.message);
         } finally {
             setLoading(false);
