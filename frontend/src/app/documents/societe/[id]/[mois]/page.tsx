@@ -167,7 +167,7 @@ export default function Page() {
 
     return (
         <>
-            <main className="w-full min-h-screen bg-gray-50 px-6 py-6 space-y-6">
+            <main className="flex-1 w-full min-h-screen bg-gray-50 px-6 py-6 space-y-6">
                 <header className="mb-8">
                     <h1 className="text-2xl font-bold text-primary1">
                         Documents du client {id}

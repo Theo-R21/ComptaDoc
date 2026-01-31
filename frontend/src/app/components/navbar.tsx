@@ -24,8 +24,7 @@ export default function Navbar() {
 
     return (
 
-        <aside
-            className="flex h-screen w-72 flex-col justify-between bg-primary1 shadow-lg transition-all duration-500">
+        <aside className="sticky top-0 h-screen flex flex-col justify-between bg-primary1 shadow-lg w-64">
             <div className="flex items-center gap-2 border-b border-primary2 p-4 max-md:justify-center">
                 <span className="font-bold text-2xl max-md:hidden">SimplyLux</span>
             </div>
