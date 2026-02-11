@@ -32,7 +32,6 @@ class UserCreateSerializer(serializers.ModelSerializer):
             "last_name",
             "email",
             "phone",
-            "company_name",
             "password",
             "password2",
         ]
@@ -81,11 +80,13 @@ class UserCreateSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError({"password2": "Les mots de passe ne correspondent pas."})
         return attrs
 
+
     def create(self, validated_data):
         validated_data.pop("password2")
         password = validated_data.pop("password")
         user = User(**validated_data)
         user.set_password(password)
+        user.is_active = False
         user.save()
         return user
 

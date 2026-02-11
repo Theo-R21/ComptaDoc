@@ -6,7 +6,6 @@ from django.db import models
 
 class User(AbstractUser):
     phone = models.CharField(unique=True, max_length=20, null=True, blank=True)
-    societe_name = models.CharField(max_length=100,null=True, blank=True)
     reset_code = models.CharField(max_length=6, null=True, blank=True)
     reset_code_expires_at = models.DateTimeField(null=True, blank=True)
     reset_password_token = models.CharField(max_length=255, null=True, blank=True)

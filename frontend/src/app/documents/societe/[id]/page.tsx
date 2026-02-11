@@ -150,20 +150,19 @@ export default function Societe() {
             <div className="mb-6 h-px w-full bg-gray-200"/>
             <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
                 {date.map((item, index) => {
-                    const isOpen = item.status === "OPEN"
+                    const isOpen = item.status === "OPEN";
 
                     return (
                         <div
                             key={index}
-                            className={`
-                                group relative rounded-xl border p-5
-                                transition-all
-                                ${isOpen
-                                ? "bg-white border-primary2 shadow-md hover:shadow-lg"
-                                : "bg-gray-100 border-gray-200 opacity-80"}
-                                hover:-translate-y-0.5
-                            `}
+                            className={`group relative rounded-xl border p-5 transition-all
+                                        ${isOpen
+                                            ? "bg-white border-primary2 shadow-md hover:shadow-lg cursor-pointer"
+                                            : "bg-gray-100 border-gray-200 opacity-80 cursor-not-allowed"
+                                        } hover:-translate-y-0.5`}
+                            onClick={() => {if (isOpen) {router.push(`/documents/societe/${id}/${item.month_name}?monthId=${item.id}`);}}}
                         >
+
                             {isOpen && (
                                 <span className="absolute left-0 top-4 h-12 w-1 rounded-r bg-primary1"/>
                             )}
@@ -172,31 +171,17 @@ export default function Societe() {
                                 <p className="text-lg font-semibold tracking-tight text-primary1">
                                     {item.month_name} {item.year}
                                 </p>
-
                                 <p
-                                    className={`mt-1 text-sm font-medium ${
-                                        isOpen
-                                            ? "text-calltoactionsuccess"
-                                            : "text-red-700"
-                                    }`}
+                                    className={`mt-1 text-sm font-medium ${isOpen ? "text-calltoactionsuccess" : "text-red-700"}`}
                                 >
-                                    {isOpen
-                                        ? "Période ouverte"
-                                        : "Période fermée"}
+                                    {isOpen ? "Période ouverte" : "Période fermée"}
                                 </p>
                             </div>
 
                             <div className="flex items-center justify-between mt-6">
                                 <div className="flex items-center gap-3 bg-primary3/60 rounded-full px-3 py-1">
-                                    <div
-                                        className="flex items-center justify-center w-6 h-6 rounded-full bg-calltoaction1/20">
-                                        <FaLock
-                                            className={`text-xs ${
-                                                isOpen
-                                                    ? "text-secondary2/40"
-                                                    : "text-calltoaction2"
-                                            }`}
-                                        />
+                                    <div className="flex items-center justify-center w-6 h-6 rounded-full bg-calltoaction1/20">
+                                        <FaLock className={`text-xs ${isOpen ? "text-secondary2/40" : "text-calltoaction2"}`}/>
                                     </div>
 
                                     <Switch
@@ -204,50 +189,35 @@ export default function Societe() {
                                         onCheckedChange={(checked) =>
                                             handleChange(item, checked)
                                         }
-                                        className="
-                                            data-[state=checked]:bg-calltoaction1
-                                            data-[state=unchecked]:bg-secondary2
-                                            transition-colors
-                                        "
+                                        className="data-[state=checked]:bg-calltoaction1 data-[state=unchecked]:bg-secondary2 transition-colors"
                                     />
-                                    <div
-                                        className="flex items-center justify-center w-6 h-6 rounded-full bg-primary1/40">
+                                    <div className="flex items-center justify-center w-6 h-6 rounded-full bg-primary1/40">
                                         <FaLockOpen
-                                            className={`text-sm ${
-                                                isOpen
-                                                    ? "text-primary1"
-                                                    : "text-primary1/60"
-                                            }`}
+                                            className={`text-sm ${isOpen ? "text-primary1" : "text-primary1/60"}`}
                                         />
                                     </div>
                                 </div>
 
                                 <button
-                                    onClick={() =>
-                                        router.push(
-                                            `/documents/societe/${id}/${item.month_name}?monthId=${item.id}`
-                                        )
-                                    }
-                                    className="
-                                        p-2 rounded-lg
-                                        hover:bg-primary3/60
-                                        transition
-                                        cursor-pointer
-                                    "
+                                    className={`p-2 rounded-lg transition ${isOpen ? "bg-primary3/60" : "cursor-not-allowed opacity-50"}`}
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        if (isOpen) {
+                                            router.push(
+                                                `/documents/societe/${id}/${item.month_name}?monthId=${item.id}`
+                                            );
+                                        }
+                                    }}
                                 >
                                     <FaArrowRight
-                                        className="
-                                            text-secondary2
-                                            group-hover:text-primary2
-                                            group-hover:translate-x-1
-                                            transition-all
-                                        "
+                                        className={`${isOpen ? "text-primary2 group-hover:translate-x-1" : "text-secondary2"} transition-all`}
                                     />
                                 </button>
                             </div>
                         </div>
-                    )
+                    );
                 })}
+
             </div>
         </main>
     )
