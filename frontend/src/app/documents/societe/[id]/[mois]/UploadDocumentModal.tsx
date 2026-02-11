@@ -170,6 +170,7 @@ export function UploadDocumentModal({
                             value={docName}
                             onChange={(e) => setDocName(e.target.value)}
                             error={errors.nom}
+                            required
                         />
                     </div>
 

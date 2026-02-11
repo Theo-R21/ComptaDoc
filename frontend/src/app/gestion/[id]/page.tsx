@@ -65,7 +65,7 @@ export default function Gestion() {
 
         if (!form.phone.trim()) {
             newErrors.phone = "Le numéro de téléphone est obligatoire.";
-        }else if (!isValidPhone(form.phone)){
+        } else if (!isValidPhone(form.phone)) {
             newErrors.phone = "Numéro français ou luxembourgeois invalide.";
         }
 
@@ -258,6 +258,7 @@ export default function Gestion() {
                                         value={form.last_name}
                                         onChange={handleInputChange}
                                         error={errors.last_name}
+                                        required
                                     />
                                     <Input
                                         label="Prénom"
@@ -265,6 +266,7 @@ export default function Gestion() {
                                         value={form.first_name}
                                         onChange={handleInputChange}
                                         error={errors.first_name}
+                                        required
                                     />
                                     <Input
                                         label="Adresse email"
@@ -273,6 +275,7 @@ export default function Gestion() {
                                         value={form.email}
                                         onChange={handleInputChange}
                                         error={errors.email}
+                                        required
                                     />
                                     <Input
                                         label="Société"
@@ -286,7 +289,7 @@ export default function Gestion() {
                                         value={form.phone}
                                         onChange={handleInputChange}
                                         error={errors.phone}
-
+                                        required
                                     />
                                 </>
                             )}
