@@ -93,10 +93,13 @@ export function AddSocieeteModal({
                 }),
             });
 
-            const data = await res.json();
-
             if (!res.ok) {
-                setErrors(data);
+                const json = await res.json()
+                setErrors({
+                    user_id: json.user_id?.[0],
+                    nom: json.nom?.[0],
+                    scte: json.scte?.[0],
+                })
                 return;
             }
 
