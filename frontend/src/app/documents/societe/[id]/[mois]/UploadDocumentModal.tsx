@@ -159,13 +159,6 @@ export function UploadDocumentModal({
                             Nom du fichier
                         </label>
                         <Input
-                            className="
-                                mt-1 w-full rounded-lg
-                                border border-gray-300
-                                bg-white px-3 py-2.5
-                                text-sm text-gray-900
-                                placeholder-gray-400
-                            "
                             placeholder="Nom du fichier..."
                             value={docName}
                             onChange={(e) => setDocName(e.target.value)}
@@ -214,16 +207,9 @@ export function UploadDocumentModal({
                         <label className="text-sm font-medium">
                             Date du document
                         </label>
-                        <div className="relative mt-1">
-                            <Calendar className="absolute left-3 top-3 h-4 w-4 text-gray-400"/>
-                            <input
+                        <div className="mt-1">
+                            <Input
                                 type="date"
-                                className="
-                                    w-full rounded-lg
-                                    border border-gray-300
-                                    pl-10 pr-3 py-2.5
-                                    text-sm
-                                "
                                 value={docDate}
                                 onChange={(e) => setDocDate(e.target.value)}
                             />

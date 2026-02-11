@@ -169,23 +169,13 @@ export function AddSocieeteModal({
                         Nom de la société
                     </label>
                     <Input
-                        className={`
-                                mt-1 w-full rounded-sm
-                                border
-                                ${errors.nom ? "border-red-500" : "border-gray-300"}
-                            bg-white px-3 py-2.5
-                            text-sm text-gray-900
-                            placeholder-gray-400
-                            `}
                         name="nom"
                         placeholder="Nom de la société..."
                         value={societeName}
                         required
                         onChange={(e) => setSocieteName(e.target.value)}
+                        error={errors.nom}
                     />
-                    {errors.nom && (
-                        <p className="text-red-500 text-xs mt-1">{errors.nom}</p>
-                    )}
                 </div>
 
 
@@ -194,25 +184,14 @@ export function AddSocieeteModal({
                         Matricule ou Siret
                     </label>
                     <Input
-                        className={`
-                            mt-1 w-full rounded-lg
-                            border
-                            ${errors.nom ? "border-red-500" : "border-gray-300"}
-                            bg-white px-3 py-2.5
-                            text-sm text-gray-900
-                            placeholder-gray-400
-                            `}
                         name="scte"
                         placeholder="Matricule ou siret de la société..."
                         value={scte}
                         required
                         onChange={(e) => setScte(e.target.value)}
+                        error={errors.scte}
                     />
-                    {errors.scte && (
-                        <p className="text-red-500 text-xs mt-1">{errors.scte}</p>
-                    )}
                 </div>
-
 
                 <div className="flex justify-between pt-6">
                     <Button
