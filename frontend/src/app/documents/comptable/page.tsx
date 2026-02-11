@@ -9,6 +9,9 @@ import Searchbar from "@/src/app/components/searchbar";
 import {HiSquares2X2} from "react-icons/hi2";
 import {useDebounce} from "@/src/hook/useDebounce";
 import Pagination from "@/src/app/components/pagination";
+import Button from "@/src/app/components/button";
+import {FaPlus} from "react-icons/fa6";
+import {AddSocieeteModal} from "@/src/app/documents/comptable/AddSocieeteModal";
 
 
 export default function Documents() {
@@ -21,47 +24,47 @@ export default function Documents() {
     const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
     const [search, setSearch] = useState("");
     const debouncedSearch = useDebounce(search);
+    const [openUpload, setOpenUpload] = useState(false);
+
+    const fetchSocietes = async (page = pageIndex, searchTerm = debouncedSearch) => {
+        setLoading(true);
+        try {
+            const url = new URL("/societe/", window.location.origin);
+            url.searchParams.set("page", (page + 1).toString());
+            url.searchParams.set("page_size", pageSize.toString());
+            if (searchTerm) url.searchParams.set("search", searchTerm);
+
+            const res = await apiFetch(url.pathname + "?" + url.searchParams.toString());
+            const json = await res.json();
+
+            setData(json.results);
+            setTotalCount(json.count);
+        } catch (err) {
+            console.error("Erreur API :", err);
+        } finally {
+            setLoading(false);
+        }
+    };
+
 
     useEffect(() => {
-        const fetchData = async () => {
-            setLoading(true);
-            try {
-                const url = new URL("/societe/", window.location.origin);
-                url.searchParams.set("page", (pageIndex + 1).toString());
-                url.searchParams.set("page_size", pageSize.toString());
-
-                if (debouncedSearch) {
-                    url.searchParams.set("search", debouncedSearch);
-                }
-
-                const res = await apiFetch(url.pathname + "?" + url.searchParams.toString());
-                const json = await res.json();
-
-                setData(json.results);
-                setTotalCount(json.count);
-            } catch (error) {
-                console.error("Erreur API :", error);
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchData();
-    }, [pageIndex, pageSize, debouncedSearch]);
+        fetchSocietes(pageIndex, debouncedSearch);
+    }, [pageIndex, debouncedSearch]);
 
 
     const totalPages = Math.ceil(totalCount / pageSize);
 
     return (
-        <main className="flex-1 p-8 overflow-auto bg-gray-50">
-            <header className="mb-8 space-y-6">
-                <div>
-                    <h1 className="text-2xl font-bold text-primary1">Documents</h1>
-                    <p className="text-sm text-primary2">
-                        Gérer et consultez facilement tous vos documents client
-                    </p>
-                </div>
-            </header>
+        <>
+            <main className="flex-1 p-8 overflow-auto bg-gray-50">
+                <header className="mb-8 space-y-6">
+                    <div>
+                        <h1 className="text-2xl font-bold text-primary1">Documents</h1>
+                        <p className="text-sm text-primary2">
+                            Gérer et consultez facilement tous vos documents client
+                        </p>
+                    </div>
+                </header>
 
                 <div className="flex items-center justify-between gap-4 px-4 py-2 mb-4 rounded-md">
                     <div className="flex-1">
@@ -76,6 +79,15 @@ export default function Documents() {
                     </div>
 
                     <div className="flex items-center gap-3">
+                        <Button
+                            variant="calltoaction1"
+                            className="flex items-center gap-2 font-medium text-sm px-4 py-2 rounded-lg"
+                            onClick={() => setOpenUpload(true)}
+                        >
+                            <FaPlus className="w-4 h-4"/>
+                            <span>Société</span>
+                        </Button>
+
                         <p className="text-sm font-medium text-primary1 whitespace-nowrap">
                             Affichage :
                         </p>
@@ -113,7 +125,8 @@ export default function Documents() {
                                 onClick={() => router.push(`/documents/societe/${item.id}`)}
                             >
                                 <div className="flex items-center gap-4">
-                                    <div className="w-11 h-11 rounded-full bg-primary3 flex items-center justify-center flex-shrink-0">
+                                    <div
+                                        className="w-11 h-11 rounded-full bg-primary3 flex items-center justify-center flex-shrink-0">
                                         <span className="text-primary1 font-semibold text-sm">
                                             {item.nom?.charAt(0)}
                                         </span>
@@ -175,16 +188,23 @@ export default function Documents() {
                     </div>
                 )}
 
-                 <Pagination
-                        pageIndex={pageIndex}
-                        totalPages={totalPages}
-                        setPageIndex={setPageIndex}
-                        pageSize={pageSize}
-                        totalCount={totalCount}
-                    />
+                <Pagination
+                    pageIndex={pageIndex}
+                    totalPages={totalPages}
+                    setPageIndex={setPageIndex}
+                    pageSize={pageSize}
+                    totalCount={totalCount}
+                />
 
-        </main>
-
-
+            </main>
+            <AddSocieeteModal
+                open={openUpload}
+                onOpenChange={setOpenUpload}
+                onSocieteCreated={() => {
+                    setPageIndex(0);
+                    fetchSocietes(0, debouncedSearch);
+                }}
+            />
+        </>
     );
 }
