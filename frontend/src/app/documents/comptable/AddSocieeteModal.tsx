@@ -93,10 +93,13 @@ export function AddSocieeteModal({
                 }),
             });
 
-            const data = await res.json();
-
             if (!res.ok) {
-                setErrors(data);
+                const json = await res.json()
+                setErrors({
+                    user_id: json.user_id?.[0],
+                    nom: json.nom?.[0],
+                    scte: json.scte?.[0],
+                })
                 return;
             }
 
@@ -177,6 +180,7 @@ export function AddSocieeteModal({
                         name="nom"
                         placeholder="Nom de la société..."
                         value={societeName}
+                        required
                         onChange={(e) => setSocieteName(e.target.value)}
                     />
                     {errors.nom && (
@@ -201,6 +205,7 @@ export function AddSocieeteModal({
                         name="scte"
                         placeholder="Matricule ou siret de la société..."
                         value={scte}
+                        required
                         onChange={(e) => setScte(e.target.value)}
                     />
                     {errors.scte && (

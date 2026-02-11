@@ -24,6 +24,11 @@ export default function Gestion() {
     const [updatingToggle, setUpdatingToggle] = useState(false);
     const [savingUser, setSavingUser] = useState(false);
 
+    const frenchPhoneRegex = /^(?:(?:\+33|0033)\s?|0)[1-9](?:[\s.-]?\d{2}){4}$/;
+
+    const luxPhoneRegex = /^(?:(?:\+352|00352)\s?)?[2-9]\d{7,8}$/;
+
+
     const [form, setForm] = useState({
         first_name: "",
         last_name: "",
@@ -31,6 +36,43 @@ export default function Gestion() {
         company_name: "",
         phone: "",
     });
+
+    const [errors, setErrors] = useState<{
+        first_name?: string;
+        last_name?: string;
+        email?: string;
+        phone?: string;
+    }>({});
+
+    const isValidPhone = (phone: string) =>
+        frenchPhoneRegex.test(phone) || luxPhoneRegex.test(phone);
+
+    const validate = () => {
+        const newErrors: typeof errors = {};
+        if (!form.first_name.trim()) {
+            newErrors.first_name = "Le prénom est obligatoire.";
+        }
+
+        if (!form.last_name.trim()) {
+            newErrors.last_name = "Le nom est obligatoire.";
+        }
+
+        if (!form.email.trim()) {
+            newErrors.email = "L'email est obligatoire.";
+        } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) {
+            newErrors.email = "Format d'email invalide.";
+        }
+
+        if (!form.phone.trim()) {
+            newErrors.phone = "Le numéro de téléphone est obligatoire.";
+        } else if (!isValidPhone(form.phone)) {
+            newErrors.phone = "Numéro français ou luxembourgeois invalide.";
+        }
+
+        setErrors(newErrors);
+        return Object.keys(newErrors).length === 0;
+    };
+
 
     useEffect(() => {
         const controller = new AbortController();
@@ -43,6 +85,17 @@ export default function Gestion() {
                 });
 
                 const json = await res.json();
+
+                if (!res.ok) {
+                    setErrors({
+                        first_name: json.first_name?.[0],
+                        last_name: json.last_name?.[0],
+                        email: json.email?.[0],
+                        phone: json.phone?.[0],
+                    })
+                    return
+                }
+
                 setUser(json);
                 setIsActive(json.is_active);
 
@@ -72,8 +125,8 @@ export default function Gestion() {
     };
 
     const handleSaveUser = async () => {
+        if (!validate()) return;
         if (!user) return;
-
         setSavingUser(true);
 
         try {
@@ -85,17 +138,28 @@ export default function Gestion() {
                 body: JSON.stringify(form),
             });
 
-            if (!res.ok) throw new Error("Erreur mise à jour utilisateur");
+            const json = await res.json();
 
-            const updatedUser = await res.json();
-            setUser(updatedUser);
+            if (!res.ok) {
+                setErrors({
+                    first_name: json.first_name?.[0],
+                    last_name: json.last_name?.[0],
+                    email: json.email?.[0],
+                    phone: json.phone?.[0],
+                });
+                return;
+            }
+
+            setUser(json);
             setIsEditing(false);
+            setErrors({});
         } catch (err) {
             console.error(err);
         } finally {
             setSavingUser(false);
         }
     };
+
 
     const handleToggleChange = async (
         userId: number,
@@ -193,12 +257,16 @@ export default function Gestion() {
                                         name="last_name"
                                         value={form.last_name}
                                         onChange={handleInputChange}
+                                        error={errors.last_name}
+                                        required
                                     />
                                     <Input
                                         label="Prénom"
                                         name="first_name"
                                         value={form.first_name}
                                         onChange={handleInputChange}
+                                        error={errors.first_name}
+                                        required
                                     />
                                     <Input
                                         label="Adresse email"
@@ -206,6 +274,8 @@ export default function Gestion() {
                                         type="email"
                                         value={form.email}
                                         onChange={handleInputChange}
+                                        error={errors.email}
+                                        required
                                     />
                                     <Input
                                         label="Société"
@@ -218,6 +288,8 @@ export default function Gestion() {
                                         name="phone"
                                         value={form.phone}
                                         onChange={handleInputChange}
+                                        error={errors.phone}
+                                        required
                                     />
                                 </>
                             )}

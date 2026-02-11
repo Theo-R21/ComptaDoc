@@ -6,6 +6,7 @@ import Button from "@/src/app/components/button"
 import {useState} from "react"
 import {apiFetch} from "@/src/hook/userRefresh"
 import {TypeDocumentList} from "@/src/models/documents/documents.model"
+import Input from "@/src/app/components/input";
 
 type UploadDocumentModalProps = {
     open: boolean
@@ -16,26 +17,52 @@ type UploadDocumentModalProps = {
 }
 
 export function UploadDocumentModal({
-    open,
-    onOpenChange,
-    societeId,
-    types,
-    monthId,
-}: UploadDocumentModalProps) {
+                                        open,
+                                        onOpenChange,
+                                        societeId,
+                                        types,
+                                        monthId,
+                                    }: UploadDocumentModalProps) {
     const [selectedType, setSelectedType] = useState<number | null>(null)
     const [file, setFile] = useState<File | null>(null)
     const [docName, setDocName] = useState<string>("")
     const [docDate, setDocDate] = useState<string>("")
     const [loading, setLoading] = useState(false)
-    const [error, setError] = useState<string | null>(null)
+    const [errors, setErrors] = useState<{
+        path?: string;
+        type?: string;
+        nom?: string;
+        date_publication?: string;
+    }>({});
 
+    const validate = () => {
+        const newErrors: typeof errors = {};
+
+        if (!file) {
+            newErrors.path = "Vous n'avez pas déposé de fichier";
+        }
+
+        if (!docName.trim()) {
+            newErrors.nom = "Le nom est obligatoire";
+        }
+
+        if (selectedType === null) {
+            newErrors.type = "Vous n'avez pas sélectionné de type";
+        }
+
+        if (!docDate.trim()) {
+            newErrors.date_publication = "La date de publication est obligatoire";
+        }
+
+        setErrors(newErrors);
+
+        return Object.keys(newErrors).length === 0;
+    };
 
 
     const handleUpload = async () => {
-        if (!file || !selectedType) {
-            setError("Veuillez sélectionner un fichier et un type")
-            return
-        }
+        if (!validate()) return;
+        if (!file || selectedType === null) return;
 
         const formData = new FormData()
         formData.append("path", file)
@@ -46,7 +73,6 @@ export function UploadDocumentModal({
         if (docDate) formData.append("date_publication", docDate)
 
         setLoading(true)
-        setError(null)
 
         try {
             const res = await apiFetch("/documents/upload/", {
@@ -56,7 +82,13 @@ export function UploadDocumentModal({
 
             if (!res.ok) {
                 const json = await res.json()
-                throw new Error(json.detail || "Erreur lors de l'upload")
+                setErrors({
+                    path: json.path?.[0],
+                    nom: json.nom?.[0],
+                    type: json.type?.[0],
+                    date_publication: json.date_publication?.[0],
+                })
+                return
             }
 
             setFile(null)
@@ -64,9 +96,9 @@ export function UploadDocumentModal({
             setDocDate("")
             setSelectedType(null)
             onOpenChange(false)
+
         } catch (err: any) {
             console.error(err)
-            setError(err.message || "Erreur inconnue")
         } finally {
             setLoading(false)
         }
@@ -103,7 +135,7 @@ export function UploadDocumentModal({
                             "
                             value={selectedType ?? ""}
                             onChange={(e) =>
-                                setSelectedType(Number(e.target.value))
+                                setSelectedType(e.target.value ? Number(e.target.value) : null)
                             }
                         >
                             <option value="" disabled>
@@ -117,13 +149,16 @@ export function UploadDocumentModal({
                                 </option>
                             ))}
                         </select>
+                        {errors.type && (
+                            <p className="text-red-500 text-xs mt-1">{errors.type}</p>
+                        )}
                     </div>
 
                     <div>
                         <label className="text-sm font-medium">
                             Nom du fichier
                         </label>
-                        <input
+                        <Input
                             className="
                                 mt-1 w-full rounded-lg
                                 border border-gray-300
@@ -134,6 +169,8 @@ export function UploadDocumentModal({
                             placeholder="Nom du fichier..."
                             value={docName}
                             onChange={(e) => setDocName(e.target.value)}
+                            error={errors.nom}
+                            required
                         />
                     </div>
 
@@ -148,12 +185,12 @@ export function UploadDocumentModal({
                                 transition
                             "
                         >
-                            <Upload className="h-9 w-9 text-gray-400 mb-2" />
+                            <Upload className="h-9 w-9 text-gray-400 mb-2"/>
                             <p className="text-sm">
                                 <span className="font-medium">
                                     Glissez votre fichier ici
                                 </span>
-                                <br />
+                                <br/>
                                 ou cliquez pour parcourir
                             </p>
                             <p className="text-xs text-gray-400 mt-2">
@@ -168,6 +205,9 @@ export function UploadDocumentModal({
                                 }
                             />
                         </label>
+                        {errors.path && (
+                            <p className="text-red-500 text-xs mt-1">{errors.path}</p>
+                        )}
                     </div>
 
                     <div>
@@ -175,7 +215,7 @@ export function UploadDocumentModal({
                             Date du document
                         </label>
                         <div className="relative mt-1">
-                            <Calendar className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                            <Calendar className="absolute left-3 top-3 h-4 w-4 text-gray-400"/>
                             <input
                                 type="date"
                                 className="
@@ -188,14 +228,11 @@ export function UploadDocumentModal({
                                 onChange={(e) => setDocDate(e.target.value)}
                             />
                         </div>
+                        {errors.date_publication && (
+                            <p className="text-red-500 text-xs mt-1">{errors.date_publication}</p>
+                        )}
                     </div>
                 </div>
-
-                {error && (
-                    <p className="mt-4 text-sm text-red-500">
-                        {error}
-                    </p>
-                )}
 
                 <div className="flex justify-between pt-6">
                     <Button
