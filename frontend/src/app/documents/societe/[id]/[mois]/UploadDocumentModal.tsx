@@ -6,6 +6,7 @@ import Button from "@/src/app/components/button"
 import {useState} from "react"
 import {apiFetch} from "@/src/hook/userRefresh"
 import {TypeDocumentList} from "@/src/models/documents/documents.model"
+import Input from "@/src/app/components/input";
 
 type UploadDocumentModalProps = {
     open: boolean
@@ -157,7 +158,7 @@ export function UploadDocumentModal({
                         <label className="text-sm font-medium">
                             Nom du fichier
                         </label>
-                        <input
+                        <Input
                             className="
                                 mt-1 w-full rounded-lg
                                 border border-gray-300
@@ -168,10 +169,8 @@ export function UploadDocumentModal({
                             placeholder="Nom du fichier..."
                             value={docName}
                             onChange={(e) => setDocName(e.target.value)}
+                            error={errors.nom}
                         />
-                        {errors.nom && (
-                            <p className="text-red-500 text-xs mt-1">{errors.nom}</p>
-                        )}
                     </div>
 
                     <div className="md:col-span-2">
