@@ -2,16 +2,33 @@ import calendar
 
 from rest_framework import serializers
 from societe.models import Societe, SocieteMonth
-
+from user.models import User
 from user.serializers import UserSerializer
-
 
 
 class SocieteSerializer(serializers.ModelSerializer):
     user = UserSerializer(read_only=True)
+    user_id = serializers.PrimaryKeyRelatedField(queryset=User.objects.all(), write_only=True)
+
     class Meta:
         model = Societe
-        fields = ["id","nom","ID_SCTE","user"]
+        fields = ["id","nom","ID_SCTE","user","user_id"]
+        extra_kwargs = {
+            "user": {"required": True},
+            "nom": {"required": True},
+            "ID_SCTE": {"required": True},
+        }
+
+    def validate_nom(self, value):
+        if not value.strip():
+            raise serializers.ValidationError("Le nom est obligatoire")
+        return value
+
+    def validate_ID_SCTE(self, value):
+        if len(value) < 10:
+            raise serializers.ValidationError("SIRET/MATRICULE invalide")
+        return value
+
 
 class SocieteMonthSerializer(serializers.ModelSerializer):
     month_name = serializers.SerializerMethodField()

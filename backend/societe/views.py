@@ -9,6 +9,8 @@ from rest_framework.response import Response
 from societe.models import Societe, SocieteMonth
 from societe.serializers import SocieteSerializer, SocieteMonthSerializer
 
+from user.models import User
+
 
 class SocietePagination(PageNumberPagination):
     page_size = 12
@@ -94,13 +96,43 @@ class SocieteViewSet(viewsets.ViewSet):
 
         return Response(SocieteMonthSerializer(obj).data)
 
-    def create(self, request):
-        nom = request.data.get("nom")
+    # def create(self, request):
+    #     nom = request.data.get("nom")
+    #     user_id = request.data.get("user")
+    #     scte = request.data.get("ID_SCTE")
+    #     serializer = SocieteSerializer(data=request.data)
+    #     serializer.is_valid(raise_exception=True)
+    #
+    #     societe = Societe.objects.create(
+    #         nom=nom,
+    #         user_id=user_id,
+    #         ID_SCTE=scte
+    #     )
+    #
+    #     ensure_company_months(societe)
+    #
+    #     return Response({
+    #         "id": societe.id,
+    #         "nom": societe.nom,
+    #         "ID_SCTE": societe.ID_SCTE,
+    #         "user_id": societe.user.id
+    #     }, status=status.HTTP_201_CREATED)
 
-        societe = Societe.objects.create(nom=nom, user=request.user.pk)
+    def create(self, request):
+        serializer = SocieteSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        user = serializer.validated_data.pop("user_id")
+        societe = Societe.objects.create(user=user, **serializer.validated_data)
+
         ensure_company_months(societe)
 
-        return Response({"id": societe.id, "nom": societe.nom}, status=status.HTTP_201_CREATED)
+        return Response({
+            "id": societe.id,
+            "nom": societe.nom,
+            "ID_SCTE": societe.ID_SCTE,
+            "user": SocieteSerializer(societe).data["user"]
+        }, status=status.HTTP_201_CREATED)
 
     # def retrieve(self, request, pk=None):
     #     try:
@@ -140,7 +172,7 @@ class SocieteViewSet(viewsets.ViewSet):
 
 def ensure_company_months(company, year=None):
     if year is None:
-        year = datetime.now().year
+        year = datetime.datetime.now().year
 
     for month in range(1, 13):
         SocieteMonth.objects.get_or_create(
@@ -153,5 +185,5 @@ def ensure_company_months(company, year=None):
 @receiver(post_save, sender=Societe)
 def create_months_for_new_societe(sender, instance, created, **kwargs):
     if created:
-        year = datetime.now().year
+        year = datetime.datetime.now().year
         ensure_company_months(instance, year)
