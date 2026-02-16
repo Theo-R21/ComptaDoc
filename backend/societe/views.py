@@ -13,6 +13,8 @@ from user.models import User
 from societe.serializers.societe import SocieteSerializer
 from societe.serializers.societe_month import SocieteMonthSerializer
 
+from core.settings import env
+
 
 class SocietePagination(PageNumberPagination):
     page_size = 12
@@ -37,7 +39,6 @@ class SocieteViewSet(viewsets.ViewSet):
         paginator = SocietePagination()
         page = paginator.paginate_queryset(queryset, request)
         serializer = SocieteSerializer(page, many=True)
-
         return paginator.get_paginated_response(serializer.data)
 
     @action(detail=False, methods=["get"], url_path="(?P<societe_id>[^/.]+)/months")
