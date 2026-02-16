@@ -1,7 +1,9 @@
 import re
 
+import unicodedata
 from django.core.exceptions import ValidationError as DjangoValidationError
 from django.core.validators import validate_email
+from django.utils.text import slugify
 from rest_framework import serializers
 from user.models import User
 
@@ -80,14 +82,34 @@ class UserCreateSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError({"password2": "Les mots de passe ne correspondent pas."})
         return attrs
 
-
     def create(self, validated_data):
         validated_data.pop("password2")
         password = validated_data.pop("password")
-        user = User(**validated_data)
+
+        first_name = validated_data.get("first_name").strip()
+        last_name = validated_data.get("last_name").strip()
+
+        first_slug = slugify(first_name)
+        last_slug = slugify(last_name)
+
+        base_username = f"{first_slug}.{last_slug}"
+
+        username = base_username
+        counter = 1
+
+        while User.objects.filter(username=username).exists():
+            username = f"{base_username}{counter}"
+            counter += 1
+
+        user = User(
+            username=username,
+            **validated_data
+        )
+
         user.set_password(password)
         user.is_active = False
         user.save()
+
         return user
 
 
