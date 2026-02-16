@@ -37,7 +37,7 @@ CSRF_TRUSTED_ORIGINS = [
 X_FRAME_OPTIONS = "ALLOWALL"
 
 ALLOWED_HOSTS = []
-environ.Env.read_env(os.path.join(BASE_DIR, 'django.env'))
+environ.Env.read_env(os.path.join(BASE_DIR, '../.env'))
 # Application definition
 
 INSTALLED_APPS = [
