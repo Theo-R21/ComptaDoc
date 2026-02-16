@@ -18,8 +18,7 @@ export default function RegisterPage() {
         first_name: "",
         email: "",
         phone: "",
-        societe: "",
-        password1: "",
+        password: "",
         password2: "",
     });
 
@@ -28,8 +27,7 @@ export default function RegisterPage() {
         first_name?: string;
         email?: string;
         phone?: string;
-        societe?: string;
-        password1?: string;
+        password?: string;
         password2?: string;
     }>({});
 
@@ -56,26 +54,23 @@ export default function RegisterPage() {
         else if (!isValidPhone(form.phone))
             newErrors.phone = "Numéro français ou luxembourgeois invalide.";
 
-        if (!form.societe.trim()) newErrors.societe = "Le nom de société est obligatoire.";
-
-        if (!form.password1) newErrors.password1 = "Le mot de passe est obligatoire.";
+        if (!form.password) newErrors.password = "Le mot de passe est obligatoire.";
         if (!form.password2) newErrors.password2 = "La confirmation est obligatoire.";
-        if (form.password1 && form.password2 && form.password1 !== form.password2)
+        if (form.password && form.password2 && form.password !== form.password2)
             newErrors.password2 = "Les mots de passe ne correspondent pas.";
 
         setErrors(newErrors);
-
+        console.log(newErrors)
         return Object.keys(newErrors).length === 0;
     };
 
-    async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
-        e.preventDefault();
+    const handleCreate = async () => {
         if (!validate()) return;
-
         setLoading(true);
 
         try {
-            const res = await apiFetch(`/auth/register/`, {
+            console.log(form)
+            const res = await apiFetch(`/user/`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -83,15 +78,25 @@ export default function RegisterPage() {
                 body: JSON.stringify(form),
             });
 
-            const resData = await res.json();
 
-            if (res.ok) {
-                router.push("/authentification");
-            } else {
-                setErrors(resData);
+            if (!res.ok) {
+                const json = await res.json()
+                setErrors({
+                    last_name: json.user_id?.[0],
+                    first_name: json.nom?.[0],
+                    email: json.scte?.[0],
+                    phone: json.scte?.[0],
+                    password: json.scte?.[0],
+                    password2: json.scte?.[0],
+                })
+                return;
+            }else{
+                router.push('/authentification/register/account')
             }
+
+            setErrors({});
         } catch (err: any) {
-            if (err.name !== "AbortError") console.error(err);
+           console.error("Erreur API :", err);
         } finally {
             setLoading(false);
         }
@@ -102,10 +107,7 @@ export default function RegisterPage() {
             <h2 className="text-primary1 bg-clip-text text-center text-4xl">
                 Création d'un compte
             </h2>
-            <form
-                onSubmit={handleSubmit}
-                className="flex w-full flex-col items-center gap-3 px-20 py-6"
-            >
+            <div className="flex w-full flex-col items-center gap-3 px-20 py-6">
                 <Input
                     label="Nom"
                     name="last_name"
@@ -145,23 +147,13 @@ export default function RegisterPage() {
                     required
                 />
                 <Input
-                    label="Nom de société"
-                    name="societe"
-                    type="text"
-                    value={form.societe}
-                    onChange={handleChange}
-                    placeholder="Nom de société..."
-                    error={errors.societe}
-                    required
-                />
-                <Input
                     label="Mot de passe"
-                    name="password1"
+                    name="password"
                     type="password"
-                    value={form.password1}
+                    value={form.password}
                     onChange={handleChange}
                     placeholder="Mot de passe..."
-                    error={errors.password1}
+                    error={errors.password}
                     required
                 />
                 <Input
@@ -180,14 +172,14 @@ export default function RegisterPage() {
                     </Link>
                 </div>
                 <Button
-                    type="submit"
                     variant="calltoaction1"
                     className="w-full rounded-md px-4 py-2"
+                    onClick={handleCreate}
                     disabled={loading}
                 >
                     {loading ? "Création..." : "Créer un compte"}
                 </Button>
-            </form>
+            </div>
         </>
     );
 }

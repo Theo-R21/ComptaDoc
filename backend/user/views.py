@@ -3,14 +3,10 @@ from rest_framework import viewsets, filters, status
 from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from user.models import User
 from user.serializers import UserListSerializer, UserActionSerializer,UserUpdateSerializer,UserCreateSerializer
-
-
-# Create your views here.
-
 
 class UserPagination(PageNumberPagination):
     page_size = 10
@@ -22,15 +18,18 @@ class UserViewSet(viewsets.ViewSet):
     serializer_class = UserListSerializer
 
     def get_permissions(self):
-        if self.action in ["create", "destroy"]:
+        if self.action == "create":
+            permission_classes = [AllowAny]
+
+        elif self.action in ["destroy", "toggle_actif"]:
             permission_classes = [IsAuthenticated, IsComptable]
+
         else:
             permission_classes = [IsAuthenticated]
 
         return [permission() for permission in permission_classes]
 
     parser_classes = [JSONParser, MultiPartParser, FormParser]
-    permission_classes = [IsAuthenticated, IsComptable]
     filter_backends = [filters.SearchFilter]
     search_fields = ["username", "first_name", "last_name", "email"]
 
