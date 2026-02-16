@@ -6,7 +6,12 @@ from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from user.models import User
-from user.serializers import UserListSerializer, UserActionSerializer,UserUpdateSerializer,UserCreateSerializer
+
+from user.serializers.list import UserListSerializer
+from user.serializers.action import UserActionSerializer
+from user.serializers.create import UserCreateSerializer
+from user.serializers.update import UserUpdateSerializer
+
 
 class UserPagination(PageNumberPagination):
     page_size = 10

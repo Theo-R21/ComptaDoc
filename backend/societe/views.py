@@ -7,9 +7,11 @@ from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 from societe.models import Societe, SocieteMonth
-from societe.serializers import SocieteSerializer, SocieteMonthSerializer
 
 from user.models import User
+
+from societe.serializers.societe import SocieteSerializer
+from societe.serializers.societe_month import SocieteMonthSerializer
 
 
 class SocietePagination(PageNumberPagination):
@@ -96,28 +98,6 @@ class SocieteViewSet(viewsets.ViewSet):
 
         return Response(SocieteMonthSerializer(obj).data)
 
-    # def create(self, request):
-    #     nom = request.data.get("nom")
-    #     user_id = request.data.get("user")
-    #     scte = request.data.get("ID_SCTE")
-    #     serializer = SocieteSerializer(data=request.data)
-    #     serializer.is_valid(raise_exception=True)
-    #
-    #     societe = Societe.objects.create(
-    #         nom=nom,
-    #         user_id=user_id,
-    #         ID_SCTE=scte
-    #     )
-    #
-    #     ensure_company_months(societe)
-    #
-    #     return Response({
-    #         "id": societe.id,
-    #         "nom": societe.nom,
-    #         "ID_SCTE": societe.ID_SCTE,
-    #         "user_id": societe.user.id
-    #     }, status=status.HTTP_201_CREATED)
-
     def create(self, request):
         serializer = SocieteSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -133,41 +113,6 @@ class SocieteViewSet(viewsets.ViewSet):
             "ID_SCTE": societe.ID_SCTE,
             "user": SocieteSerializer(societe).data["user"]
         }, status=status.HTTP_201_CREATED)
-
-    # def retrieve(self, request, pk=None):
-    #     try:
-    #         user = User.objects.get(pk=pk)
-    #     except User.DoesNotExist:
-    #         return Response(status=status.HTTP_404_NOT_FOUND)
-    #     serializer = UserActionSerializer(user)
-    #     return Response(serializer.data)
-    #
-    # def create(self, request):
-    #     serializer = UserActionSerializer(data=request.data)
-    #     if serializer.is_valid():
-    #         serializer.save()
-    #         return Response(serializer.data, status=status.HTTP_201_CREATED)
-    #     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    #
-    # def update(self, request, pk=None):
-    #     try:
-    #         user = User.objects.get(pk=pk)
-    #     except User.DoesNotExist:
-    #         return Response(status=status.HTTP_404_NOT_FOUND)
-    #     serializer = UserActionSerializer(user, data=request.data)
-    #
-    #     if serializer.is_valid():
-    #         serializer.save()
-    #         return Response(serializer.data)
-    #     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    #
-    # def destroy(self, request, pk=None):
-    #     try:
-    #         user = User.objects.get(pk=pk)
-    #     except User.DoesNotExist:
-    #         return Response(status=status.HTTP_404_NOT_FOUND)
-    #     user.delete()
-    #     return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 def ensure_company_months(company, year=None):
