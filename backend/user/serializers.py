@@ -120,7 +120,6 @@ class UserUpdateSerializer(serializers.ModelSerializer):
             "first_name",
             "last_name",
             "email",
-            "company_name",
             "phone",
         ]
 

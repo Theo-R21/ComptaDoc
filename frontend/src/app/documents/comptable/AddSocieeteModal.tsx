@@ -4,6 +4,8 @@ import {useEffect, useState} from "react";
 import {UserModel} from "@/src/models/user/user.model";
 import {apiFetch} from "@/src/hook/userRefresh";
 import Input from "@/src/app/components/input";
+import {formatZodErrors} from "@/src/lib/validation/helpers";
+import {societeCreateSchema} from "@/src/lib/validation/societe.schema";
 
 
 type AddSocieeteModalProps = {
@@ -50,26 +52,19 @@ export function AddSocieeteModal({
     );
 
     const validate = () => {
+        const result = societeCreateSchema.safeParse({
+            user_id: selectedUsers,
+            nom: societeName,
+            scte: scte,
+        });
 
-        const newErrors: typeof errors = {};
-
-        if (!selectedUsers) {
-            newErrors.user_id = "Le propriétaire est obligatoire";
+        if (!result.success) {
+            setErrors(formatZodErrors(result.error));
+            return false;
         }
 
-        if (!societeName.trim()) {
-            newErrors.nom = "Le nom de la société est obligatoire";
-        }
-
-        if (!scte.trim()) {
-            newErrors.scte = "Le matricule ou SIRET est obligatoire";
-        } else if (scte.length < 10) {
-            newErrors.scte = "Le matricule semble invalide";
-        }
-
-        setErrors(newErrors);
-
-        return Object.keys(newErrors).length === 0;
+        setErrors({});
+        return true;
     };
 
 

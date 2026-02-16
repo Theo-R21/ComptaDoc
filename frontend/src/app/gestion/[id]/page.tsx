@@ -9,6 +9,8 @@ import {UserInfoModel} from "@/src/models/user/user.model";
 import Input from "@/src/app/components/input";
 import {Switch} from "@/src/app/components/ui/switch";
 import {FaArrowLeft} from "react-icons/fa";
+import {userEditSchema} from "@/src/lib/validation/user.schema";
+import {formatZodErrors} from "@/src/lib/validation/helpers";
 
 export default function Gestion() {
     const params = useParams();
@@ -23,10 +25,6 @@ export default function Gestion() {
     const [isActive, setIsActive] = useState(false);
     const [updatingToggle, setUpdatingToggle] = useState(false);
     const [savingUser, setSavingUser] = useState(false);
-
-    const frenchPhoneRegex = /^(?:(?:\+33|0033)\s?|0)[1-9](?:[\s.-]?\d{2}){4}$/;
-
-    const luxPhoneRegex = /^(?:(?:\+352|00352)\s?)?[2-9]\d{7,8}$/;
 
 
     const [form, setForm] = useState({
@@ -44,35 +42,16 @@ export default function Gestion() {
         phone?: string;
     }>({});
 
-    const isValidPhone = (phone: string) =>
-        frenchPhoneRegex.test(phone) || luxPhoneRegex.test(phone);
+     const validate = () => {
+        const result = userEditSchema.safeParse(form)
 
-    const validate = () => {
-        const newErrors: typeof errors = {};
-        if (!form.first_name.trim()) {
-            newErrors.first_name = "Le prénom est obligatoire.";
+        if (!result.success) {
+            setErrors(formatZodErrors(result.error))
+            return false
         }
 
-        if (!form.last_name.trim()) {
-            newErrors.last_name = "Le nom est obligatoire.";
-        }
-
-        if (!form.email.trim()) {
-            newErrors.email = "L'email est obligatoire.";
-        } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) {
-            newErrors.email = "Format d'email invalide.";
-        }
-
-        if (!form.phone.trim()) {
-            newErrors.phone = "Le numéro de téléphone est obligatoire.";
-        } else if (!isValidPhone(form.phone)) {
-            newErrors.phone = "Numéro français ou luxembourgeois invalide.";
-        }
-
-        setErrors(newErrors);
-        return Object.keys(newErrors).length === 0;
-    };
-
+        return true
+    }
 
     useEffect(() => {
         const controller = new AbortController();
@@ -241,7 +220,6 @@ export default function Gestion() {
                                     <ReadOnlyField label="Nom" value={user.last_name}/>
                                     <ReadOnlyField label="Prénom" value={user.first_name}/>
                                     <ReadOnlyField label="Adresse email" value={user.email}/>
-                                    <ReadOnlyField label="Société" value={user.company_name}/>
                                     <ReadOnlyField label="Téléphone" value={user.phone}/>
                                 </>
                             ) : (
@@ -276,12 +254,6 @@ export default function Gestion() {
                                         onChange={handleInputChange}
                                         error={errors.email}
                                         required
-                                    />
-                                    <Input
-                                        label="Société"
-                                        name="company_name"
-                                        value={form.company_name}
-                                        onChange={handleInputChange}
                                     />
                                     <Input
                                         label="Téléphone"

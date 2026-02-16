@@ -1,12 +1,14 @@
 "use client"
 
 import {Dialog, DialogContent, DialogHeader, DialogTitle,} from "@/src/app/components/ui/dialog"
-import {Calendar, Upload} from "lucide-react"
+import {Upload} from "lucide-react"
 import Button from "@/src/app/components/button"
 import {useState} from "react"
 import {apiFetch} from "@/src/hook/userRefresh"
 import {TypeDocumentList} from "@/src/models/documents/documents.model"
 import Input from "@/src/app/components/input";
+import {formatZodErrors} from "@/src/lib/validation/helpers";
+import {documentCreateSchema} from "@/src/lib/validation/document.schema";
 
 type UploadDocumentModalProps = {
     open: boolean
@@ -36,27 +38,20 @@ export function UploadDocumentModal({
     }>({});
 
     const validate = () => {
-        const newErrors: typeof errors = {};
+        const result = documentCreateSchema.safeParse({
+            path: file,
+            type: selectedType,
+            nom: docName,
+            date_publication: docDate,
+        });
 
-        if (!file) {
-            newErrors.path = "Vous n'avez pas déposé de fichier";
+        if (!result.success) {
+            setErrors(formatZodErrors(result.error));
+            return false;
         }
 
-        if (!docName.trim()) {
-            newErrors.nom = "Le nom est obligatoire";
-        }
-
-        if (selectedType === null) {
-            newErrors.type = "Vous n'avez pas sélectionné de type";
-        }
-
-        if (!docDate.trim()) {
-            newErrors.date_publication = "La date de publication est obligatoire";
-        }
-
-        setErrors(newErrors);
-
-        return Object.keys(newErrors).length === 0;
+        setErrors({});
+        return true;
     };
 
 

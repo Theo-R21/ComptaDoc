@@ -5,19 +5,40 @@ import Button from "@/src/app/components/button";
 import {useState} from "react";
 import {useRouter} from "next/navigation";
 import {apiFetch} from "@/src/hook/userRefresh";
+import {societeCreateSchema} from "@/src/lib/validation/societe.schema";
+import {formatZodErrors} from "@/src/lib/validation/helpers";
 
 export default function PasswordPage() {
     const router = useRouter();
     const [loading, setLoading] = useState(false);
-    const [error, setError] = useState("");
+    const [errors, setErrors] = useState<{
+        email?: string;
+    }>({});
+
+    const validate = (email: string) => {
+        const result = societeCreateSchema.safeParse({
+            email: email,
+        });
+
+        if (!result.success) {
+            setErrors(formatZodErrors(result.error));
+            return false;
+        }
+
+        setErrors({});
+        return true;
+    };
 
     async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
         e.preventDefault();
         setLoading(true);
-        setError("");
 
         const formData = new FormData(e.currentTarget);
         const email = formData.get("email") as string;
+        if (!validate(email)) {
+            setLoading(false);
+            return;
+        }
 
         try {
             const res = await apiFetch(`/auth/password_reset/`, {
@@ -36,7 +57,7 @@ export default function PasswordPage() {
                 throw new Error(resData.message);
             }
         } catch (err: any) {
-            setError(err.message);
+            console.error(err.message);
         } finally {
             setLoading(false);
         }
@@ -52,14 +73,10 @@ export default function PasswordPage() {
                         name="email"
                         type="email"
                         placeholder="Adresse mail..."
+                        error={errors.email}
                         required
                     />
                 </div>
-                {error && (
-                    <p className="text-red-500 text-sm text-left w-full">
-                        {error}
-                    </p>
-                )}
                 <div className="flex flex-col items-start self-start text-primary2">
                     <Link href="/authentification" className="hover:underline">Retour à la connexion</Link>
                 </div>
