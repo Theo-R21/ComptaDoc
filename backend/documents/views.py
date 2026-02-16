@@ -6,12 +6,15 @@ from core import settings
 from django.http import FileResponse, HttpResponse
 from django.shortcuts import get_object_or_404, get_list_or_404
 from documents.models import SocieteDocument, TypeDocument
-from documents.serializers import DocumentsSerializer, TypeDocumentsSerializer, SocieteDocumentUploadSerializer
 from rest_framework import viewsets, permissions, filters, status
 from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from rest_framework.response import Response
+
+from documents.serializers.document import DocumentsSerializer
+from documents.serializers.type_document import TypeDocumentsSerializer
+from documents.serializers.upload import SocieteDocumentUploadSerializer
 
 
 class DocumentsPagination(PageNumberPagination):
@@ -105,50 +108,3 @@ class DocumentsViewSet(viewsets.ViewSet):
 
         return response
 
-    # @action(detail=False, methods=["get"], url_path="(?P<societe_id>[^/.]+)/months")
-    # def months(self, request, societe_id=None):
-    #     societe = Societe.objects.get(pk=societe_id)
-    #
-    #     year = request.query_params.get(
-    #         "year", datetime.datetime.now().year
-    #     )
-    #
-    #     months = ensure_company_months(societe, year)
-    #
-    #     serializer = SocieteMonthSerializer(months, many=True)
-    #     return Response(serializer.data)
-
-    # def retrieve(self, request, pk=None):
-    #     try:
-    #         user = User.objects.get(pk=pk)
-    #     except User.DoesNotExist:
-    #         return Response(status=status.HTTP_404_NOT_FOUND)
-    #     serializer = UserActionSerializer(user)
-    #     return Response(serializer.data)
-    #
-    # def create(self, request):
-    #     serializer = UserActionSerializer(data=request.data)
-    #     if serializer.is_valid():
-    #         serializer.save()
-    #         return Response(serializer.data, status=status.HTTP_201_CREATED)
-    #     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    #
-    # def update(self, request, pk=None):
-    #     try:
-    #         user = User.objects.get(pk=pk)
-    #     except User.DoesNotExist:
-    #         return Response(status=status.HTTP_404_NOT_FOUND)
-    #     serializer = UserActionSerializer(user, data=request.data)
-    #
-    #     if serializer.is_valid():
-    #         serializer.save()
-    #         return Response(serializer.data)
-    #     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    #
-    # def destroy(self, request, pk=None):
-    #     try:
-    #         user = User.objects.get(pk=pk)
-    #     except User.DoesNotExist:
-    #         return Response(status=status.HTTP_404_NOT_FOUND)
-    #     user.delete()
-    #     return Response(status=status.HTTP_204_NO_CONTENT)
