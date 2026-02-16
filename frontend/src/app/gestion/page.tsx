@@ -2,7 +2,7 @@
 
 import {useEffect, useState} from "react";
 import {useRouter} from "next/navigation";
-import {FaCheckCircle, FaChevronLeft, FaChevronRight, FaTimesCircle} from "react-icons/fa";
+import {FaCheckCircle, FaTimesCircle} from "react-icons/fa";
 import Pagination from "@/src/app/components/pagination";
 import Searchbar from "@/src/app/components/searchbar";
 import {apiFetch} from "@/src/hook/userRefresh";
@@ -10,7 +10,6 @@ import {useDebounce} from "@/src/hook/useDebounce";
 import {UserInfoModel} from "@/src/models/user/user.model";
 import Button from "@/src/app/components/button";
 import {FaPlus} from "react-icons/fa6";
-import {AddSocieeteModal} from "@/src/app/documents/comptable/AddSocieeteModal";
 import {AddUserModal} from "@/src/app/gestion/AddUserModal";
 
 export default function Gestion() {

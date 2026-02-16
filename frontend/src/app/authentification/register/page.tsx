@@ -5,13 +5,12 @@ import Button from "@/src/app/components/button";
 import {useState} from "react";
 import {useRouter} from "next/navigation";
 import {apiFetch} from "@/src/hook/userRefresh";
+import {userCreateSchema} from "@/src/lib/validation/user.schema";
+import {formatZodErrors} from "@/src/lib/validation/helpers";
 
 export default function RegisterPage() {
     const router = useRouter();
     const [loading, setLoading] = useState(false);
-
-    const frenchPhoneRegex = /^(?:(?:\+33|0033)\s?|0)[1-9](?:[\s.-]?\d{2}){4}$/;
-    const luxPhoneRegex = /^(?:(?:\+352|00352)\s?)?[2-9]\d{7,8}$/;
 
     const [form, setForm] = useState({
         last_name: "",
@@ -31,8 +30,6 @@ export default function RegisterPage() {
         password2?: string;
     }>({});
 
-    const isValidPhone = (phone: string) =>
-        frenchPhoneRegex.test(phone) || luxPhoneRegex.test(phone);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const {name, value} = e.target;
@@ -41,28 +38,16 @@ export default function RegisterPage() {
     };
 
     const validate = () => {
-        const newErrors: typeof errors = {};
+        const result = userCreateSchema.safeParse(form)
 
-        if (!form.first_name.trim()) newErrors.first_name = "Le prénom est obligatoire.";
-        if (!form.last_name.trim()) newErrors.last_name = "Le nom est obligatoire.";
+        if (!result.success) {
+            setErrors(formatZodErrors(result.error))
+            return false
+        }
 
-        if (!form.email.trim()) newErrors.email = "L'email est obligatoire.";
-        else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email))
-            newErrors.email = "Format d'email invalide.";
+        return true
+    }
 
-        if (!form.phone.trim()) newErrors.phone = "Le numéro de téléphone est obligatoire.";
-        else if (!isValidPhone(form.phone))
-            newErrors.phone = "Numéro français ou luxembourgeois invalide.";
-
-        if (!form.password) newErrors.password = "Le mot de passe est obligatoire.";
-        if (!form.password2) newErrors.password2 = "La confirmation est obligatoire.";
-        if (form.password && form.password2 && form.password !== form.password2)
-            newErrors.password2 = "Les mots de passe ne correspondent pas.";
-
-        setErrors(newErrors);
-        console.log(newErrors)
-        return Object.keys(newErrors).length === 0;
-    };
 
     const handleCreate = async () => {
         if (!validate()) return;
@@ -90,13 +75,13 @@ export default function RegisterPage() {
                     password2: json.scte?.[0],
                 })
                 return;
-            }else{
+            } else {
                 router.push('/authentification/register/account')
             }
 
             setErrors({});
         } catch (err: any) {
-           console.error("Erreur API :", err);
+            console.error("Erreur API :", err);
         } finally {
             setLoading(false);
         }

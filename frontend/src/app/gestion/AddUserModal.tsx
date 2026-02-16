@@ -3,6 +3,8 @@ import Button from "@/src/app/components/button";
 import {useState} from "react";
 import {apiFetch} from "@/src/hook/userRefresh";
 import Input from "@/src/app/components/input";
+import {userCreateSchema} from "@/src/lib/validation/user.schema";
+import {formatZodErrors} from "@/src/lib/validation/helpers";
 
 
 type AddUserModalProps = {
@@ -17,9 +19,6 @@ export function AddUserModal({
                                  onSocieteCreated
                              }: AddUserModalProps) {
     const [loading, setLoading] = useState(false);
-
-    const frenchPhoneRegex = /^(?:(?:\+33|0033)\s?|0)[1-9](?:[\s.-]?\d{2}){4}$/;
-    const luxPhoneRegex = /^(?:(?:\+352|00352)\s?)?[2-9]\d{7,8}$/;
 
     const [form, setForm] = useState({
         last_name: "",
@@ -45,32 +44,16 @@ export function AddUserModal({
         setForm((prev) => ({...prev, [name]: value}));
     };
 
-    const isValidPhone = (phone: string) =>
-        frenchPhoneRegex.test(phone) || luxPhoneRegex.test(phone);
-
     const validate = () => {
-        const newErrors: typeof errors = {};
+        const result = userCreateSchema.safeParse(form)
 
-        if (!form.first_name.trim()) newErrors.first_name = "Le prénom est obligatoire.";
-        if (!form.last_name.trim()) newErrors.last_name = "Le nom est obligatoire.";
+        if (!result.success) {
+            setErrors(formatZodErrors(result.error))
+            return false
+        }
 
-        if (!form.email.trim()) newErrors.email = "L'email est obligatoire.";
-        else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email))
-            newErrors.email = "Format d'email invalide.";
-
-        if (!form.phone.trim()) newErrors.phone = "Le numéro de téléphone est obligatoire.";
-        else if (!isValidPhone(form.phone))
-            newErrors.phone = "Numéro français ou luxembourgeois invalide.";
-
-        if (!form.password) newErrors.password = "Le mot de passe est obligatoire.";
-        if (!form.password2) newErrors.password2 = "La confirmation est obligatoire.";
-        if (form.password && form.password2 && form.password !== form.password2)
-            newErrors.password2 = "Les mots de passe ne correspondent pas.";
-
-        setErrors(newErrors);
-
-        return Object.keys(newErrors).length === 0;
-    };
+        return true
+    }
 
     const handleCreate = async () => {
         if (!validate()) return;

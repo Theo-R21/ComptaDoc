@@ -5,33 +5,45 @@ import Button from "@/src/app/components/button";
 import {useRouter} from "next/navigation";
 import {useState} from "react";
 import {apiFetch} from "@/src/hook/userRefresh";
+import {resetPasswordSchema} from "@/src/lib/validation/user.schema";
+import {formatZodErrors} from "@/src/lib/validation/helpers";
 
 export default function ResetPasswordPage() {
     const router = useRouter();
     const [loading, setLoading] = useState(false);
-    const [error, setError] = useState("");
+    const [errors, setErrors] = useState<{
+        password1?: string;
+        password2?: string;
+    }>({});
+
+    const validate = (psw1: string, psw2: string) => {
+        const result = resetPasswordSchema.safeParse({
+            password1: psw1,
+            password2: psw2,
+        })
+
+        if (!result.success) {
+            setErrors(formatZodErrors(result.error))
+            return false
+        }
+
+        return true
+    }
 
     async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
         e.preventDefault();
         setLoading(true);
-        setError("");
 
         const formData = new FormData(e.currentTarget);
         const password1 = formData.get("password1") as string;
         const password2 = formData.get("password2") as string;
+
+        if (!validate(password1, password2)) {
+            setLoading(false);
+            return;
+        }
+
         const resetToken = localStorage.getItem("resetToken");
-
-        if (!password1 || !password2 || password1 !== password2) {
-            setError("Les mots de passe ne correspondent pas.");
-            setLoading(false);
-            return;
-        }
-
-        if (!resetToken) {
-            setError("Token manquant. Veuillez recommencer la procédure.");
-            setLoading(false);
-            return;
-        }
 
         try {
             const res = await apiFetch(`/auth/password_reset/change/`, {
@@ -46,7 +58,7 @@ export default function ResetPasswordPage() {
                 throw new Error(resData.message);
             }
         } catch (err: any) {
-            setError(err.message);
+            console.error(err);
         } finally {
             setLoading(false);
         }
@@ -62,6 +74,7 @@ export default function ResetPasswordPage() {
                         name="password1"
                         type="password"
                         placeholder="Nouveau mot de passe..."
+                        error={errors.password1}
                         required
                     />
                 </div>
@@ -71,14 +84,10 @@ export default function ResetPasswordPage() {
                         name="password2"
                         type="password"
                         placeholder="Nouveau mot de passe..."
+                        error={errors.password2}
                         required
                     />
                 </div>
-                 {error && (
-                    <p className="text-red-500 text-sm text-left w-full">
-                        {error}
-                    </p>
-                )}
                 <div className="flex flex-col items-start self-start text-primary2">
                     <Link href="/authentification" className="hover:underline">Retour à la connexion</Link>
                 </div>
