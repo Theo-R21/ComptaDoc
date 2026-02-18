@@ -11,6 +11,7 @@ from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from rest_framework.response import Response
+from core.permission import IsComptableOrClient
 
 from documents.serializers.document import DocumentsSerializer
 from documents.serializers.type_document import TypeDocumentsSerializer
@@ -24,7 +25,7 @@ class DocumentsPagination(PageNumberPagination):
 
 
 class DocumentsViewSet(viewsets.ViewSet):
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    permission_classes = [IsComptableOrClient, permissions.IsAuthenticatedOrReadOnly]
     parser_classes = [JSONParser, MultiPartParser, FormParser]
     filter_backends = [filters.SearchFilter]
     search_fields = ["nom", "date_publication"]

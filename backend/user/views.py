@@ -1,5 +1,5 @@
 from core.permission import IsComptable
-from rest_framework import viewsets, filters, status
+from rest_framework import viewsets, filters, status, permissions
 from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
@@ -21,6 +21,7 @@ class UserPagination(PageNumberPagination):
 class UserViewSet(viewsets.ViewSet):
     queryset = User.objects.all()
     serializer_class = UserListSerializer
+    permission_classes = [IsComptable, permissions.IsAuthenticatedOrReadOnly]
 
     def get_permissions(self):
         if self.action == "create":

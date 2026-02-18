@@ -15,6 +15,8 @@ from societe.serializers.societe_month import SocieteMonthSerializer
 
 from core.settings import env
 
+from core.permission import IsComptableOrClient
+
 
 class SocietePagination(PageNumberPagination):
     page_size = 12
@@ -23,7 +25,7 @@ class SocietePagination(PageNumberPagination):
 
 
 class SocieteViewSet(viewsets.ViewSet):
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    permission_classes = [IsComptableOrClient, permissions.IsAuthenticatedOrReadOnly]
     # parser_classes = [MultiPartParser, FormParser]
     filter_backends = [filters.SearchFilter]
     search_fields = ["user__first_name", "user__last_name", "nom"]
@@ -34,12 +36,20 @@ class SocieteViewSet(viewsets.ViewSet):
         return queryset
 
     def list(self, request):
+        user = request.user
         queryset = Societe.objects.all().order_by("nom")
+
+        if not user.is_superuser and not user.has_role("comptable"):
+            queryset = queryset.filter(user=user)
+
         queryset = self.filter_queryset(queryset, request)
+
         paginator = SocietePagination()
         page = paginator.paginate_queryset(queryset, request)
         serializer = SocieteSerializer(page, many=True)
+
         return paginator.get_paginated_response(serializer.data)
+
 
     @action(detail=False, methods=["get"], url_path="(?P<societe_id>[^/.]+)/months")
     def months(self, request, societe_id=None):

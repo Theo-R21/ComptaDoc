@@ -36,7 +36,7 @@ CSRF_TRUSTED_ORIGINS = [
 
 X_FRAME_OPTIONS = "ALLOWALL"
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["host.docker.internal", "localhost"]
 environ.Env.read_env(os.path.join(BASE_DIR, '../.env'))
 # Application definition
 

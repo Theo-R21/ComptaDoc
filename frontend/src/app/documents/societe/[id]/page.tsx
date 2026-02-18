@@ -9,7 +9,7 @@ import {hasRole} from "@/src/lib/permissions";
 import {useCurrentUser} from "@/src/hook/useCurrent";
 
 export default function Societe() {
-    const {id} = useParams()
+    const {id} = useParams();
     const [date, setDate] = useState<SocieteMonthInfo[]>([]);
     const [years, setYears] = useState<number[]>([]);
     const [statusFilter, setStatusFilter] = useState<string>("ALL");
@@ -57,7 +57,6 @@ export default function Societe() {
         fetchMonths();
     }, [id, selectedYear, statusFilter]);
 
-
     const handleChange = async (
         monthItem: SocieteMonthInfo,
         checked: boolean
@@ -65,20 +64,20 @@ export default function Societe() {
         const newStatus = checked ? "OPEN" : "CLOSED";
 
         try {
-            const url = new URL(`/societe/${id}/months/${monthItem.month}/`, window.location.origin);
-            console.log(url)
-            const res = await apiFetch(
-                url.pathname,
-                {
-                    method: "PATCH",
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                    credentials: "include",
-                    body: JSON.stringify({status: newStatus}),
-                }
+            const url = new URL(
+                `/societe/${id}/months/${monthItem.month}/`,
+                window.location.origin
             );
-            console.log(res)
+
+            const res = await apiFetch(url.pathname, {
+                method: "PATCH",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                credentials: "include",
+                body: JSON.stringify({status: newStatus}),
+            });
+
             if (!res.ok) throw new Error("Erreur lors de la mise à jour");
 
             const updatedMonth = await res.json();
@@ -93,26 +92,29 @@ export default function Societe() {
         }
     };
 
+    const goToMonth = (item: SocieteMonthInfo) => {
+        if (item.status !== "OPEN") return;
+
+        router.push(
+            `/documents/societe/${id}/${item.month_name}?monthId=${item.id}`
+        );
+    };
 
     return (
         <main className="flex-1 p-8 overflow-auto bg-gray-50">
             <header className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                    <h1 className="text-2xl font-bold text-primary1">Gestion des périodes</h1>
+                    <h1 className="text-2xl font-bold text-primary1">
+                        Gestion des périodes
+                    </h1>
                     <p className="text-sm text-primary2">
                         Année fiscale & statut des mois
                     </p>
-                    {hasRole(user, ["comptable"]) && (
-                        <p
-                            onClick={() => router.push(`/documents/comptable`)}
-                            className="flex items-center mt-2 gap-2 cursor-pointer text-primary2 transition-all duration-300
-                   hover:text-primary1 hover:translate-x-1"
-                        >
-                            <FaArrowLeft/>
-                            retour
-                        </p>
-                    )}
-
+                    <p onClick={() => router.push(`/documents/societe`)}
+                        className="flex items-center mt-2 gap-2 cursor-pointer text-primary2 transition-all duration-300 hover:text-primary1 hover:translate-x-1">
+                        <FaArrowLeft/>
+                        retour
+                    </p>
                 </div>
 
                 <div className="flex items-center gap-3">
@@ -121,7 +123,9 @@ export default function Societe() {
                         <select
                             className="bg-transparent text-sm font-medium text-secondary1 focus:outline-none"
                             value={selectedYear ?? ""}
-                            onChange={(e) => setSelectedYear(Number(e.target.value))}
+                            onChange={(e) =>
+                                setSelectedYear(Number(e.target.value))
+                            }
                         >
                             {years.map((year) => (
                                 <option key={year} value={year}>
@@ -136,33 +140,45 @@ export default function Societe() {
                         <select
                             className="bg-transparent text-sm font-medium text-secondary1 focus:outline-none"
                             value={statusFilter}
-                            onChange={(e) => setStatusFilter(e.target.value)}
+                            onChange={(e) =>
+                                setStatusFilter(e.target.value)
+                            }
                         >
                             <option value="ALL">Tous</option>
                             <option value="OPEN">Ouverts</option>
                             <option value="CLOSED">Fermés</option>
                         </select>
-
                     </div>
                 </div>
             </header>
 
             <div className="mb-6 h-px w-full bg-gray-200"/>
+
             <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
-                {date.map((item, index) => {
+                {date.map((item) => {
                     const isOpen = item.status === "OPEN";
 
                     return (
                         <div
-                            key={index}
-                            className={`group relative rounded-xl border p-5 transition-all
-                                        ${isOpen
-                                            ? "bg-white border-primary2 shadow-md hover:shadow-lg cursor-pointer"
-                                            : "bg-gray-100 border-gray-200 opacity-80 cursor-not-allowed"
-                                        } hover:-translate-y-0.5`}
-                            onClick={() => {if (isOpen) {router.push(`/documents/societe/${id}/${item.month_name}?monthId=${item.id}`);}}}
-                        >
+                            key={item.id}
+                            role="button"
+                            tabIndex={0}
+                            onClick={isOpen ? () => goToMonth(item) : undefined}
+                            onKeyDown={(e) => {
+                                if (!isOpen) return;
 
+                                if (e.key === "Enter" || e.key === " ") {
+                                    e.preventDefault();
+                                    goToMonth(item);
+                                }
+                            }}
+                            className={`group relative rounded-xl border p-5 transition-all
+                                ${
+                                isOpen
+                                    ? "bg-white border-primary2 shadow-md hover:shadow-lg cursor-pointer"
+                                    : "bg-gray-100 border-gray-200 opacity-80 cursor-default"
+                            } hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-primary1`}
+                        >
                             {isOpen && (
                                 <span className="absolute left-0 top-4 h-12 w-1 rounded-r bg-primary1"/>
                             )}
@@ -172,16 +188,32 @@ export default function Societe() {
                                     {item.month_name} {item.year}
                                 </p>
                                 <p
-                                    className={`mt-1 text-sm font-medium ${isOpen ? "text-calltoactionsuccess" : "text-red-700"}`}
+                                    className={`mt-1 text-sm font-medium ${
+                                        isOpen
+                                            ? "text-calltoactionsuccess"
+                                            : "text-red-700"
+                                    }`}
                                 >
-                                    {isOpen ? "Période ouverte" : "Période fermée"}
+                                    {isOpen
+                                        ? "Période ouverte"
+                                        : "Période fermée"}
                                 </p>
                             </div>
 
                             <div className="flex items-center justify-between mt-6">
-                                <div className="flex items-center gap-3 bg-primary3/60 rounded-full px-3 py-1">
-                                    <div className="flex items-center justify-center w-6 h-6 rounded-full bg-calltoaction1/20">
-                                        <FaLock className={`text-xs ${isOpen ? "text-secondary2/40" : "text-calltoaction2"}`}/>
+                                <div
+                                    className="flex items-center gap-3 bg-primary3/60 rounded-full px-3 py-1"
+                                    onClick={(e) => e.stopPropagation()}
+                                >
+                                    <div
+                                        className="flex items-center justify-center w-6 h-6 rounded-full bg-calltoaction1/20">
+                                        <FaLock
+                                            className={`text-xs ${
+                                                isOpen
+                                                    ? "text-secondary2/40"
+                                                    : "text-calltoaction2"
+                                            }`}
+                                        />
                                     </div>
 
                                     <Switch
@@ -189,36 +221,31 @@ export default function Societe() {
                                         onCheckedChange={(checked) =>
                                             handleChange(item, checked)
                                         }
+                                        onClick={(e) => e.stopPropagation()}
                                         className="data-[state=checked]:bg-calltoaction1 data-[state=unchecked]:bg-secondary2 transition-colors"
                                     />
-                                    <div className="flex items-center justify-center w-6 h-6 rounded-full bg-primary1/40">
+
+                                    <div
+                                        className="flex items-center justify-center w-6 h-6 rounded-full bg-primary1/40">
                                         <FaLockOpen
-                                            className={`text-sm ${isOpen ? "text-primary1" : "text-primary1/60"}`}
+                                            className={`text-sm ${
+                                                isOpen
+                                                    ? "text-primary1"
+                                                    : "text-primary1/60"
+                                            }`}
                                         />
                                     </div>
                                 </div>
+                                <div
+                                    className={`p-2 rounded-lg transition ${isOpen ? "bg-primary3/60" : "cursor-not-allowed opacity-50"}`}>
 
-                                <button
-                                    className={`p-2 rounded-lg transition ${isOpen ? "bg-primary3/60" : "cursor-not-allowed opacity-50"}`}
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        if (isOpen) {
-                                            router.push(
-                                                `/documents/societe/${id}/${item.month_name}?monthId=${item.id}`
-                                            );
-                                        }
-                                    }}
-                                >
-                                    <FaArrowRight
-                                        className={`${isOpen ? "text-primary2 group-hover:translate-x-1" : "text-secondary2"} transition-all`}
-                                    />
-                                </button>
+                                    <FaArrowRight className="text-primary2 transition-all group-hover:translate-x-1"/>
+                                </div>
                             </div>
                         </div>
                     );
                 })}
-
             </div>
         </main>
-    )
+    );
 }
