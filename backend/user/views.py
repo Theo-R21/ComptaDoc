@@ -19,22 +19,8 @@ class UserPagination(PageNumberPagination):
     max_page_size = 100
 
 class UserViewSet(viewsets.ViewSet):
-    queryset = User.objects.all()
     serializer_class = UserListSerializer
-    permission_classes = [IsComptable, permissions.IsAuthenticatedOrReadOnly]
-
-    def get_permissions(self):
-        if self.action == "create":
-            permission_classes = [AllowAny]
-
-        elif self.action in ["destroy", "toggle_actif"]:
-            permission_classes = [IsAuthenticated, IsComptable]
-
-        else:
-            permission_classes = [IsAuthenticated]
-
-        return [permission() for permission in permission_classes]
-
+    permission_classes = [IsComptable]
     parser_classes = [JSONParser, MultiPartParser, FormParser]
     filter_backends = [filters.SearchFilter]
     search_fields = ["username", "first_name", "last_name", "email"]

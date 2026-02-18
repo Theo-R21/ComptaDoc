@@ -7,15 +7,11 @@ from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 from societe.models import Societe, SocieteMonth
-
 from user.models import User
-
 from societe.serializers.societe import SocieteSerializer
 from societe.serializers.societe_month import SocieteMonthSerializer
-
 from core.settings import env
-
-from core.permission import IsComptableOrClient
+from core.permission import IsComptableOrClient, IsComptable
 
 
 class SocietePagination(PageNumberPagination):
@@ -25,10 +21,16 @@ class SocietePagination(PageNumberPagination):
 
 
 class SocieteViewSet(viewsets.ViewSet):
-    permission_classes = [IsComptableOrClient, permissions.IsAuthenticatedOrReadOnly]
+    permission_classes = [IsComptableOrClient]
     # parser_classes = [MultiPartParser, FormParser]
     filter_backends = [filters.SearchFilter]
     search_fields = ["user__first_name", "user__last_name", "nom"]
+
+    def get_permissions(self):
+        if self.action == "update_month":
+            return [IsComptable()]
+
+        return [permission() for permission in self.permission_classes]
 
     def filter_queryset(self, queryset, request):
         for backend in list(self.filter_backends):
@@ -49,7 +51,6 @@ class SocieteViewSet(viewsets.ViewSet):
         serializer = SocieteSerializer(page, many=True)
 
         return paginator.get_paginated_response(serializer.data)
-
 
     @action(detail=False, methods=["get"], url_path="(?P<societe_id>[^/.]+)/months")
     def months(self, request, societe_id=None):
@@ -137,6 +138,7 @@ def ensure_company_months(company, year=None):
             month=month,
             defaults={"status": "OPEN"},
         )
+
 
 @receiver(post_save, sender=Societe)
 def create_months_for_new_societe(sender, instance, created, **kwargs):

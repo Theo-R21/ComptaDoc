@@ -29,7 +29,7 @@ export default function Documents() {
     const [openUpload, setOpenUpload] = useState(false);
     const {user} = useCurrentUser();
 
-    const fetchSocietes = async (page = pageIndex,searchTerm = debouncedSearch) => {
+    const fetchSocietes = async (page = pageIndex, searchTerm = debouncedSearch) => {
         setLoading(true);
         try {
             const url = new URL("/societe/", window.location.origin);
@@ -88,14 +88,14 @@ export default function Documents() {
 
                     <div className="flex items-center gap-3">
                         {hasRole(user, ["comptable"]) && (
-                        <Button
-                            variant="calltoaction1"
-                            className="flex items-center gap-2 font-medium text-sm px-4 py-2 rounded-lg"
-                            onClick={() => setOpenUpload(true)}
-                        >
-                            <FaPlus className="w-4 h-4"/>
-                            <span>Société</span>
-                        </Button>
+                            <Button
+                                variant="calltoaction1"
+                                className="flex items-center gap-2 font-medium text-sm px-4 py-2 rounded-lg"
+                                onClick={() => setOpenUpload(true)}
+                            >
+                                <FaPlus className="w-4 h-4"/>
+                                <span>Société</span>
+                            </Button>
                         )}
 
                         <p className="text-sm font-medium text-primary1 whitespace-nowrap">
@@ -207,14 +207,16 @@ export default function Documents() {
                 />
 
             </main>
-            <AddSocieeteModal
-                open={openUpload}
-                onOpenChange={setOpenUpload}
-                onSocieteCreated={() => {
-                    setPageIndex(0);
-                    fetchSocietes(0, debouncedSearch);
-                }}
-            />
+            {hasRole(user, ["comptable"]) && (
+                <AddSocieeteModal
+                    open={openUpload}
+                    onOpenChange={setOpenUpload}
+                    onSocieteCreated={() => {
+                        setPageIndex(0);
+                        fetchSocietes(0, debouncedSearch);
+                    }}
+                />
+            )}
         </>
     );
 }

@@ -25,7 +25,7 @@ class DocumentsPagination(PageNumberPagination):
 
 
 class DocumentsViewSet(viewsets.ViewSet):
-    permission_classes = [IsComptableOrClient, permissions.IsAuthenticatedOrReadOnly]
+    permission_classes = [IsComptableOrClient]
     parser_classes = [JSONParser, MultiPartParser, FormParser]
     filter_backends = [filters.SearchFilter]
     search_fields = ["nom", "date_publication"]

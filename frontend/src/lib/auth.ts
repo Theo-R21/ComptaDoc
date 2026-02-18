@@ -4,7 +4,7 @@ export async function getCurrentUser() {
     const cookieStore = cookies();
     const cookieHeader = cookieStore.toString();
 
-    const res = await fetch(`http://host.docker.internal:8000/auth/users/me/`, {
+    const res = await fetch(`${process.env.API_URL}/auth/users/me/`, {
         headers: {
             Cookie: cookieHeader,
         },
