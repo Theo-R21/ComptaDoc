@@ -1,7 +1,8 @@
 from rest_framework.permissions import BasePermission
 
+
 class HasRole(BasePermission):
-    allowed_roles = []
+    allowed_roles = set()   # plus performant que list
 
     def has_permission(self, request, view):
         user = request.user
@@ -12,10 +13,16 @@ class HasRole(BasePermission):
         if user.is_superuser:
             return True
 
-        return user.role in self.allowed_roles
+        return getattr(user, "role", None) in self.allowed_roles
+
 
 class IsComptable(HasRole):
-    allowed_roles = ["comptable"]
+    allowed_roles = {"comptable"}
 
-class IsUser(HasRole):
-    allowed_roles = ["user"]
+
+class IsClient(HasRole):
+    allowed_roles = {"client"}
+
+
+class IsComptableOrClient(HasRole):
+    allowed_roles = {"comptable", "client"}

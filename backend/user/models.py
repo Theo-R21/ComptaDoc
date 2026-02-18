@@ -21,3 +21,6 @@ class User(AbstractUser):
         if timezone.now() > self.reset_code_expires_at:
             return False
         return self.reset_code == code
+
+    def has_role(self, role_name):
+        return self.role == role_name

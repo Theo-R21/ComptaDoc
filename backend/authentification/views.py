@@ -37,7 +37,7 @@ class CustomTokenObtainPairView(TokenObtainPairView):
                 value=data["access"],
                 httponly=True,
                 secure=False,
-                samesite="Strict",
+                samesite="Lax",
                 path="/",
             )
             res.set_cookie(
@@ -45,7 +45,7 @@ class CustomTokenObtainPairView(TokenObtainPairView):
                 value=data["refresh"],
                 httponly=True,
                 secure=False,
-                samesite="Strict",
+                samesite="Lax",
                 path="/",
             )
             return res
@@ -71,7 +71,7 @@ class CustomTokenRefreshView(TokenRefreshView):
             value=data["access"],
             httponly=True,
             secure=False,
-            samesite="Strict",
+            samesite="Lax",
             path="/",
         )
         return res
@@ -81,8 +81,8 @@ class LogoutView(APIView):
     def post(self, request):
         response = Response({"detail": "Logout successful"}, status=status.HTTP_200_OK)
 
-        response.delete_cookie("access", samesite="Strict")
-        response.delete_cookie("refresh", samesite="Strict")
+        response.delete_cookie("access", samesite="Lax")
+        response.delete_cookie("refresh", samesite="Lax")
 
         return response
 
@@ -104,6 +104,7 @@ class MeView(APIView):
             "last_name": user.last_name,
             "email": user.email,
             "is_superuser": user.is_superuser,
+            "role": user.role,
             "societe_id": societe_id
         })
 

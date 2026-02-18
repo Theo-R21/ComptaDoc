@@ -5,22 +5,10 @@ import UserDropdown from "@/src/app/components/dropdown";
 import {MdOutlineDashboard} from "react-icons/md";
 import {RiFoldersLine, RiGroup2Line} from "react-icons/ri";
 import {hasRole} from "@/src/lib/permissions";
-import {useRouter} from "next/navigation";
 
 export default function Navbar() {
     const {user} = useCurrentUser();
-    const router = useRouter();
     if (!user) return null;
-    console.log(user)
-    const handleDroit = () => {
-        if (!user) return;
-
-        if (user.role === "comptable" || user.is_superuser) {
-            router.push("/documents/comptable");
-        } else {
-            router.push(`/documents/societe/${user.societe_id}/`);
-        }
-    };
 
     return (
 
@@ -36,13 +24,11 @@ export default function Navbar() {
                     <span className="max-md:hidden">Dashboard</span>
                 </Link>
 
-                 <button
-                    onClick={handleDroit}
-                    className="flex items-center gap-2 rounded-md px-3 py-2 hover:bg-primary2 cursor-pointer transition max-md:justify-center text-left"
-                >
+                 <Link href="/documents/societe"
+                    className="flex items-center gap-2 rounded-md px-3 py-2 hover:bg-primary2 cursor-pointer transition max-md:justify-center text-left">
                     <RiFoldersLine className="text-calltoaction1 text-2xl" />
                     <span className="max-md:hidden">Documents</span>
-                </button>
+                </Link>
 
                 {hasRole(user, ["comptable"]) && (
                     <Link href="/gestion"

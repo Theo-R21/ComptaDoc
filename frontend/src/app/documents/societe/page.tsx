@@ -11,7 +11,9 @@ import {useDebounce} from "@/src/hook/useDebounce";
 import Pagination from "@/src/app/components/pagination";
 import Button from "@/src/app/components/button";
 import {FaPlus} from "react-icons/fa6";
-import {AddSocieeteModal} from "@/src/app/documents/comptable/AddSocieeteModal";
+import {AddSocieeteModal} from "@/src/app/documents/societe/AddSocieeteModal";
+import {useCurrentUser} from "@/src/hook/useCurrent";
+import {hasRole} from "@/src/lib/permissions";
 
 
 export default function Documents() {
@@ -25,20 +27,26 @@ export default function Documents() {
     const [search, setSearch] = useState("");
     const debouncedSearch = useDebounce(search);
     const [openUpload, setOpenUpload] = useState(false);
+    const {user} = useCurrentUser();
 
     const fetchSocietes = async (page = pageIndex, searchTerm = debouncedSearch) => {
         setLoading(true);
         try {
             const url = new URL("/societe/", window.location.origin);
+
             url.searchParams.set("page", (page + 1).toString());
             url.searchParams.set("page_size", pageSize.toString());
-            if (searchTerm) url.searchParams.set("search", searchTerm);
+
+            if (searchTerm) {
+                url.searchParams.set("search", searchTerm);
+            }
 
             const res = await apiFetch(url.pathname + "?" + url.searchParams.toString());
             const json = await res.json();
 
             setData(json.results);
             setTotalCount(json.count);
+
         } catch (err) {
             console.error("Erreur API :", err);
         } finally {
@@ -79,14 +87,16 @@ export default function Documents() {
                     </div>
 
                     <div className="flex items-center gap-3">
-                        <Button
-                            variant="calltoaction1"
-                            className="flex items-center gap-2 font-medium text-sm px-4 py-2 rounded-lg"
-                            onClick={() => setOpenUpload(true)}
-                        >
-                            <FaPlus className="w-4 h-4"/>
-                            <span>Société</span>
-                        </Button>
+                        {hasRole(user, ["comptable"]) && (
+                            <Button
+                                variant="calltoaction1"
+                                className="flex items-center gap-2 font-medium text-sm px-4 py-2 rounded-lg"
+                                onClick={() => setOpenUpload(true)}
+                            >
+                                <FaPlus className="w-4 h-4"/>
+                                <span>Société</span>
+                            </Button>
+                        )}
 
                         <p className="text-sm font-medium text-primary1 whitespace-nowrap">
                             Affichage :
@@ -197,14 +207,16 @@ export default function Documents() {
                 />
 
             </main>
-            <AddSocieeteModal
-                open={openUpload}
-                onOpenChange={setOpenUpload}
-                onSocieteCreated={() => {
-                    setPageIndex(0);
-                    fetchSocietes(0, debouncedSearch);
-                }}
-            />
+            {hasRole(user, ["comptable"]) && (
+                <AddSocieeteModal
+                    open={openUpload}
+                    onOpenChange={setOpenUpload}
+                    onSocieteCreated={() => {
+                        setPageIndex(0);
+                        fetchSocietes(0, debouncedSearch);
+                    }}
+                />
+            )}
         </>
     );
 }
