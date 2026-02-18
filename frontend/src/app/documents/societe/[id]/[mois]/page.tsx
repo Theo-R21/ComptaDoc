@@ -73,48 +73,49 @@ export default function Page() {
         fetchTypes();
     }, []);
 
-    useEffect(() => {
+    const fetchDocument = async (page = pageIndex, searchTerm = debouncedSearch) => {
+        setLoading(true);
         const controller = new AbortController();
+        try {
+            const url = new URL(
+                `/documents/${id}/months/${monthId}/`,
+                window.location.origin
+            );
 
-        const fetchData = async () => {
-            setLoading(true);
-            try {
-                const url = new URL(
-                    `/documents/${id}/months/${monthId}/`,
-                    window.location.origin
-                );
+            url.searchParams.set("page", String(pageIndex + 1));
+            url.searchParams.set("page_size", String(pageSize));
 
-                url.searchParams.set("page", String(pageIndex + 1));
-                url.searchParams.set("page_size", String(pageSize));
-
-                if (debouncedSearch) {
-                    url.searchParams.set("search", debouncedSearch);
-                }
-
-                if (selectedType) {
-                    url.searchParams.set("type", selectedType);
-                }
-
-                const res = await apiFetch(
-                    url.pathname + "?" + url.searchParams.toString(),
-                    {signal: controller.signal}
-                );
-
-                const json = await res.json();
-                setData(json.results);
-                setTotalCount(json.count);
-            } catch (err: any) {
-                if (err.name !== "AbortError") {
-                    console.error(err);
-                }
-            } finally {
-                setLoading(false);
+            if (debouncedSearch) {
+                url.searchParams.set("search", debouncedSearch);
             }
-        };
 
-        fetchData();
+            if (selectedType) {
+                url.searchParams.set("type", selectedType);
+            }
+
+            const res = await apiFetch(
+                url.pathname + "?" + url.searchParams.toString(),
+                {signal: controller.signal}
+            );
+
+            const json = await res.json();
+            setData(json.results);
+            setTotalCount(json.count);
+        } catch (err: any) {
+            if (err.name !== "AbortError") {
+                console.error(err);
+            }
+        } finally {
+            setLoading(false);
+        }
         return () => controller.abort();
-    }, [pageIndex, pageSize, debouncedSearch, id, monthId, selectedType]);
+
+    };
+
+
+    useEffect(() => {
+        fetchDocument(pageIndex, debouncedSearch);
+    }, [pageIndex, debouncedSearch]);
 
     const downloadPDF = useCallback(async (documentId: number, filename: string) => {
         const response = await apiFetch(`/documents/${documentId}/download/`, {
@@ -238,7 +239,7 @@ export default function Page() {
                             value={selectedType ?? ""}
                             onChange={(e) => setSelectedType(e.target.value)}
                         >
-                            <option value="null" selected>Tout les types</option>
+                            <option value="null">Tout les types</option>
                             {types.map((item) => (
                                 <option key={item.id} value={item.id}>
                                     {item.nom}
@@ -349,6 +350,10 @@ export default function Page() {
                 societeId={id}
                 types={types}
                 monthId={monthId}
+                onDocumentUploaded={() => {
+                    setPageIndex(0);
+                    fetchDocument(0, debouncedSearch);
+                }}
             />
             <PdfViewerModal
                 open={open}
