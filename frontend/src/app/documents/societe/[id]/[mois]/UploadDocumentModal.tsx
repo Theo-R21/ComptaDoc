@@ -76,7 +76,7 @@ export function UploadDocumentModal({
                 method: "POST",
                 body: formData,
             })
-
+            if (!res) return
             if (!res.ok) {
                 const json = await res.json()
                 setErrors({
@@ -95,8 +95,14 @@ export function UploadDocumentModal({
             onOpenChange(false)
             if (onDocumentUploaded) onDocumentUploaded();
 
-        } catch (err: any) {
-            console.error(err)
+        } catch (err: unknown) {
+            if (err instanceof DOMException && err.name === "AbortError") {
+                console.error(err.message);
+            } else if (err instanceof Error) {
+                console.error(err.message);
+            } else {
+                console.error("Erreur inconnue", err);
+            }
         } finally {
             setLoading(false)
         }

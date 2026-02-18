@@ -39,9 +39,10 @@ export default function Page() {
     const [downloading, setDownloading] = useState(false);
 
     const allSelected = useMemo(
-        () => data.length > 0 && data.every(d => selectedIds.includes(d.id)),
+        () => (data?.length || 0) > 0 && data.every(d => selectedIds.includes(d.id)),
         [data, selectedIds]
     );
+
 
     const toggleAll = useCallback(() => {
         setSelectedIds(allSelected ? [] : data.map(d => d.id));
@@ -64,6 +65,7 @@ export default function Page() {
         const fetchTypes = async () => {
             try {
                 const res = await apiFetch("/documents/types/");
+                if (!res) return;
                 const json = await res.json();
                 setTypes(Array.isArray(json) ? json : []);
             } catch {
@@ -95,15 +97,20 @@ export default function Page() {
 
             const res = await apiFetch(
                 url.pathname + "?" + url.searchParams.toString(),
-                {signal: controller.signal}
+                {signal: controller.signal},
+                router
             );
-
+            if (!res) return;
             const json = await res.json();
             setData(json.results);
             setTotalCount(json.count);
-        } catch (err: any) {
-            if (err.name !== "AbortError") {
-                console.error(err);
+        } catch (err: unknown) {
+            if (err instanceof DOMException && err.name === "AbortError") {
+                console.error(err.message);
+            } else if (err instanceof Error) {
+                console.error(err.message);
+            } else {
+                console.error("Erreur inconnue", err);
             }
         } finally {
             setLoading(false);
@@ -118,14 +125,13 @@ export default function Page() {
     }, [pageIndex, debouncedSearch]);
 
     const downloadPDF = useCallback(async (documentId: number, filename: string) => {
-        const response = await apiFetch(`/documents/${documentId}/download/`, {
+        const res = await apiFetch(`/documents/${documentId}/download/`, {
             method: "GET",
             credentials: "include",
         });
+        if (!res) return;
 
-        if (!response.ok) return;
-
-        const blob = await response.blob();
+        const blob = await res.blob();
         if (blob.type === "text/html") return;
 
         const url = URL.createObjectURL(blob);
@@ -143,16 +149,16 @@ export default function Page() {
 
         setDownloading(true);
         try {
-            const response = await apiFetch("/documents/download-multiple/", {
+            const res = await apiFetch("/documents/download-multiple/", {
                 method: "POST",
                 headers: {"Content-Type": "application/json"},
                 credentials: "include",
                 body: JSON.stringify({ids: selectedIds}),
             });
 
-            if (!response.ok) return;
+            if (!res) return;
 
-            const blob = await response.blob();
+            const blob = await res.blob();
             const url = URL.createObjectURL(blob);
             const a = document.createElement("a");
             a.href = url;
@@ -288,21 +294,15 @@ export default function Page() {
                         </tr>
                         </thead>
                         <tbody className="divide-y">
-                        {data.length === 0 ? (
+                        {(data?.length === 0 ? (
                             <tr>
-                                <td
-                                    colSpan={5}
-                                    className="px-6 py-6 text-center text-gray-400 italic"
-                                >
+                                <td colSpan={5} className="px-6 py-6 text-center text-gray-400 italic">
                                     Aucun document disponible
                                 </td>
                             </tr>
                         ) : (
-                            data.map((item, index) => (
-                                <tr
-                                    key={index}
-                                    className=" hover:bg-gray-50 transition"
-                                >
+                            data?.map((item, index) => (
+                                <tr key={index} className=" hover:bg-gray-50 transition">
                                     <td className="px-6 py-4 ">
                                         <input
                                             type="checkbox"
@@ -323,14 +323,23 @@ export default function Page() {
                                             : "-"}
                                     </td>
                                     <td className="px-6 py-4 space-x-2 text-xl">
-                                        <button className="hover:text-black cursor-pointer text-primary2"
-                                                onClick={() => openPdf(item.path)}><FaRegEye/></button>
-                                        <button className="hover:text-black cursor-pointer text-primary2"
-                                                onClick={() => downloadPDF(item.id, item.nom)}><TbDownload/></button>
+                                        <button
+                                            className="hover:text-black cursor-pointer text-primary2"
+                                            onClick={() => openPdf(item.path)}
+                                        >
+                                            <FaRegEye/>
+                                        </button>
+                                        <button
+                                            className="hover:text-black cursor-pointer text-primary2"
+                                            onClick={() => downloadPDF(item.id, item.nom)}
+                                        >
+                                            <TbDownload/>
+                                        </button>
                                     </td>
                                 </tr>
                             ))
-                        )}
+                        ))}
+
                         </tbody>
                     </table>
 
@@ -348,8 +357,8 @@ export default function Page() {
                 open={openUpload}
                 onOpenChange={setOpenUpload}
                 societeId={id}
-                types={types}
                 monthId={monthId}
+                types={types}
                 onDocumentUploaded={() => {
                     setPageIndex(0);
                     fetchDocument(0, debouncedSearch);

@@ -35,13 +35,18 @@ export function AddSocieeteModal({
                     setLoading(true);
                     try {
                         const res = await apiFetch("/user/");
+                        if (!res) return;
                         const json = await res.json();
 
-
                         setUsers(json.results);
-                    } catch
-                        (error) {
-                        console.error("Erreur API :", error);
+                    } catch (err: unknown) {
+                        if (err instanceof DOMException && err.name === "AbortError") {
+                            console.error(err.message);
+                        } else if (err instanceof Error) {
+                            console.error(err.message);
+                        } else {
+                            console.error("Erreur inconnue", err);
+                        }
                     } finally {
                         setLoading(false);
                     }
@@ -87,6 +92,7 @@ export function AddSocieeteModal({
                     ID_SCTE: scte,
                 }),
             });
+            if (!res) return;
 
             if (!res.ok) {
                 const json = await res.json()

@@ -3,21 +3,22 @@ import os
 import zipfile
 
 from core import settings
+from core.permission import IsComptableOrClient
 from django.http import FileResponse, HttpResponse
 from django.shortcuts import get_object_or_404, get_list_or_404
 from documents.models import SocieteDocument, TypeDocument
-from drf_yasg import openapi
-from drf_yasg.utils import swagger_auto_schema
-from rest_framework import viewsets, permissions, filters, status
-from rest_framework.decorators import action
-from rest_framework.pagination import PageNumberPagination
-from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
-from rest_framework.response import Response
-from core.permission import IsComptableOrClient
-
 from documents.serializers.document import DocumentsSerializer
 from documents.serializers.type_document import TypeDocumentsSerializer
 from documents.serializers.upload import SocieteDocumentUploadSerializer
+from drf_yasg import openapi
+from drf_yasg.utils import swagger_auto_schema
+from rest_framework import viewsets, filters, status
+from rest_framework.decorators import action
+from rest_framework.exceptions import PermissionDenied
+from rest_framework.pagination import PageNumberPagination
+from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
+from rest_framework.response import Response
+from societe.models import Societe, SocieteMonth
 
 
 class DocumentsPagination(PageNumberPagination):
@@ -67,6 +68,20 @@ class DocumentsViewSet(viewsets.ViewSet):
     )
     @action(detail=True, methods=["get"], url_path=r"months/(?P<mois>[^/.]+)")
     def documents_by_month(self, request, pk=None, mois=None):
+        user = request.user
+        try:
+            societe = Societe.objects.get(pk=pk)
+        except Societe.DoesNotExist:
+            raise PermissionDenied("Société introuvable ou accès refusé")
+
+        try:
+            societe_month = SocieteMonth.objects.get(pk=mois, societe=societe)
+        except SocieteMonth.DoesNotExist:
+            raise PermissionDenied("Mois introuvable pour cette société")
+
+        if not (user.is_superuser or user.has_role("comptable") or societe.user == user):
+            raise PermissionDenied("Vous n'avez pas accès à cette société")
+
         queryset = SocieteDocument.objects.filter(
             societe_id=pk,
             mois_id=mois

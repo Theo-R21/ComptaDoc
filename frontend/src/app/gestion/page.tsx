@@ -36,13 +36,20 @@ export default function Gestion() {
             url.searchParams.set("page_size", pageSize.toString());
             if (searchTerm) url.searchParams.set("search", searchTerm);
 
-            const res = await apiFetch(url.pathname + "?" + url.searchParams.toString());
+            const res = await apiFetch(url.pathname + "?" + url.searchParams.toString(), {}, router);
+            if (!res) return;
             const json = await res.json();
 
             setUsers(json.results);
             setTotalCount(json.count);
-        } catch (err) {
-            console.error("Erreur API :", err);
+        } catch (err: unknown) {
+            if (err instanceof DOMException && err.name === "AbortError") {
+                console.error(err.message);
+            } else if (err instanceof Error) {
+                console.error(err.message);
+            } else {
+                console.error("Erreur inconnue", err);
+            }
         } finally {
             setLoading(false);
         }

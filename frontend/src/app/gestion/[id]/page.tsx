@@ -42,7 +42,7 @@ export default function Gestion() {
         phone?: string;
     }>({});
 
-     const validate = () => {
+    const validate = () => {
         const result = userEditSchema.safeParse(form)
 
         if (!result.success) {
@@ -61,7 +61,8 @@ export default function Gestion() {
             try {
                 const res = await apiFetch(`/user/${id}/`, {
                     signal: controller.signal,
-                });
+                }, router);
+                if (!res) return;
 
                 const json = await res.json();
 
@@ -85,8 +86,14 @@ export default function Gestion() {
                     company_name: json.company_name ?? "",
                     phone: json.phone ?? "",
                 });
-            } catch (err: never) {
-                if (err.name !== "AbortError") console.error(err);
+            } catch (err: unknown) {
+                if (err instanceof DOMException && err.name === "AbortError") {
+                    console.error(err.message);
+                } else if (err instanceof Error) {
+                    console.error(err.message);
+                } else {
+                    console.error("Erreur inconnue", err);
+                }
             } finally {
                 setLoading(false);
             }
@@ -116,7 +123,7 @@ export default function Gestion() {
                 },
                 body: JSON.stringify(form),
             });
-
+            if (!res) return;
             const json = await res.json();
 
             if (!res.ok) {
@@ -156,7 +163,7 @@ export default function Gestion() {
                 },
                 body: JSON.stringify({actif}),
             });
-
+            if (!res) return;
             if (!res.ok) throw new Error();
         } catch (err) {
             console.error(err);

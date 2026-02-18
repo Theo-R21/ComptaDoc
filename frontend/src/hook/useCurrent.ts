@@ -1,5 +1,5 @@
 import { createContext, useContext } from "react";
-import {UserModel} from "@/app/models/user/user.model";
+import {UserModel} from "@/src/models/user/user.model";
 
 
 export type CurrentUserContextType = {

@@ -41,7 +41,8 @@ export default function Documents() {
                 url.searchParams.set("search", searchTerm);
             }
 
-            const res = await apiFetch(url.pathname + "?" + url.searchParams.toString());
+            const res = await apiFetch(url.pathname + "?" + url.searchParams.toString(), {}, router);
+            if (!res) return;
             const json = await res.json();
 
             setData(json.results);

@@ -1,19 +1,20 @@
 import datetime
 
+from core.permission import IsComptableOrClient, IsComptable
+from core.settings import env
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
-from rest_framework import viewsets, permissions, filters, status
+from rest_framework import viewsets, filters, status
 from rest_framework.decorators import action
+from rest_framework.exceptions import PermissionDenied
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 from societe.models import Societe, SocieteMonth
-from user.models import User
 from societe.serializers.societe import SocieteSerializer
 from societe.serializers.societe_month import SocieteMonthSerializer
-from core.settings import env
-from core.permission import IsComptableOrClient, IsComptable
+from user.models import User
 
 
 class SocietePagination(PageNumberPagination):
@@ -99,7 +100,14 @@ class SocieteViewSet(viewsets.ViewSet):
     )
     @action(detail=False, methods=["get"], url_path="(?P<societe_id>[^/.]+)/months")
     def months(self, request, societe_id=None):
-        societe = Societe.objects.get(pk=societe_id)
+        user = request.user
+        try:
+            societe = Societe.objects.get(pk=societe_id)
+        except Societe.DoesNotExist:
+            raise PermissionDenied("Société introuvable ou accès refusé")
+
+        if not (user.is_superuser or user.has_role("comptable") or societe.user == user):
+            raise PermissionDenied("Vous n'avez pas accès à cette société")
 
         year = int(
             request.query_params.get("year", datetime.datetime.now().year)
