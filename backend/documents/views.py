@@ -6,6 +6,8 @@ from core import settings
 from django.http import FileResponse, HttpResponse
 from django.shortcuts import get_object_or_404, get_list_or_404
 from documents.models import SocieteDocument, TypeDocument
+from drf_yasg import openapi
+from drf_yasg.utils import swagger_auto_schema
 from rest_framework import viewsets, permissions, filters, status
 from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
@@ -35,6 +37,34 @@ class DocumentsViewSet(viewsets.ViewSet):
             queryset = backend().filter_queryset(request, queryset, self)
         return queryset
 
+    @swagger_auto_schema(
+        operation_description="Liste des documents d'une société pour un mois donné.",
+        manual_parameters=[
+            openapi.Parameter(
+                'type',
+                openapi.IN_QUERY,
+                description="Filtrer par type de document",
+                type=openapi.TYPE_INTEGER,
+                example=1
+            ),
+            openapi.Parameter(
+                'search',
+                openapi.IN_QUERY,
+                description="Recherche par nom",
+                type=openapi.TYPE_STRING,
+                example="facture"
+            ),
+            openapi.Parameter(
+                'page',
+                openapi.IN_QUERY,
+                type=openapi.TYPE_INTEGER,
+                example=1
+            ),
+        ],
+        responses={
+            200: DocumentsSerializer(many=True)
+        }
+    )
     @action(detail=True, methods=["get"], url_path=r"months/(?P<mois>[^/.]+)")
     def documents_by_month(self, request, pk=None, mois=None):
         queryset = SocieteDocument.objects.filter(
@@ -53,6 +83,12 @@ class DocumentsViewSet(viewsets.ViewSet):
 
         return paginator.get_paginated_response(serializer.data)
 
+    @swagger_auto_schema(
+        operation_description="Liste des types de documents disponibles.",
+        responses={
+            200: TypeDocumentsSerializer(many=True)
+        }
+    )
     @action(detail=False, methods=["get"], url_path="types")
     def type_doc(self, request):
         queryset = TypeDocument.objects.all().order_by("nom")
@@ -60,6 +96,21 @@ class DocumentsViewSet(viewsets.ViewSet):
 
         return Response(serializer.data)
 
+    @swagger_auto_schema(
+        operation_description="Upload d'un document (multipart/form-data).",
+        request_body=SocieteDocumentUploadSerializer,
+        responses={
+            201: openapi.Response(
+                description="Fichier téléversé",
+                examples={
+                    "application/json": {
+                        "detail": "Fichier téléversé avec succès"
+                    }
+                }
+            ),
+            400: "Erreur de validation"
+        }
+    )
     @action(detail=False, methods=["post"], url_path="upload")
     def upload_document(self, request):
         serializer = SocieteDocumentUploadSerializer(data=request.data)
@@ -68,6 +119,19 @@ class DocumentsViewSet(viewsets.ViewSet):
             return Response({"detail": "Fichier téléversé avec succès"}, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+    @swagger_auto_schema(
+        operation_description="Téléchargement d'un document PDF.",
+        responses={
+            200: openapi.Response(
+                description="Fichier PDF",
+                schema=openapi.Schema(
+                    type=openapi.TYPE_STRING,
+                    format="binary"
+                )
+            ),
+            404: "Document introuvable"
+        }
+    )
     @action(detail=True, methods=["get"], url_path="download")
     def download(self, request, pk=None):
         document = get_object_or_404(SocieteDocument, pk=pk)
@@ -79,6 +143,37 @@ class DocumentsViewSet(viewsets.ViewSet):
             content_type="application/pdf",
         )
 
+    @swagger_auto_schema(
+        operation_description="Téléchargement multiple de documents au format ZIP.",
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            required=["ids"],
+            properties={
+                "ids": openapi.Schema(
+                    type=openapi.TYPE_ARRAY,
+                    items=openapi.Items(type=openapi.TYPE_INTEGER),
+                    example=[1, 2, 3]
+                )
+            }
+        ),
+        responses={
+            200: openapi.Response(
+                description="Archive ZIP",
+                schema=openapi.Schema(
+                    type=openapi.TYPE_STRING,
+                    format="binary"
+                )
+            ),
+            400: openapi.Response(
+                description="Aucun document sélectionné",
+                examples={
+                    "application/json": {
+                        "error": "Aucun document sélectionné"
+                    }
+                }
+            )
+        }
+    )
     @action(detail=False, methods=["post"], url_path="download-multiple")
     def download_multiple(self, request):
         ids = request.data.get("ids", [])
