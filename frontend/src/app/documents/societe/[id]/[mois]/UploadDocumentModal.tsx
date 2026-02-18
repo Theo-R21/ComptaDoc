@@ -3,9 +3,9 @@
 import {Dialog, DialogContent, DialogHeader, DialogTitle,} from "@/src/app/components/ui/dialog"
 import {Upload} from "lucide-react"
 import Button from "@/src/app/components/button"
-import {useState} from "react"
+import {useEffect, useState} from "react"
 import {apiFetch} from "@/src/hook/userRefresh"
-import {TypeDocumentList} from "@/src/models/documents/documents.model"
+import {DocumentsList, TypeDocumentList} from "@/src/models/documents/documents.model"
 import Input from "@/src/app/components/input";
 import {formatZodErrors} from "@/src/lib/validation/helpers";
 import {documentCreateSchema} from "@/src/lib/validation/document.schema";
@@ -16,6 +16,7 @@ type UploadDocumentModalProps = {
     societeId: number
     monthId: number
     types: TypeDocumentList[]
+    onDocumentUploaded?: () => void;
 }
 
 export function UploadDocumentModal({
@@ -24,6 +25,7 @@ export function UploadDocumentModal({
                                         societeId,
                                         types,
                                         monthId,
+                                        onDocumentUploaded,
                                     }: UploadDocumentModalProps) {
     const [selectedType, setSelectedType] = useState<number | null>(null)
     const [file, setFile] = useState<File | null>(null)
@@ -91,6 +93,7 @@ export function UploadDocumentModal({
             setDocDate("")
             setSelectedType(null)
             onOpenChange(false)
+            if (onDocumentUploaded) onDocumentUploaded();
 
         } catch (err: any) {
             console.error(err)
