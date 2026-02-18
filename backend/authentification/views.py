@@ -17,11 +17,24 @@ from .serializers import CustomTokenObtainPairSerializer
 from user.models import User
 
 from societe.models import Societe
+from drf_yasg import openapi
+from drf_yasg.utils import swagger_auto_schema
 
 
 class CustomTokenObtainPairView(TokenObtainPairView):
     serializer_class = CustomTokenObtainPairSerializer
 
+    @swagger_auto_schema(
+        operation_description="Connexion utilisateur - obtention tokens JWT et cookies sécurisés.",
+        request_body=CustomTokenObtainPairSerializer,
+        responses={
+            200: openapi.Response(
+                description="Token d’accès et cookie défini",
+                examples={"application/json": {"success": True, "access": "eyJ..."}}
+            ),
+            401: "Échec d’authentification"
+        }
+    )
     def post(self, request, *args, **kwargs):
         response = super().post(request, *args, **kwargs)
 
@@ -54,6 +67,16 @@ class CustomTokenObtainPairView(TokenObtainPairView):
 
 
 class CustomTokenRefreshView(TokenRefreshView):
+    @swagger_auto_schema(
+        operation_description="Rafraîchissement du token via cookie refresh (HTTPOnly).",
+        responses={
+            200: openapi.Response(
+                description="Nouveau token d’accès",
+                examples={"application/json": {"access": "eyJ..."}}
+            ),
+            401: "Refresh token manquant ou invalide"
+        }
+    )
     def post(self, request, *args, **kwargs):
         refresh_token = request.COOKIES.get("refresh")
 
@@ -78,6 +101,15 @@ class CustomTokenRefreshView(TokenRefreshView):
 
 
 class LogoutView(APIView):
+    @swagger_auto_schema(
+        operation_description="Déconnexion et suppression des cookies d’authentification.",
+        responses={
+            200: openapi.Response(
+                description="Déconnexion réussie",
+                examples={"application/json": {"detail": "Logout successful"}}
+            )
+        }
+    )
     def post(self, request):
         response = Response({"detail": "Logout successful"}, status=status.HTTP_200_OK)
 
@@ -89,6 +121,26 @@ class LogoutView(APIView):
 class MeView(APIView):
     permission_classes = [IsAuthenticated]
 
+    @swagger_auto_schema(
+        operation_description="Récupération des informations de l’utilisateur connecté.",
+        responses={
+            200: openapi.Response(
+                description="Informations utilisateur",
+                examples={
+                    "application/json": {
+                        "id": 1,
+                        "username": "jdoe",
+                        "first_name": "John",
+                        "last_name": "Doe",
+                        "email": "jdoe@example.com",
+                        "is_superuser": False,
+                        "role": "client",
+                        "societe_id": 5
+                    }
+                }
+            )
+        }
+    )
     def get(self, request):
         user = request.user
         societe = Societe.objects.filter(user=user)
@@ -109,6 +161,22 @@ class MeView(APIView):
         })
 
 class ForgotPasswordView(APIView):
+    @swagger_auto_schema(
+        operation_description="Demande d’envoi d’un code OTP pour réinitialisation de mot de passe.",
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            required=["email"],
+            properties={
+                "email": openapi.Schema(type=openapi.TYPE_STRING, format="email", example="user@example.com")
+            }
+        ),
+        responses={
+            200: openapi.Response(description="OTP envoyé",
+                                  examples={"application/json": {"message": "OTP envoyé par email"}}),
+            400: openapi.Response(description="Email non trouvé",
+                                  examples={"application/json": {"message": "Email non trouvé"}})
+        }
+    )
     def post(self, request):
         email = request.data.get("email")
 
@@ -134,6 +202,26 @@ class ForgotPasswordView(APIView):
 
 
 class VerifyResetCodeView(APIView):
+    @swagger_auto_schema(
+        operation_description="Vérification du code OTP envoyé à l’email.",
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            required=["email", "code"],
+            properties={
+                "email": openapi.Schema(type=openapi.TYPE_STRING, format="email", example="user@example.com"),
+                "code": openapi.Schema(type=openapi.TYPE_STRING, example="123456")
+            }
+        ),
+        responses={
+            200: openapi.Response(
+                description="Code validé avec reset_token renvoyé",
+                examples={"application/json": {"message": "Code validé", "reset_token": "token_abcdef123"}}
+            ),
+            400: openapi.Response(description="Code ou email invalide", examples={
+                "application/json": {"message": "Code invalide ou expiré"}
+            }),
+        }
+    )
     def post(self, request):
         email = request.data.get("email")
         code = request.data.get("code")
@@ -157,6 +245,25 @@ class VerifyResetCodeView(APIView):
         }, status=200)
 
 class ResetPasswordView(APIView):
+    @swagger_auto_schema(
+        operation_description="Réinitialisation du mot de passe avec token et nouveaux mots de passe.",
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            required=["reset_token", "password1", "password2"],
+            properties={
+                "reset_token": openapi.Schema(type=openapi.TYPE_STRING, example="token_abcdef123"),
+                "password1": openapi.Schema(type=openapi.TYPE_STRING, format="password", example="NewPass123!"),
+                "password2": openapi.Schema(type=openapi.TYPE_STRING, format="password", example="NewPass123!")
+            }
+        ),
+        responses={
+            200: openapi.Response(description="Mot de passe changé avec succès",
+                                  examples={"application/json": {"message": "Mot de passe changé avec succès"}}),
+            400: openapi.Response(description="Erreurs de validation", examples={
+                "application/json": {"message": "Les mots de passe ne correspondent pas."}
+            }),
+        }
+    )
     def post(self, request):
         reset_token = request.data.get('reset_token')
         new_password1 = request.data.get('password1')
@@ -183,6 +290,44 @@ class ResetPasswordView(APIView):
 class RegisterView(APIView):
     permission_classes = [AllowAny]
 
+    @swagger_auto_schema(
+        operation_description="Création d’un nouvel utilisateur.",
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            required=["email", "password1", "password2"],
+            properties={
+                "first_name": openapi.Schema(type=openapi.TYPE_STRING, example="John"),
+                "last_name": openapi.Schema(type=openapi.TYPE_STRING, example="Doe"),
+                "email": openapi.Schema(type=openapi.TYPE_STRING, format="email", example="john@example.com"),
+                "phone": openapi.Schema(type=openapi.TYPE_STRING, example="+33123456789"),
+                "societe": openapi.Schema(type=openapi.TYPE_STRING, example="Ma Société"),
+                "password1": openapi.Schema(type=openapi.TYPE_STRING, format="password", example="Pass1234!"),
+                "password2": openapi.Schema(type=openapi.TYPE_STRING, format="password", example="Pass1234!"),
+            }
+        ),
+        responses={
+            201: openapi.Response(
+                description="Utilisateur créé",
+                examples={
+                    "application/json": {
+                        "message": "Utilisateur créé avec succès.",
+                        "user": {
+                            "id": 12,
+                            "username": "john@example.com",
+                            "email": "john@example.com",
+                            "first_name": "John",
+                            "last_name": "Doe",
+                            "phone": "+33123456789",
+                            "societe": "Ma Société"
+                        }
+                    }
+                }
+            ),
+            400: openapi.Response(description="Erreur de validation", examples={
+                "application/json": {"message": "Tous les champs sont obligatoires."}
+            }),
+        }
+    )
     def post(self, request):
         data = request.data
 
