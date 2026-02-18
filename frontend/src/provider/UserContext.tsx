@@ -2,11 +2,13 @@
 import {useEffect, useState} from "react";
 import {UserModel} from "@/src/models/user/user.model";
 import {apiFetch} from "@/src/hook/userRefresh";
-import { CurrentUserContext } from "../hook/useCurrent";
+import {CurrentUserContext} from "../hook/useCurrent";
+import {useRouter} from "next/navigation";
 
 
 export function UserProvider({children}: { children: React.ReactNode }) {
     const [user, setUser] = useState<UserModel | null>(null);
+    const router = useRouter();
 
     async function fetchUser() {
         try {
@@ -32,7 +34,7 @@ export function UserProvider({children}: { children: React.ReactNode }) {
             console.error("Erreur logout:", err);
         } finally {
             setUser(null);
-            window.location.href = "/authentication";
+            router.push("/authentification");
         }
     }
 

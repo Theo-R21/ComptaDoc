@@ -1,6 +1,4 @@
 "use client";
-
-import {useRouter} from "next/navigation";
 import Image from "next/image";
 
 import {useCurrentUser} from "@/src/hook/useCurrent";
@@ -9,27 +7,12 @@ import {
     DropdownMenuContent,
     DropdownMenuItem,
     DropdownMenuLabel,
-    DropdownMenuSeparator, DropdownMenuTrigger
+    DropdownMenuSeparator,
+    DropdownMenuTrigger
 } from "@/src/app/components/ui/dropdown-menu"
-import {apiFetch} from "@/src/hook/userRefresh";
 
 export default function UserDropdown() {
-    const {user} = useCurrentUser();
-    const router = useRouter();
-
-    async function handleLogout() {
-        try {
-            await apiFetch(`/auth/logout/`, {
-                method: "POST",
-                credentials: "include",
-            });
-        } catch (err) {
-            console.error("Erreur logout:", err);
-        } finally {
-            router.refresh();
-            router.push("/authentification");
-        }
-    }
+    const {user, logout } = useCurrentUser();
 
     if (!user) return null;
 
@@ -66,7 +49,7 @@ export default function UserDropdown() {
                 </DropdownMenuItem>
                 <DropdownMenuSeparator/>
                 <DropdownMenuItem
-                    onClick={handleLogout}
+                    onClick={logout}
                     className="text-red-600 cursor-pointer"
                 >
                     <i className="ri-logout-box-line"></i>

@@ -104,14 +104,12 @@ export default function Societe() {
         <main className="flex-1 p-8 overflow-auto bg-gray-50">
             <header className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                    <h1 className="text-2xl font-bold text-primary1">
-                        Gestion des périodes
-                    </h1>
-                    <p className="text-sm text-primary2">
-                        Année fiscale & statut des mois
-                    </p>
-                    <p onClick={() => router.push(`/documents/societe`)}
-                        className="flex items-center mt-2 gap-2 cursor-pointer text-primary2 transition-all duration-300 hover:text-primary1 hover:translate-x-1">
+                    <h1 className="text-2xl font-bold text-primary1">Gestion des périodes</h1>
+                    <p className="text-sm text-primary2">Année fiscale & statut des mois</p>
+                    <p
+                        onClick={() => router.push(`/documents/societe`)}
+                        className="flex items-center mt-2 gap-2 cursor-pointer text-primary2 transition-all duration-300 hover:text-primary1 hover:translate-x-1"
+                    >
                         <FaArrowLeft/>
                         retour
                     </p>
@@ -123,9 +121,7 @@ export default function Societe() {
                         <select
                             className="bg-transparent text-sm font-medium text-secondary1 focus:outline-none"
                             value={selectedYear ?? ""}
-                            onChange={(e) =>
-                                setSelectedYear(Number(e.target.value))
-                            }
+                            onChange={(e) => setSelectedYear(Number(e.target.value))}
                         >
                             {years.map((year) => (
                                 <option key={year} value={year}>
@@ -140,9 +136,7 @@ export default function Societe() {
                         <select
                             className="bg-transparent text-sm font-medium text-secondary1 focus:outline-none"
                             value={statusFilter}
-                            onChange={(e) =>
-                                setStatusFilter(e.target.value)
-                            }
+                            onChange={(e) => setStatusFilter(e.target.value)}
                         >
                             <option value="ALL">Tous</option>
                             <option value="OPEN">Ouverts</option>
@@ -166,17 +160,15 @@ export default function Societe() {
                             onClick={isOpen ? () => goToMonth(item) : undefined}
                             onKeyDown={(e) => {
                                 if (!isOpen) return;
-
                                 if (e.key === "Enter" || e.key === " ") {
                                     e.preventDefault();
                                     goToMonth(item);
                                 }
                             }}
                             className={`group relative rounded-xl border p-5 transition-all
-                                ${
-                                isOpen
-                                    ? "bg-white border-primary2 shadow-md hover:shadow-lg cursor-pointer"
-                                    : "bg-gray-100 border-gray-200 opacity-80 cursor-default"
+            ${isOpen
+                                ? "bg-white border-primary2 shadow-md hover:shadow-lg cursor-pointer"
+                                : "bg-gray-100 border-gray-200 opacity-80 cursor-default"
                             } hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-primary1`}
                         >
                             {isOpen && (
@@ -189,56 +181,51 @@ export default function Societe() {
                                 </p>
                                 <p
                                     className={`mt-1 text-sm font-medium ${
-                                        isOpen
-                                            ? "text-calltoactionsuccess"
-                                            : "text-red-700"
+                                        isOpen ? "text-calltoactionsuccess" : "text-red-700"
                                     }`}
                                 >
-                                    {isOpen
-                                        ? "Période ouverte"
-                                        : "Période fermée"}
+                                    {isOpen ? "Période ouverte" : "Période fermée"}
                                 </p>
                             </div>
 
-                            <div className="flex items-center justify-between mt-6">
-                                <div
-                                    className="flex items-center gap-3 bg-primary3/60 rounded-full px-3 py-1"
-                                    onClick={(e) => e.stopPropagation()}
-                                >
+                            <div className="flex items-center mt-6">
+                                {hasRole(user, ["comptable"]) && (
                                     <div
-                                        className="flex items-center justify-center w-6 h-6 rounded-full bg-calltoaction1/20">
-                                        <FaLock
-                                            className={`text-xs ${
-                                                isOpen
-                                                    ? "text-secondary2/40"
-                                                    : "text-calltoaction2"
-                                            }`}
-                                        />
-                                    </div>
-
-                                    <Switch
-                                        checked={isOpen}
-                                        onCheckedChange={(checked) =>
-                                            handleChange(item, checked)
-                                        }
+                                        className="flex items-center gap-3 bg-primary3/60 rounded-full px-3 py-1"
                                         onClick={(e) => e.stopPropagation()}
-                                        className="data-[state=checked]:bg-calltoaction1 data-[state=unchecked]:bg-secondary2 transition-colors"
-                                    />
+                                    >
+                                        <div
+                                            className="flex items-center justify-center w-6 h-6 rounded-full bg-calltoaction1/20">
+                                            <FaLock
+                                                className={`text-xs ${
+                                                    isOpen ? "text-secondary2/40" : "text-calltoaction2"
+                                                }`}
+                                            />
+                                        </div>
 
-                                    <div
-                                        className="flex items-center justify-center w-6 h-6 rounded-full bg-primary1/40">
-                                        <FaLockOpen
-                                            className={`text-sm ${
-                                                isOpen
-                                                    ? "text-primary1"
-                                                    : "text-primary1/60"
-                                            }`}
+                                        <Switch
+                                            checked={isOpen}
+                                            onCheckedChange={(checked) => handleChange(item, checked)}
+                                            onClick={(e) => e.stopPropagation()}
+                                            className="data-[state=checked]:bg-calltoaction1 data-[state=unchecked]:bg-secondary2 transition-colors"
                                         />
-                                    </div>
-                                </div>
-                                <div
-                                    className={`p-2 rounded-lg transition ${isOpen ? "bg-primary3/60" : "cursor-not-allowed opacity-50"}`}>
 
+                                        <div
+                                            className="flex items-center justify-center w-6 h-6 rounded-full bg-primary1/40">
+                                            <FaLockOpen
+                                                className={`text-sm ${
+                                                    isOpen ? "text-primary1" : "text-primary1/60"
+                                                }`}
+                                            />
+                                        </div>
+                                    </div>
+                                )}
+
+                                <div
+                                    className={`ml-auto p-2 rounded-lg transition ${
+                                        isOpen ? "bg-primary3/60" : "cursor-not-allowed opacity-50"
+                                    }`}
+                                >
                                     <FaArrowRight className="text-primary2 transition-all group-hover:translate-x-1"/>
                                 </div>
                             </div>
@@ -247,5 +234,6 @@ export default function Societe() {
                 })}
             </div>
         </main>
+
     );
 }

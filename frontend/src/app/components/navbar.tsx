@@ -5,7 +5,6 @@ import UserDropdown from "@/src/app/components/dropdown";
 import {MdOutlineDashboard} from "react-icons/md";
 import {RiFoldersLine, RiGroup2Line} from "react-icons/ri";
 import {hasRole} from "@/src/lib/permissions";
-import {useRouter} from "next/navigation";
 
 export default function Navbar() {
     const {user} = useCurrentUser();
