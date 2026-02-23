@@ -17,7 +17,6 @@ export default function Navbar() {
 
         <aside className="sticky top-0 h-screen flex flex-col justify-between bg-primary1 shadow-lg w-64">
             <div className="flex items-center justify-center border-b border-primary2 max-md:justify-center">
-                {/* Logo avec texte — desktop */}
                 <Image
                     src={Logo1}
                     alt="SimplyLux"
@@ -25,7 +24,6 @@ export default function Navbar() {
                     height={40}
                     className="max-md:hidden"
                 />
-                {/* Logo icône seule — mobile */}
                 <Image
                     src={Logo2}
                     alt="SimplyLux"
