@@ -19,7 +19,6 @@ import Button from "@/src/app/components/button";
 export default function Gestion() {
     const params = useParams();
     const id = params.id;
-
     const router = useRouter();
 
     const [loading, setLoading] = useState(false);
@@ -49,15 +48,13 @@ export default function Gestion() {
     }>({});
 
     const validate = () => {
-        const result = userEditSchema.safeParse(form)
-
+        const result = userEditSchema.safeParse(form);
         if (!result.success) {
-            setErrors(formatZodErrors(result.error))
-            return false
+            setErrors(formatZodErrors(result.error));
+            return false;
         }
-
-        return true
-    }
+        return true;
+    };
 
     useEffect(() => {
         const controller = new AbortController();
@@ -114,12 +111,9 @@ export default function Gestion() {
         return () => controller.abort();
     }, [id, societePageIndex]);
 
-    const handleInputChange = (
-        e: React.ChangeEvent<HTMLInputElement>
-    ) => {
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const {name, value} = e.target;
         setForm((prev) => ({...prev, [name]: value}));
-        console.log(form)
     };
 
     const handleSaveUser = async () => {
@@ -130,9 +124,7 @@ export default function Gestion() {
         try {
             const res = await apiFetch(`/user/${id}/`, {
                 method: "PUT",
-                headers: {
-                    "Content-Type": "application/json",
-                },
+                headers: {"Content-Type": "application/json"},
                 body: JSON.stringify(form),
             });
             if (!res) return;
@@ -149,6 +141,12 @@ export default function Gestion() {
             }
 
             setUser(json);
+            setForm({
+                first_name: json.first_name ?? "",
+                last_name: json.last_name ?? "",
+                email: json.email ?? "",
+                phone: json.phone ?? "",
+            });
             setIsEditing(false);
             setErrors({});
         } catch (err) {
@@ -157,7 +155,6 @@ export default function Gestion() {
             setSavingUser(false);
         }
     };
-
 
     const handleToggleChange = async (
         userId: string | Array<string> | undefined,
@@ -170,9 +167,7 @@ export default function Gestion() {
         try {
             const res = await apiFetch(`/user/${userId}/toggle-actif/`, {
                 method: "PATCH",
-                headers: {
-                    "Content-Type": "application/json",
-                },
+                headers: {"Content-Type": "application/json"},
                 body: JSON.stringify({actif}),
             });
             if (!res) return;
@@ -191,46 +186,45 @@ export default function Gestion() {
 
     return (
         <main className="flex-1 p-8 bg-gray-50 overflow-auto">
-            <header className="mb-8 flex items-center justify-between">
-                <div>
-                    <h1 className="text-2xl font-bold text-primary1">
-                        Profil utilisateur
-                    </h1>
-                    <p className="text-sm text-primary2">
-                        Gestion du compte — {user.first_name} {user.last_name}
-                    </p>
-                    <p
-                        onClick={() => router.push(`/gestion/`)}
-                        className="flex items-center mt-2 gap-2 cursor-pointer text-primary2 transition-all duration-300
-                   hover:text-primary1 hover:translate-x-1"
-                    >
-                        <FaArrowLeft/>
-                        retour
-                    </p>
-
-                </div>
+            <header className="mb-8">
+                <h1 className="text-2xl font-bold text-primary1">
+                    Profil utilisateur
+                </h1>
+                <p className="text-sm text-primary2">
+                    Gestion du compte — {user.first_name} {user.last_name}
+                </p>
+                <p
+                    onClick={() => router.push(`/gestion/`)}
+                    className="flex items-center mt-2 gap-2 cursor-pointer text-primary2 transition-all duration-300 hover:text-primary1 hover:translate-x-1"
+                >
+                    <FaArrowLeft/>
+                    retour
+                </p>
             </header>
+
             <div className="mb-6 h-px w-full bg-gray-200"/>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+
                 <div className="lg:col-span-1">
-                    <div className="bg-white rounded-xl shadow p-6 space-y-6 relative">
-                        <button
+                    <div className="bg-white rounded-xl shadow border border-primary3/60 p-6 space-y-6 relative">
+
+                        <Button
+                            variant="primary1"
                             onClick={() => setIsEditing((p) => !p)}
-                            className="absolute top-6 right-6 flex items-center gap-2 px-4 py-2 rounded-lg bg-calltoaction1 hover:bg-calltoaction2 text-white text-sm font-medium"
+                            className="absolute top-6 right-6 flex items-center gap-2 px-4 py-2 text-sm"
                         >
                             <CiEdit/>
                             {isEditing ? "Annuler" : "Modifier"}
-                        </button>
+                        </Button>
 
                         <div className="flex justify-start pt-2">
                             <div
-                                className="w-24 h-24 rounded-full bg-gradient-to-br from-calltoaction1 to-calltoaction2 flex items-center justify-center text-white text-2xl font-bold">
+                                className="w-24 h-24 rounded-full bg-gradient-to-br from-primary1 to-primary2 flex items-center justify-center text-white text-2xl font-bold shadow-sm">
                                 {user.first_name?.[0]}
                                 {user.last_name?.[0]}
                             </div>
                         </div>
-
 
                         <div className="space-y-4">
                             {!isEditing ? (
@@ -247,7 +241,7 @@ export default function Gestion() {
                                         label="Nom d'utilisateur"
                                         value={user.username}
                                         disabled
-                                        className="bg-gray-100 cursor-not-allowed"
+                                        className="bg-gray-100 cursor-not-allowed text-primary1/60"
                                     />
                                     <Input
                                         label="Nom"
@@ -256,6 +250,7 @@ export default function Gestion() {
                                         onChange={handleInputChange}
                                         error={errors.last_name}
                                         required
+                                        className="text-primary1"
                                     />
                                     <Input
                                         label="Prénom"
@@ -264,6 +259,7 @@ export default function Gestion() {
                                         onChange={handleInputChange}
                                         error={errors.first_name}
                                         required
+                                        className="text-primary1"
                                     />
                                     <Input
                                         label="Adresse email"
@@ -273,6 +269,7 @@ export default function Gestion() {
                                         onChange={handleInputChange}
                                         error={errors.email}
                                         required
+                                        className="text-primary1"
                                     />
                                     <Input
                                         label="Téléphone"
@@ -281,17 +278,16 @@ export default function Gestion() {
                                         onChange={handleInputChange}
                                         error={errors.phone}
                                         required
+                                        className="text-primary1"
                                     />
                                 </>
                             )}
                         </div>
 
-                        <hr className="border-gray-200"/>
+                        <hr className="border-primary3/60"/>
 
                         <div className="text-sm text-gray-500">
-                        <span className="font-medium text-gray-600">
-                            Dernière connexion
-                        </span>
+                            <span className="font-medium text-gray-600">Dernière connexion</span>
                             <div>
                                 {user.last_login
                                     ? new Date(user.last_login).toLocaleDateString("fr-FR")
@@ -300,51 +296,50 @@ export default function Gestion() {
                         </div>
 
                         {isEditing && (
-                            <button
+                            <Button
+                                variant="primary1"
                                 onClick={handleSaveUser}
                                 disabled={savingUser}
-                                className="w-full bg-calltoaction1 hover:bg-calltoaction2 text-white font-semibold py-2 rounded-lg disabled:opacity-50"
+                                className="w-full py-2"
                             >
                                 {savingUser ? "Sauvegarde..." : "Sauvegarder les modifications"}
-                            </button>
+                            </Button>
                         )}
                     </div>
                 </div>
 
-                <div className="lg:col-span-2 space-y-8">
-                    <div className="bg-white rounded-xl shadow p-6 flex items-center justify-between">
+                <div className="lg:col-span-2 space-y-5">
+
+                    <div
+                        className="bg-white rounded-xl shadow border border-primary3/60 p-6 flex items-center justify-between">
                         <div>
-                            <h2 className="font-semibold text-gray-700">
+                            <h2 className="font-semibold text-primary1">
                                 Statut du compte
                             </h2>
                             <p className="text-sm text-gray-500">
-                                Activer ou désactiver l’accès utilisateur
+                                Activer ou désactiver l'accès utilisateur
                             </p>
                         </div>
-
                         <div className="flex items-center gap-3">
-                            <span className="text-sm text-gray-600">Actif</span>
+                            <span
+                                className={`text-sm font-medium ${isActive ? "text-calltoactionsuccess" : "text-red-500"}`}>
+                                {isActive ? "Actif" : "Inactif"}
+                            </span>
                             <Switch
                                 checked={isActive}
                                 disabled={updatingToggle}
-                                onCheckedChange={(checked) =>
-                                    handleToggleChange(id, checked)
-                                }
-                                className="
-                                data-[state=checked]:bg-calltoaction1
-                                data-[state=unchecked]:bg-secondary2
-                            "
+                                onCheckedChange={(checked) => handleToggleChange(id, checked)}
+                                className="data-[state=checked]:bg-calltoactionsuccess data-[state=unchecked]:bg-secondary2"
                             />
                         </div>
                     </div>
 
-                    <div className="bg-white rounded-xl shadow p-6 min-h-[300px]">
-                        <div className="flex items-center justify-between mb-4">
-                            <h2 className="font-semibold text-gray-700">
+                    <div className="bg-white rounded-xl shadow border border-primary3/60 p-6 min-h-[300px]">
+                        <div className="flex items-center justify-between mb-6">
+                            <h2 className="font-semibold text-primary1">
                                 Sociétés de l'utilisateur
                             </h2>
-                            <Button variant="calltoaction1"
-                                className="text-xs px-3 py-1.5 text-white">
+                            <Button variant="calltoaction1" className="text-xs px-3 py-1.5">
                                 + Ajouter
                             </Button>
                         </div>
@@ -353,20 +348,22 @@ export default function Gestion() {
                             <p className="text-sm text-gray-400">Aucune société associée</p>
                         ) : (
                             <>
-                                <div className="space-y-3">
+                                <div className="space-y-2">
                                     {societes.map((societe) => (
                                         <div
                                             key={societe.id}
-                                            className="flex items-center justify-between p-4 rounded-xl border border-gray-100 bg-gray-50 hover:bg-gray-100 transition"
+                                            className="group relative flex items-center justify-between px-4 py-3 rounded-xl border border-primary3/60 bg-white hover:shadow-md hover:-translate-y-0.5 transition-all duration-300"
                                         >
-                                            <div className="flex items-center gap-3">
+                                            <span className="absolute left-0 top-3 h-8 w-1 rounded-r bg-primary1"/>
+
+                                            <div className="flex items-center gap-3 pl-2">
                                                 <div
-                                                    className="w-9 h-9 rounded-lg bg-gradient-to-br from-calltoaction1 to-calltoaction2 flex items-center justify-center text-white text-sm font-bold flex-shrink-0">
+                                                    className="w-9 h-9 rounded-xl bg-gradient-to-br from-primary1 to-primary2 flex items-center justify-center text-white text-sm font-bold flex-shrink-0 shadow-sm">
                                                     {societe.nom[0]}
                                                 </div>
                                                 <div>
-                                                    <p className="font-medium text-gray-800 text-sm">{societe.nom}</p>
-                                                    <p className="text-xs text-gray-400">{societe.ID_SCTE ?? "—"}</p>
+                                                    <p className="font-semibold text-primary1 text-sm">{societe.nom}</p>
+                                                    <p className="text-xs text-secondary2">{societe.ID_SCTE ?? "—"}</p>
                                                 </div>
                                             </div>
 
@@ -378,16 +375,10 @@ export default function Gestion() {
                                                 >
                                                     Documents
                                                 </Button>
-                                                <Button
-                                                    variant="secondary2"
-                                                    className="text-xs px-3 py-1.5"
-                                                >
+                                                <Button variant="secondary2" className="text-xs px-3 py-1.5">
                                                     <CiEdit className="text-base"/>
                                                 </Button>
-                                                <Button
-                                                    variant="danger"
-                                                    className="text-xs px-3 py-1.5"
-                                                >
+                                                <Button variant="danger" className="text-xs px-3 py-1.5">
                                                     <TbTrash className="text-base"/>
                                                 </Button>
                                             </div>
@@ -409,20 +400,13 @@ export default function Gestion() {
             </div>
         </main>
     );
-
 }
 
-function ReadOnlyField({
-                           label,
-                           value,
-                       }: {
-    label: string;
-    value?: string | null;
-}) {
+function ReadOnlyField({label, value}: { label: string; value?: string | null }) {
     return (
         <div className="flex flex-col gap-1">
-            <span className="text-gray-700 font-medium text-lg">{label}</span>
-            <span className="text-gray-900">{value || "-"}</span>
+            <span className="text-gray-500 font-medium text-sm">{label}</span>
+            <span className="text-primary1 font-semibold">{value || "-"}</span>
         </div>
     );
 }
