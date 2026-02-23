@@ -11,7 +11,7 @@ import {useDebounce} from "@/src/hook/useDebounce";
 import Pagination from "@/src/app/components/pagination";
 import Button from "@/src/app/components/button";
 import {FaPlus} from "react-icons/fa6";
-import {AddSocieeteModal} from "@/src/app/documents/societe/AddSocieeteModal";
+import {SocieteModal} from "@/src/app/components/modal/SocieteModal";
 import {useCurrentUser} from "@/src/hook/useCurrent";
 import {hasRole} from "@/src/lib/permissions";
 
@@ -231,10 +231,11 @@ export default function Documents() {
 
             </main>
             {hasRole(user, ["comptable"]) && (
-                <AddSocieeteModal
+                <SocieteModal
                     open={openUpload}
                     onOpenChange={setOpenUpload}
-                    onSocieteCreated={() => {
+                    mode="create"
+                    onSuccess={() => {
                         setPageIndex(0);
                         fetchSocietes(0, debouncedSearch);
                     }}
