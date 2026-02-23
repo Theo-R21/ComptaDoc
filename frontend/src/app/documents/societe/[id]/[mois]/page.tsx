@@ -13,6 +13,7 @@ import {TbDownload} from "react-icons/tb";
 import {FaArrowLeft, FaRegEye} from "react-icons/fa";
 import {PdfViewerModal} from "@/src/app/documents/societe/[id]/[mois]/PDFViewModal";
 import {SocieteInfo} from "@/src/models/societe/societe.model";
+import {Badge} from "@/src/app/components/ui/badge";
 
 export default function Page() {
     const params = useParams();
@@ -209,9 +210,9 @@ export default function Page() {
                         <h1 className="text-2xl font-bold text-primary1">
                             {societeData?.nom}
                         </h1>
-                        <span className="text-xs font-medium px-2 py-1 rounded-full bg-blue-100 text-blue-700">
+                        <Badge variant="info">
                             {societeData?.ID_SCTE}
-                        </span>
+                        </Badge>
                     </div>
                     <p className="text-sm text-gray-500">
                         Propriétaire —{" "}
@@ -351,10 +352,9 @@ export default function Page() {
                                     </td>
                                     <td className="px-6 py-4 text-gray-700">{item.nom}</td>
                                     <td className="px-6 py-4 ">
-                                        <span
-                                            className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-700">
+                                        <Badge variant="calltoaction">
                                             {item.type.nom}
-                                        </span>
+                                        </Badge>
                                     </td>
                                     <td className="px-6 py-4 text-gray-700">
                                         {item.date_publication

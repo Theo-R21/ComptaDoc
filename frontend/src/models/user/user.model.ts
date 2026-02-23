@@ -1,3 +1,5 @@
+import {SocieteInfo} from "@/src/models/societe/societe.model";
+
 export interface UserModel {
     id: string;
     first_name: string;
@@ -13,4 +15,5 @@ export interface UserInfoModel extends UserModel {
     last_login: string | null;
     date_joined: string;
     is_active: boolean;
+    societes: SocieteInfo[];
 }

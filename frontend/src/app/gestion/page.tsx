@@ -11,6 +11,7 @@ import {UserInfoModel} from "@/src/models/user/user.model";
 import Button from "@/src/app/components/button";
 import {FaPlus} from "react-icons/fa6";
 import {AddUserModal} from "@/src/app/gestion/AddUserModal";
+import {Badge} from "@/src/app/components/ui/badge";
 
 export default function Gestion() {
     const router = useRouter();
@@ -142,33 +143,29 @@ export default function Gestion() {
 
                                     <td className="px-6 py-4 text-center">
                                         {item.is_active ? (
-                                            <span
-                                                className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700">
-                                            <FaCheckCircle/>
-                                            Actif
-                                        </span>
+                                            <Badge variant="accepted">
+                                                <FaCheckCircle/>
+                                                Actif
+                                            </Badge>
                                         ) : (
-                                            <span
-                                                className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-700">
+                                             <Badge variant="denied">
                                             <FaTimesCircle/>
                                             Inactif
-                                        </span>
+                                             </Badge>
                                         )}
                                     </td>
 
                                     <td className="px-6 py-4 text-center">
                                         {item.is_superuser ? (
-                                            <span
-                                                className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-700">
-                                            <FaCheckCircle/>
-                                            Oui
-                                        </span>
+                                            <Badge variant="info">
+                                                <FaCheckCircle/>
+                                                Oui
+                                            </Badge>
                                         ) : (
-                                            <span
-                                                className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
-                                            <FaTimesCircle/>
-                                            Non
-                                        </span>
+                                            <Badge variant="secondary">
+                                                <FaTimesCircle/>
+                                                Non
+                                            </Badge>
                                         )}
                                     </td>
 

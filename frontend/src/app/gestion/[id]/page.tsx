@@ -11,6 +11,10 @@ import {Switch} from "@/src/app/components/ui/switch";
 import {FaArrowLeft} from "react-icons/fa";
 import {userEditSchema} from "@/src/lib/validation/user.schema";
 import {formatZodErrors} from "@/src/lib/validation/helpers";
+import {TbTrash} from "react-icons/tb";
+import Pagination from "@/src/app/components/pagination";
+import {SocieteInfo} from "@/src/models/societe/societe.model";
+import Button from "@/src/app/components/button";
 
 export default function Gestion() {
     const params = useParams();
@@ -20,12 +24,15 @@ export default function Gestion() {
 
     const [loading, setLoading] = useState(false);
     const [user, setUser] = useState<UserInfoModel | null>(null);
-
     const [isEditing, setIsEditing] = useState(false);
     const [isActive, setIsActive] = useState(false);
     const [updatingToggle, setUpdatingToggle] = useState(false);
     const [savingUser, setSavingUser] = useState(false);
-
+    const [societes, setSocietes] = useState<SocieteInfo[]>([]);
+    const [societePageIndex, setSocietePageIndex] = useState(0);
+    const [societeTotalCount, setSocieteTotalCount] = useState(0);
+    const societePageSize = 5;
+    const societeTotalPages = Math.ceil(societeTotalCount / societePageSize);
 
     const [form, setForm] = useState({
         first_name: "",
@@ -58,7 +65,11 @@ export default function Gestion() {
         const fetchUser = async () => {
             setLoading(true);
             try {
-                const res = await apiFetch(`/user/${id}/`, {
+                const url = new URL(`/user/${id}/`, window.location.origin);
+                url.searchParams.set("page", (societePageIndex + 1).toString());
+                url.searchParams.set("page_size", societePageSize.toString());
+
+                const res = await apiFetch(url.pathname + "?" + url.searchParams.toString(), {
                     signal: controller.signal,
                 }, router);
                 if (!res) return;
@@ -71,18 +82,21 @@ export default function Gestion() {
                         last_name: json.last_name?.[0],
                         email: json.email?.[0],
                         phone: json.phone?.[0],
-                    })
-                    return
+                    });
+                    return;
                 }
+
                 setUser(json);
                 setIsActive(json.is_active);
-
                 setForm({
                     first_name: json.first_name ?? "",
                     last_name: json.last_name ?? "",
                     email: json.email ?? "",
                     phone: json.phone ?? "",
                 });
+                setSocietes(json.societes.results);
+                setSocieteTotalCount(json.societes.count);
+
             } catch (err: unknown) {
                 if (err instanceof DOMException && err.name === "AbortError") {
                     console.error(err.message);
@@ -98,7 +112,7 @@ export default function Gestion() {
 
         fetchUser();
         return () => controller.abort();
-    }, [id]);
+    }, [id, societePageIndex]);
 
     const handleInputChange = (
         e: React.ChangeEvent<HTMLInputElement>
@@ -325,12 +339,71 @@ export default function Gestion() {
                     </div>
 
                     <div className="bg-white rounded-xl shadow p-6 min-h-[300px]">
-                        <h2 className="font-semibold text-gray-700 mb-2">
-                            Documents récents
-                        </h2>
-                        <p className="text-sm text-gray-400">
-                            Aucun document téléversé pour le moment
-                        </p>
+                        <div className="flex items-center justify-between mb-4">
+                            <h2 className="font-semibold text-gray-700">
+                                Sociétés de l'utilisateur
+                            </h2>
+                            <Button variant="calltoaction1"
+                                className="text-xs px-3 py-1.5 text-white">
+                                + Ajouter
+                            </Button>
+                        </div>
+
+                        {!societes.length ? (
+                            <p className="text-sm text-gray-400">Aucune société associée</p>
+                        ) : (
+                            <>
+                                <div className="space-y-3">
+                                    {societes.map((societe) => (
+                                        <div
+                                            key={societe.id}
+                                            className="flex items-center justify-between p-4 rounded-xl border border-gray-100 bg-gray-50 hover:bg-gray-100 transition"
+                                        >
+                                            <div className="flex items-center gap-3">
+                                                <div
+                                                    className="w-9 h-9 rounded-lg bg-gradient-to-br from-calltoaction1 to-calltoaction2 flex items-center justify-center text-white text-sm font-bold flex-shrink-0">
+                                                    {societe.nom[0]}
+                                                </div>
+                                                <div>
+                                                    <p className="font-medium text-gray-800 text-sm">{societe.nom}</p>
+                                                    <p className="text-xs text-gray-400">{societe.ID_SCTE ?? "—"}</p>
+                                                </div>
+                                            </div>
+
+                                            <div className="flex items-center gap-2">
+                                                <Button
+                                                    variant="primary1"
+                                                    onClick={() => router.push(`/documents/societe/${societe.id}/`)}
+                                                    className="text-xs px-3 py-1.5"
+                                                >
+                                                    Documents
+                                                </Button>
+                                                <Button
+                                                    variant="secondary2"
+                                                    className="text-xs px-3 py-1.5"
+                                                >
+                                                    <CiEdit className="text-base"/>
+                                                </Button>
+                                                <Button
+                                                    variant="danger"
+                                                    className="text-xs px-3 py-1.5"
+                                                >
+                                                    <TbTrash className="text-base"/>
+                                                </Button>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+
+                                <Pagination
+                                    pageIndex={societePageIndex}
+                                    totalPages={societeTotalPages}
+                                    setPageIndex={setSocietePageIndex}
+                                    pageSize={societePageSize}
+                                    totalCount={societeTotalCount}
+                                />
+                            </>
+                        )}
                     </div>
                 </div>
             </div>

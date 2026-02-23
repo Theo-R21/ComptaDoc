@@ -16,18 +16,18 @@ export default function Button({
   const baseStyles = 'rounded font-medium transition-all duration-200 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed'
 
   const variants = {
-    primary1: 'bg-primary1 hover:bg-yellow-600 text-white',
-    primary2: 'bg-primary2 hover:bg-yellow-600 text-white',
-    primary3: 'bg-yellow-500 hover:bg-yellow-600 text-primary1',
-    secondary1: 'border border-secondary1 hover:bg-grey-900 text-secondary1',
-    secondary2: 'bg-gray-500 hover:bg-gray-600 text-white',
-    secondary3: 'bg-gray-500 hover:bg-gray-600 text-white',
-    calltoaction1: 'bg-calltoaction1 hover:bg-calltoaction2 text-black',
-    calltoaction2: 'bg-calltoaction2  hover:bg-gray-600 text-white',
-    calltoaction3: 'bg-gray-500 hover:bg-gray-600 calltoaction1',
-    danger: 'bg-red-500 hover:bg-red-600 text-white',
-    success: ''
-  }
+    primary1: 'bg-primary1 hover:bg-primary2 text-white',
+    primary2: 'bg-primary2 hover:bg-primary1 text-white',
+    primary3: 'bg-primary3 hover:bg-primary3/70 text-primary1 border border-primary2/30',
+    secondary1: 'border border-secondary1 hover:bg-secondary1/10 text-secondary1',
+    secondary2: 'bg-secondary2/20 hover:bg-secondary2/35 text-secondary1 border border-secondary2/40',
+    secondary3: 'bg-transparent hover:bg-secondary1/10 text-secondary1 border border-secondary1/30',
+    calltoaction1: 'bg-calltoaction1 hover:bg-calltoaction2 text-primary1 shadow-sm',
+    calltoaction2: 'border-2 border-calltoaction1 hover:bg-calltoaction1/15 text-calltoaction2',
+    calltoaction3: 'bg-calltoaction1/20 hover:bg-calltoaction1/35 text-calltoaction2 border border-calltoaction1/40',
+    danger: 'bg-red-500 hover:bg-red-600 text-white shadow-sm',
+    success: 'bg-calltoactionsuccess hover:bg-calltoactionsuccess/85 text-white shadow-sm',
+}
 
   return (
     <button
