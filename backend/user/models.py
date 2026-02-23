@@ -1,3 +1,5 @@
+import uuid
+
 from django.utils import timezone
 from django.contrib.auth.models import AbstractUser
 from django.db import models
@@ -5,6 +7,7 @@ from django.db import models
 # Create your models here.
 
 class User(AbstractUser):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     phone = models.CharField(unique=True, max_length=20, null=True, blank=True)
     reset_code = models.CharField(max_length=6, null=True, blank=True)
     reset_code_expires_at = models.DateTimeField(null=True, blank=True)

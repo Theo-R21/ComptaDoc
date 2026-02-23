@@ -20,7 +20,7 @@ export function AddSocieeteModal({
                                      onSocieteCreated
                                  }: AddSocieeteModalProps) {
     const [users, setUsers] = useState<UserModel[]>([])
-    const [selectedUsers, setSelectedUsers] = useState<number | null>(null)
+    const [selectedUsers, setSelectedUsers] = useState<string>("")
     const [societeName, setSocieteName] = useState<string>("")
     const [scte, setScte] = useState<string>("")
     const [loading, setLoading] = useState(false);
@@ -75,11 +75,11 @@ export function AddSocieeteModal({
 
     const handleCreate = async () => {
         if (!validate()) return;
-        if (!selectedUsers) {
-            setErrors(prev => ({...prev, user: "Le propriétaire est obligatoire"}));
-            return;
-        }
-
+        // if (!selectedUsers) {
+        //     setErrors(prev => ({...prev, user: "Le propriétaire est obligatoire"}));
+        //     return;
+        // }
+        console.log(selectedUsers)
         try {
             const res = await apiFetch(`/societe/`, {
                 method: "POST",
@@ -108,7 +108,7 @@ export function AddSocieeteModal({
             if (onSocieteCreated) onSocieteCreated();
             setSocieteName("");
             setScte("");
-            setSelectedUsers(null);
+            setSelectedUsers("");
             setErrors({});
 
         } catch (err) {
@@ -144,10 +144,9 @@ export function AddSocieeteModal({
                             text-sm text-primary1
                             `}
                         name="user_id"
-                        value={selectedUsers ?? ""}
+                        value={selectedUsers}
                         onChange={(e) => {
-                            const value = e.target.value;
-                            setSelectedUsers(value ? Number(value) : null);
+                            setSelectedUsers(e.target.value);
                         }}
                     >
                         <option value="" disabled>

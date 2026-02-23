@@ -31,7 +31,6 @@ export default function Gestion() {
         first_name: "",
         last_name: "",
         email: "",
-        company_name: "",
         phone: "",
     });
 
@@ -75,7 +74,6 @@ export default function Gestion() {
                     })
                     return
                 }
-
                 setUser(json);
                 setIsActive(json.is_active);
 
@@ -83,7 +81,6 @@ export default function Gestion() {
                     first_name: json.first_name ?? "",
                     last_name: json.last_name ?? "",
                     email: json.email ?? "",
-                    company_name: json.company_name ?? "",
                     phone: json.phone ?? "",
                 });
             } catch (err: unknown) {
@@ -108,6 +105,7 @@ export default function Gestion() {
     ) => {
         const {name, value} = e.target;
         setForm((prev) => ({...prev, [name]: value}));
+        console.log(form)
     };
 
     const handleSaveUser = async () => {
@@ -116,7 +114,7 @@ export default function Gestion() {
         setSavingUser(true);
 
         try {
-            const res = await apiFetch(`/user/${user.id}/`, {
+            const res = await apiFetch(`/user/${id}/`, {
                 method: "PUT",
                 headers: {
                     "Content-Type": "application/json",
@@ -148,7 +146,7 @@ export default function Gestion() {
 
 
     const handleToggleChange = async (
-        userId: number,
+        userId: string,
         actif: boolean
     ) => {
         const previousValue = isActive;

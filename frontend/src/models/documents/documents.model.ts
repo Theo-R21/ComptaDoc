@@ -16,10 +16,10 @@ export class DocumentsList {
 }
 
 export class TypeDocumentList{
-    id: number;
+    id: string;
     nom: string;
 
-    constructor(id: number, nom: string) {
+    constructor(id: string, nom: string) {
         this.id = id;
         this.nom = nom;
     }

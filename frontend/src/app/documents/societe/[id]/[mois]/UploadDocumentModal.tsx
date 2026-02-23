@@ -13,8 +13,8 @@ import {documentCreateSchema} from "@/src/lib/validation/document.schema";
 type UploadDocumentModalProps = {
     open: boolean
     onOpenChange: (open: boolean) => void
-    societeId: number
-    monthId: number
+    societeId: string
+    monthId: string
     types: TypeDocumentList[]
     onDocumentUploaded?: () => void;
 }
@@ -27,7 +27,7 @@ export function UploadDocumentModal({
                                         monthId,
                                         onDocumentUploaded,
                                     }: UploadDocumentModalProps) {
-    const [selectedType, setSelectedType] = useState<number | null>(null)
+    const [selectedType, setSelectedType] = useState<string>("")
     const [file, setFile] = useState<File | null>(null)
     const [docName, setDocName] = useState<string>("")
     const [docDate, setDocDate] = useState<string>("")
@@ -51,7 +51,6 @@ export function UploadDocumentModal({
             setErrors(formatZodErrors(result.error));
             return false;
         }
-
         setErrors({});
         return true;
     };
@@ -59,11 +58,11 @@ export function UploadDocumentModal({
 
     const handleUpload = async () => {
         if (!validate()) return;
-        if (!file || selectedType === null) return;
+        if (!file || selectedType === "") return;
 
         const formData = new FormData()
         formData.append("path", file)
-        formData.append("type", selectedType.toString())
+        formData.append("type", selectedType)
         formData.append("societe", societeId.toString())
         formData.append("mois", monthId.toString())
         if (docName) formData.append("nom", docName)
@@ -91,7 +90,7 @@ export function UploadDocumentModal({
             setFile(null)
             setDocName("")
             setDocDate("")
-            setSelectedType(null)
+            setSelectedType("")
             onOpenChange(false)
             if (onDocumentUploaded) onDocumentUploaded();
 
@@ -137,10 +136,10 @@ export function UploadDocumentModal({
                                 bg-white px-3 py-2.5
                                 text-sm text-primary1
                             "
-                            value={selectedType ?? ""}
-                            onChange={(e) =>
-                                setSelectedType(e.target.value ? Number(e.target.value) : null)
-                            }
+                            value={selectedType}
+                            onChange={(e) => {
+                                setSelectedType(e.target.value);
+                            }}
                         >
                             <option value="" disabled>
                                 {types.length === 0

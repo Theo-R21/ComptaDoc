@@ -19,7 +19,7 @@ export default function Page() {
 
     const id = params.id;
     const mois = params.mois as string;
-    const monthId = Number(searchParams.get("monthId"));
+    const monthId = String(searchParams.get("monthId"));
 
     const router = useRouter();
     const [data, setData] = useState<DocumentsList[]>([]);
@@ -75,7 +75,7 @@ export default function Page() {
         fetchTypes();
     }, []);
 
-    const fetchDocument = async (page = pageIndex, searchTerm = debouncedSearch) => {
+    const fetchDocument = async (page = pageIndex, searchTerm = debouncedSearch, type = selectedType) => {
         setLoading(true);
         const controller = new AbortController();
         try {
@@ -84,15 +84,15 @@ export default function Page() {
                 window.location.origin
             );
 
-            url.searchParams.set("page", String(pageIndex + 1));
+            url.searchParams.set("page", String(page + 1));
             url.searchParams.set("page_size", String(pageSize));
 
-            if (debouncedSearch) {
-                url.searchParams.set("search", debouncedSearch);
+            if (searchTerm) {
+                url.searchParams.set("search", searchTerm);
             }
 
-            if (selectedType) {
-                url.searchParams.set("type", selectedType);
+            if (type) {
+                url.searchParams.set("type", type);
             }
 
             const res = await apiFetch(
@@ -122,7 +122,7 @@ export default function Page() {
 
     useEffect(() => {
         fetchDocument(pageIndex, debouncedSearch);
-    }, [pageIndex, debouncedSearch]);
+    }, [pageIndex, debouncedSearch, selectedType]);
 
     const downloadPDF = useCallback(async (documentId: number, filename: string) => {
         const res = await apiFetch(`/documents/${documentId}/download/`, {

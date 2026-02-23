@@ -1,9 +1,10 @@
 import { z } from "zod"
 
 export const societeCreateSchema = z.object({
-  user_id: z.number({
-    message: "Le propriétaire est obligatoire"
-  }),
+   user_id: z
+        .string()
+        .min(1, {message: "Le propriétaire est obligatoire"})
+        .check(z.uuid({error: "UUID invalide"})),
 
   nom: z.string().min(1, {
     message: "Le nom de la société est obligatoire"
