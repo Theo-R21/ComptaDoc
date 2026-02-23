@@ -14,7 +14,7 @@ import {FaArrowLeft, FaRegEye} from "react-icons/fa";
 import {PdfViewerModal} from "@/src/app/documents/societe/[id]/[mois]/PDFViewModal";
 import {SocieteInfo} from "@/src/models/societe/societe.model";
 import {Badge} from "@/src/app/components/ui/badge";
-import {PieChart, Pie, Cell, Tooltip, ResponsiveContainer} from "recharts";
+import {Pie, PieChart, ResponsiveContainer, Sector, Tooltip} from "recharts";
 
 export default function Page() {
     const params = useParams();
@@ -47,6 +47,19 @@ export default function Page() {
         dernier_depot: string | null;
         types_distincts: number;
     } | null>(null);
+
+    interface SectorProps {
+        cx: number;
+        cy: number;
+        innerRadius: number;
+        outerRadius: number;
+        startAngle: number;
+        endAngle: number;
+        index: number;
+    }
+
+    const COLORS = ["#1D3557", "#3A6EA5", "#FBC02D", "#4CAF50", "#9E9E9E"];
+
     const allSelected = useMemo(
         () => (data?.length || 0) > 0 && data.every(d => selectedIds.includes(d.id)),
         [data, selectedIds]
@@ -209,6 +222,7 @@ export default function Page() {
         }
     }, [selectedIds, downloading]);
 
+
     return (
         <>
             <main className="flex-1 w-full min-h-screen bg-gray-50 px-6 py-6 space-y-6">
@@ -242,8 +256,6 @@ export default function Page() {
                 <div className="mb-6 h-px w-full bg-gray-200"/>
 
                 <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 w-full">
-
-                    {/* Camembert + chiffres clés */}
                     <div className="bg-white rounded-xl shadow border border-primary3/60 p-6 space-y-4">
                         <h2 className="font-medium text-primary1">Vue d'ensemble</h2>
 
@@ -266,7 +278,6 @@ export default function Page() {
                             </div>
                         </div>
 
-                        {/* Camembert */}
                         {stats?.par_type?.length ? (
                             <ResponsiveContainer width="100%" height={150}>
                                 <PieChart>
@@ -278,14 +289,19 @@ export default function Page() {
                                         cy="50%"
                                         outerRadius={60}
                                         innerRadius={35}
-                                    >
-                                        {stats.par_type.map((_, index) => (
-                                            <Cell
-                                                key={index}
-                                                fill={["#1D3557", "#3A6EA5", "#FBC02D", "#4CAF50", "#9E9E9E"][index % 5]}
+                                        fill="#1D3557"
+                                        shape={(props: SectorProps) => (
+                                            <Sector
+                                                cx={props.cx}
+                                                cy={props.cy}
+                                                innerRadius={props.innerRadius}
+                                                outerRadius={props.outerRadius}
+                                                startAngle={props.startAngle}
+                                                endAngle={props.endAngle}
+                                                fill={COLORS[props.index % COLORS.length]}
                                             />
-                                        ))}
-                                    </Pie>
+                                        )}
+                                    />
                                     <Tooltip formatter={(value, name) => [value, name]}/>
                                 </PieChart>
                             </ResponsiveContainer>
@@ -297,7 +313,6 @@ export default function Page() {
                         )}
                     </div>
 
-                    {/* Légende types */}
                     <div className="bg-white rounded-xl shadow border border-primary3/60 p-6 xl:col-span-2">
                         <h2 className="font-medium text-primary1 mb-4">Répartition par type</h2>
 
@@ -325,8 +340,8 @@ export default function Page() {
                                             </div>
                                         </div>
                                         <span className="text-xs text-secondary2 w-8 text-right">
-                            {Math.round((item.count / (stats?.total || 1)) * 100)}%
-                        </span>
+                                            {Math.round((item.count / (stats?.total || 1)) * 100)}%
+                                        </span>
                                     </div>
                                 ))}
                             </div>

@@ -16,7 +16,7 @@ export default function AuthenticationLayout({
                 <div className="col-span-2 flex items-center justify-center p-12 max-lg:hidden">
                     <div className="flex flex-col items-center gap-4">
                         <h1 className="text-center text-6xl font-bold text-white">
-                            Bienvenue sur ComptaDoc
+                            Bienvenue sur le site de SimplyLux
                         </h1>
                         <p className="text-center text-xl text-white/60">
                             Le site de partage de document pour la comptabilité
