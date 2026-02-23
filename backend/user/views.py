@@ -8,17 +8,25 @@ from rest_framework.response import Response
 from user.models import User
 
 from user.serializers.list import UserListSerializer
-from user.serializers.action import UserActionSerializer
+from user.serializers.action import UserDetailsSerializer
 from user.serializers.create import UserCreateSerializer
 from user.serializers.update import UserUpdateSerializer
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
+
+from societe.models import Societe
+from societe.serializers.base import BaseSocieteSerializer
 
 
 class UserPagination(PageNumberPagination):
     page_size = 10
     page_size_query_param = "page_size"
     max_page_size = 100
+
+class SocietePagination(PageNumberPagination):
+    page_size = 5
+    page_size_query_param = "page_size"
+    max_page_size = 50
 
 class UserViewSet(viewsets.ViewSet):
     serializer_class = UserListSerializer
@@ -63,7 +71,7 @@ class UserViewSet(viewsets.ViewSet):
     @swagger_auto_schema(
         operation_description="Détail d'un utilisateur.",
         responses={
-            200: UserActionSerializer,
+            200: UserDetailsSerializer,
             404: "Utilisateur non trouvé"
         }
     )
@@ -72,8 +80,38 @@ class UserViewSet(viewsets.ViewSet):
             user = User.objects.get(pk=pk)
         except User.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
-        serializer = UserActionSerializer(user)
-        return Response(serializer.data)
+
+        societes = Societe.objects.filter(user=user).order_by("nom")
+        paginator = SocietePagination()
+        page = paginator.paginate_queryset(societes, request)
+        societes_serialized = BaseSocieteSerializer(page, many=True)
+
+        user_serializer = UserDetailsSerializer(user)
+
+        data = user_serializer.data
+        data["societes"] = paginator.get_paginated_response(societes_serialized.data).data
+
+        return Response(data)
+
+    def retrieve(self, request, pk=None):
+        try:
+            user = User.objects.get(pk=pk)
+        except User.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+
+        # Paginer les sociétés du user, pas le user lui-même
+        societes = Societe.objects.filter(user=user).order_by("nom")
+        paginator = SocietePagination()
+        page = paginator.paginate_queryset(societes, request)
+        societes_serialized = BaseSocieteSerializer(page, many=True)
+
+        # Sérialiser le user séparément
+        user_serializer = UserDetailsSerializer(user)
+
+        data = user_serializer.data
+        data["societes"] = paginator.get_paginated_response(societes_serialized.data).data
+
+        return Response(data)
 
     @swagger_auto_schema(
         operation_description="Création d'un nouvel utilisateur.",
