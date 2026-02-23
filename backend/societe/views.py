@@ -262,6 +262,49 @@ class SocieteViewSet(viewsets.ViewSet):
             "user": SocieteSerializer(societe).data["user"]
         }, status=status.HTTP_201_CREATED)
 
+    @swagger_auto_schema(
+        operation_description="Mise à jour partielle d'une société.",
+        request_body=SocieteSerializer,
+        responses={
+            200: SocieteSerializer,
+            404: openapi.Response(
+                description="Société non trouvée",
+                examples={"application/json": {"detail": "Not found."}}
+            )
+        }
+    )
+    def partial_update(self, request, pk=None):
+        try:
+            societe = Societe.objects.get(pk=pk)
+        except Societe.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+        print(request.data)
+        serializer = SocieteSerializer(societe, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+
+        societe.refresh_from_db()
+        return Response(SocieteSerializer(societe).data)
+
+    @swagger_auto_schema(
+        operation_description="Suppression d'une société.",
+        responses={
+            204: openapi.Response(description="Société supprimée avec succès"),
+            404: openapi.Response(
+                description="Société non trouvée",
+                examples={"application/json": {"detail": "Not found."}}
+            )
+        }
+    )
+    def destroy(self, request, pk=None):
+        try:
+            societe = Societe.objects.get(pk=pk)
+        except Societe.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+
+        societe.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
 
 def ensure_company_months(company, year=None):
     if year is None:

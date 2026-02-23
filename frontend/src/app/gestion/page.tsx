@@ -10,7 +10,7 @@ import {useDebounce} from "@/src/hook/useDebounce";
 import {UserInfoModel} from "@/src/models/user/user.model";
 import Button from "@/src/app/components/button";
 import {FaPlus} from "react-icons/fa6";
-import {AddUserModal} from "@/src/app/gestion/AddUserModal";
+import {AddUserModal} from "@/src/app/components/modal/AddUserModal";
 import {Badge} from "@/src/app/components/ui/badge";
 
 export default function Gestion() {
