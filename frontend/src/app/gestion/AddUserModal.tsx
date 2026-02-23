@@ -69,7 +69,7 @@ export function AddUserModal({
                 body: JSON.stringify(form),
             });
 
-
+            if(!res) return
             if (!res.ok) {
                 const json = await res.json()
                 setErrors({
@@ -86,8 +86,14 @@ export function AddUserModal({
             onOpenChange(false);
             if (onSocieteCreated) onSocieteCreated();
             setErrors({});
-        } catch (err: any) {
-            if (err.name !== "AbortError") console.error(err);
+        } catch (err: unknown) {
+            if (err instanceof DOMException && err.name === "AbortError") {
+                console.error(err.message);
+            } else if (err instanceof Error) {
+                console.error(err.message);
+            } else {
+                console.error("Erreur inconnue", err);
+            }
         } finally {
             setLoading(false);
         }

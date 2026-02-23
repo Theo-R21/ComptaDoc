@@ -21,6 +21,7 @@ export default function Societe() {
         const fetchDataYear = async () => {
             try {
                 const res = await apiFetch(`/societe/${id}/year`);
+                if (!res) return
                 const json: number[] = await res.json();
 
                 setYears(json);
@@ -46,11 +47,19 @@ export default function Societe() {
                     url += `&status=${statusFilter}`;
                 }
 
-                const res = await apiFetch(url);
+                const res = await apiFetch(url, {}, router);
+                if (!res) return;
+
                 const json = await res.json();
                 setDate(json);
-            } catch (error) {
-                console.error("Erreur API :", error);
+            } catch (err: unknown) {
+                if (err instanceof DOMException && err.name === "AbortError") {
+                    console.error(err.message);
+                } else if (err instanceof Error) {
+                    console.error(err.message);
+                } else {
+                    console.error("Erreur inconnue", err);
+                }
             }
         };
 
@@ -77,6 +86,7 @@ export default function Societe() {
                 credentials: "include",
                 body: JSON.stringify({status: newStatus}),
             });
+            if (!res) return
 
             if (!res.ok) throw new Error("Erreur lors de la mise à jour");
 
@@ -87,8 +97,14 @@ export default function Societe() {
                     item.month === updatedMonth.month ? updatedMonth : item
                 )
             );
-        } catch (error) {
-            console.error("Erreur API :", error);
+        } catch (err: unknown) {
+            if (err instanceof DOMException && err.name === "AbortError") {
+                console.error(err.message);
+            } else if (err instanceof Error) {
+                console.error(err.message);
+            } else {
+                console.error("Erreur inconnue", err);
+            }
         }
     };
 
@@ -149,89 +165,93 @@ export default function Societe() {
             <div className="mb-6 h-px w-full bg-gray-200"/>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
-                {date.map((item) => {
-                    const isOpen = item.status === "OPEN";
+                {date?.length > 0 ? (
+                    date.map((item) => {
+                        const isOpen = item.status === "OPEN";
 
-                    return (
-                        <div
-                            key={item.id}
-                            role="button"
-                            tabIndex={0}
-                            onClick={isOpen ? () => goToMonth(item) : undefined}
-                            onKeyDown={(e) => {
-                                if (!isOpen) return;
-                                if (e.key === "Enter" || e.key === " ") {
-                                    e.preventDefault();
-                                    goToMonth(item);
-                                }
-                            }}
-                            className={`group relative rounded-xl border p-5 transition-all
-            ${isOpen
-                                ? "bg-white border-primary2 shadow-md hover:shadow-lg cursor-pointer"
-                                : "bg-gray-100 border-gray-200 opacity-80 cursor-default"
-                            } hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-primary1`}
-                        >
-                            {isOpen && (
-                                <span className="absolute left-0 top-4 h-12 w-1 rounded-r bg-primary1"/>
-                            )}
-
-                            <div>
-                                <p className="text-lg font-semibold tracking-tight text-primary1">
-                                    {item.month_name} {item.year}
-                                </p>
-                                <p
-                                    className={`mt-1 text-sm font-medium ${
-                                        isOpen ? "text-calltoactionsuccess" : "text-red-700"
-                                    }`}
-                                >
-                                    {isOpen ? "Période ouverte" : "Période fermée"}
-                                </p>
-                            </div>
-
-                            <div className="flex items-center mt-6">
-                                {hasRole(user, ["comptable"]) && (
-                                    <div
-                                        className="flex items-center gap-3 bg-primary3/60 rounded-full px-3 py-1"
-                                        onClick={(e) => e.stopPropagation()}
-                                    >
-                                        <div
-                                            className="flex items-center justify-center w-6 h-6 rounded-full bg-calltoaction1/20">
-                                            <FaLock
-                                                className={`text-xs ${
-                                                    isOpen ? "text-secondary2/40" : "text-calltoaction2"
-                                                }`}
-                                            />
-                                        </div>
-
-                                        <Switch
-                                            checked={isOpen}
-                                            onCheckedChange={(checked) => handleChange(item, checked)}
-                                            onClick={(e) => e.stopPropagation()}
-                                            className="data-[state=checked]:bg-calltoaction1 data-[state=unchecked]:bg-secondary2 transition-colors"
-                                        />
-
-                                        <div
-                                            className="flex items-center justify-center w-6 h-6 rounded-full bg-primary1/40">
-                                            <FaLockOpen
-                                                className={`text-sm ${
-                                                    isOpen ? "text-primary1" : "text-primary1/60"
-                                                }`}
-                                            />
-                                        </div>
-                                    </div>
+                        return (
+                            <div
+                                key={item.id}
+                                role="button"
+                                tabIndex={0}
+                                onClick={isOpen ? () => goToMonth(item) : undefined}
+                                onKeyDown={(e) => {
+                                    if (!isOpen) return;
+                                    if (e.key === "Enter" || e.key === " ") {
+                                        e.preventDefault();
+                                        goToMonth(item);
+                                    }
+                                }}
+                                className={`group relative rounded-xl border p-5 transition-all
+                                    ${isOpen
+                                    ? "bg-white border-primary2 shadow-md hover:shadow-lg cursor-pointer"
+                                    : "bg-gray-100 border-gray-200 opacity-80 cursor-default"
+                                } hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-primary1`}
+                            >
+                                {isOpen && (
+                                    <span className="absolute left-0 top-4 h-12 w-1 rounded-r bg-primary1"/>
                                 )}
 
-                                <div
-                                    className={`ml-auto p-2 rounded-lg transition ${
-                                        isOpen ? "bg-primary3/60" : "cursor-not-allowed opacity-50"
-                                    }`}
-                                >
-                                    <FaArrowRight className="text-primary2 transition-all group-hover:translate-x-1"/>
+                                <div>
+                                    <p className="text-lg font-semibold tracking-tight text-primary1">
+                                        {item.month_name} {item.year}
+                                    </p>
+                                    <p
+                                        className={`mt-1 text-sm font-medium ${
+                                            isOpen ? "text-calltoactionsuccess" : "text-red-700"
+                                        }`}
+                                    >
+                                        {isOpen ? "Période ouverte" : "Période fermée"}
+                                    </p>
+                                </div>
+
+                                <div className="flex items-center mt-6">
+                                    {hasRole(user, ["comptable"]) && (
+                                        <div
+                                            className="flex items-center gap-3 bg-primary3/60 rounded-full px-3 py-1"
+                                            onClick={(e) => e.stopPropagation()}
+                                        >
+                                            <div
+                                                className="flex items-center justify-center w-6 h-6 rounded-full bg-calltoaction1/20">
+                                                <FaLock
+                                                    className={`text-xs ${
+                                                        isOpen ? "text-secondary2/40" : "text-calltoaction2"
+                                                    }`}
+                                                />
+                                            </div>
+
+                                            <Switch
+                                                checked={isOpen}
+                                                onCheckedChange={(checked) => handleChange(item, checked)}
+                                                onClick={(e) => e.stopPropagation()}
+                                                className="data-[state=checked]:bg-calltoaction1 data-[state=unchecked]:bg-secondary2 transition-colors"
+                                            />
+
+                                            <div
+                                                className="flex items-center justify-center w-6 h-6 rounded-full bg-primary1/40">
+                                                <FaLockOpen
+                                                    className={`text-sm ${
+                                                        isOpen ? "text-primary1" : "text-primary1/60"
+                                                    }`}
+                                                />
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    <div
+                                        className={`ml-auto p-2 rounded-lg transition ${
+                                            isOpen ? "bg-primary3/60" : "cursor-not-allowed opacity-50"
+                                        }`}
+                                    >
+                                        <FaArrowRight
+                                            className="text-primary2 transition-all group-hover:translate-x-1"/>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    );
-                })}
+                        );
+                    })) : (
+                    <p className="col-span-full text-center text-gray-500">Aucune donnée disponible</p>
+                )}
             </div>
         </main>
 

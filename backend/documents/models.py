@@ -18,9 +18,11 @@ def societe_document_upload_path(instance, filename):
     return f"documents/{societe_slug}/{now:%Y/%m}/{filename}"
 
 class TypeDocument(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     nom = models.CharField(max_length=100)
 
 class SocieteDocument(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     nom = models.CharField(max_length=100)
     date_publication = models.DateField(auto_now_add=True)
     path = models.FileField(upload_to=societe_document_upload_path)

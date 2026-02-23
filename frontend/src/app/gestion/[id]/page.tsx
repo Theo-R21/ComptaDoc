@@ -31,7 +31,6 @@ export default function Gestion() {
         first_name: "",
         last_name: "",
         email: "",
-        company_name: "",
         phone: "",
     });
 
@@ -42,7 +41,7 @@ export default function Gestion() {
         phone?: string;
     }>({});
 
-     const validate = () => {
+    const validate = () => {
         const result = userEditSchema.safeParse(form)
 
         if (!result.success) {
@@ -61,7 +60,8 @@ export default function Gestion() {
             try {
                 const res = await apiFetch(`/user/${id}/`, {
                     signal: controller.signal,
-                });
+                }, router);
+                if (!res) return;
 
                 const json = await res.json();
 
@@ -74,7 +74,6 @@ export default function Gestion() {
                     })
                     return
                 }
-
                 setUser(json);
                 setIsActive(json.is_active);
 
@@ -82,11 +81,16 @@ export default function Gestion() {
                     first_name: json.first_name ?? "",
                     last_name: json.last_name ?? "",
                     email: json.email ?? "",
-                    company_name: json.company_name ?? "",
                     phone: json.phone ?? "",
                 });
-            } catch (err: never) {
-                if (err.name !== "AbortError") console.error(err);
+            } catch (err: unknown) {
+                if (err instanceof DOMException && err.name === "AbortError") {
+                    console.error(err.message);
+                } else if (err instanceof Error) {
+                    console.error(err.message);
+                } else {
+                    console.error("Erreur inconnue", err);
+                }
             } finally {
                 setLoading(false);
             }
@@ -101,6 +105,7 @@ export default function Gestion() {
     ) => {
         const {name, value} = e.target;
         setForm((prev) => ({...prev, [name]: value}));
+        console.log(form)
     };
 
     const handleSaveUser = async () => {
@@ -109,14 +114,14 @@ export default function Gestion() {
         setSavingUser(true);
 
         try {
-            const res = await apiFetch(`/user/${user.id}/`, {
+            const res = await apiFetch(`/user/${id}/`, {
                 method: "PUT",
                 headers: {
                     "Content-Type": "application/json",
                 },
                 body: JSON.stringify(form),
             });
-
+            if (!res) return;
             const json = await res.json();
 
             if (!res.ok) {
@@ -141,7 +146,7 @@ export default function Gestion() {
 
 
     const handleToggleChange = async (
-        userId: number,
+        userId: string | Array<string> | undefined,
         actif: boolean
     ) => {
         const previousValue = isActive;
@@ -156,7 +161,7 @@ export default function Gestion() {
                 },
                 body: JSON.stringify({actif}),
             });
-
+            if (!res) return;
             if (!res.ok) throw new Error();
         } catch (err) {
             console.error(err);
@@ -309,7 +314,7 @@ export default function Gestion() {
                                 checked={isActive}
                                 disabled={updatingToggle}
                                 onCheckedChange={(checked) =>
-                                    handleToggleChange(user.id, checked)
+                                    handleToggleChange(id, checked)
                                 }
                                 className="
                                 data-[state=checked]:bg-calltoaction1

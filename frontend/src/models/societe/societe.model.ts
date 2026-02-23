@@ -1,32 +1,17 @@
 import {UserModel} from "@/src/models/user/user.model";
 
-export class SocieteInfo {
-    id: number;
+export interface SocieteInfo {
+    id: string ;
     nom: string;
     ID_SCTE: string;
     user: UserModel
 
-    constructor(id: number, nom: string, ID_SCTE: string,user: UserModel) {
-        this.id = id;
-        this.nom = nom;
-        this.ID_SCTE = ID_SCTE;
-        this.user = user;
-    }
 }
 
-export class SocieteMonthInfo {
-    id: number;
+export interface SocieteMonthInfo {
+    id: string;
     month: number;
     month_name: string;
     year: number;
     status: "OPEN" | "LOCKED" | string;
-
-
-    constructor(id: number, month: number, month_name: string, year: number, status: "OPEN" | "LOCKED" | string) {
-        this.id = id;
-        this.month = month;
-        this.month_name = month_name;
-        this.year = year;
-        this.status = status;
-    }
 }
