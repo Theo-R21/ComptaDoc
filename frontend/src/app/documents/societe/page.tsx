@@ -127,45 +127,52 @@ export default function Documents() {
                             <div
                                 key={index}
                                 className="
-                                    group relative rounded-xl border border-primary1/20
-                                    bg-primary1 text-white
-                                    p-5 cursor-pointer
-                                    transition-all
-                                    hover:shadow-lg hover:-translate-y-0.5
-                                "
+                                        group relative rounded-2xl overflow-hidden
+                                        border border-primary3/60
+                                        bg-white shadow-sm
+                                        p-5 cursor-pointer
+                                        transition-all duration-300
+                                        hover:shadow-xl hover:-translate-y-1
+                                    "
                                 onClick={() => router.push(`/documents/societe/${item.id}`)}
                             >
-                                <div className="flex items-center gap-4">
+                                <div className="absolute top-0 left-0 right-0 h-1 bg-primary1"/>
+
+                                <div
+                                    className="absolute top-0 right-0 w-24 h-24 bg-primary3/30 rounded-full blur-2xl pointer-events-none"/>
+
+                                <div className="flex items-center gap-3 mt-2">
                                     <div
-                                        className="w-11 h-11 rounded-full bg-primary3 flex items-center justify-center flex-shrink-0">
-                                        <span className="text-primary1 font-semibold text-sm">
+                                        className="w-11 h-11 rounded-xl bg-gradient-to-br from-primary1 to-primary2 flex items-center justify-center flex-shrink-0 shadow-sm">
+                                        <span className="text-white font-bold text-sm">
                                             {item.nom?.charAt(0)}
                                         </span>
                                     </div>
-
-                                    <p className="text-lg font-semibold tracking-tight">
+                                    <p className="text-base font-bold tracking-tight text-primary1 leading-tight">
                                         {item.nom}
                                     </p>
                                 </div>
 
-                                <div className="mt-4 space-y-1 text-sm text-primary3/90">
-                                    <p>
-                                        <span className="opacity-70">Propriétaire :</span>{" "}
+                                <div className="my-3 h-px bg-primary3/60"/>
+
+                                <div className="space-y-1.5 text-sm">
+                                    <p className="flex items-center gap-2 text-secondary1">
+                                        <span className="text-primary2 font-medium">Propriétaire</span>
+                                        <span className="text-secondary2">·</span>
                                         {item.user.last_name} {item.user.first_name}
                                     </p>
-                                    <p>
-                                        <span className="opacity-70">ID Scte :</span>{" "}
+                                    <p className="flex items-center gap-2 text-secondary1">
+                                        <span className="text-primary2 font-medium">ID Scte</span>
+                                        <span className="text-secondary2">·</span>
                                         {item.ID_SCTE || "-"}
                                     </p>
                                 </div>
 
-                                <div className="flex justify-end mt-5">
+                                <div className="flex justify-end mt-4">
                                     <div
-                                        className="flex items-center justify-center w-9 h-9 rounded-full bg-primary3/10 group-hover:bg-primary3/20 transition"
-                                    >
+                                        className="flex items-center justify-center w-8 h-8 rounded-full bg-primary1 group-hover:bg-primary2 transition-colors duration-300">
                                         <FaArrowRight
-                                            className="text-calltoaction1 group-hover:translate-x-1 transition-transform"
-                                        />
+                                            className="text-calltoaction1 text-xs group-hover:translate-x-0.5 transition-transform"/>
                                     </div>
                                 </div>
                             </div>
@@ -178,12 +185,24 @@ export default function Documents() {
                         {data.map((item, index) => (
                             <div
                                 key={index}
-                                className="bg-white border border-primary1/50 rounded-lg px-4 py-3 flex items-center justify-between hover:bg-primary1/10 transition cursor-pointer"
+                                className="group relative overflow-hidden bg-white border border-primary3/60 rounded-xl px-4 py-3 flex items-center justify-between hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 cursor-pointer"
+                                onClick={() => router.push(`/documents/societe/${item.id}`)}
                             >
-                                <div className="flex items-center gap-4">
-                                    <div className="w-10 h-10 rounded-full bg-gray-200 flex-shrink-0"/>
+                                <div className="absolute left-0 top-0 bottom-0 w-1 bg-primary1 rounded-l-xl"/>
+
+                                <div
+                                    className="absolute right-0 top-0 w-20 h-20 bg-primary3/20 rounded-full blur-2xl pointer-events-none"/>
+
+                                <div className="flex items-center gap-4 pl-2">
+
+                                    <div
+                                        className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary1 to-primary2 flex items-center justify-center flex-shrink-0 shadow-sm">
+                                        <span className="text-white font-bold text-sm">
+                                            {item.nom?.charAt(0)}
+                                        </span>
+                                    </div>
                                     <div>
-                                        <p className="font-semibold text-primary1">
+                                        <p className="font-bold text-primary1">
                                             {item.nom}
                                         </p>
                                         <p className="text-sm text-primary2">
@@ -192,8 +211,11 @@ export default function Documents() {
                                     </div>
                                 </div>
 
-                                <FaArrowRight className="text-calltoaction1"
-                                              onClick={() => router.push(`/documents/societe/${item.id}`)}/>
+                                <div
+                                    className="flex items-center justify-center w-8 h-8 rounded-full bg-primary1 group-hover:bg-primary2 transition-colors duration-300">
+                                    <FaArrowRight
+                                        className="text-calltoaction1 text-xs group-hover:translate-x-0.5 transition-transform"/>
+                                </div>
                             </div>
                         ))}
                     </div>

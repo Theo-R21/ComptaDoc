@@ -35,6 +35,11 @@ class UserViewSet(viewsets.ViewSet):
     filter_backends = [filters.SearchFilter]
     search_fields = ["username", "first_name", "last_name", "email"]
 
+    def get_permissions(self):
+        if self.action == "create":
+            return [permissions.AllowAny()]
+        return [permission() for permission in self.permission_classes]
+
     def filter_queryset(self, queryset, request):
         for backend in list(self.filter_backends):
             queryset = backend().filter_queryset(request, queryset, self)

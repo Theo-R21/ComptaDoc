@@ -238,13 +238,10 @@ export default function Societe() {
                                         </div>
                                     )}
 
-                                    <div
-                                        className={`ml-auto p-2 rounded-lg transition ${
-                                            isOpen ? "bg-primary3/60" : "cursor-not-allowed opacity-50"
-                                        }`}
-                                    >
+                                    <div className={`ml-auto flex items-center justify-center w-8 h-8 rounded-full transition-colors duration-300
+            ${isOpen ? "bg-primary1 group-hover:bg-primary2" : "bg-gray-200 cursor-not-allowed opacity-50"}`}>
                                         <FaArrowRight
-                                            className="text-primary2 transition-all group-hover:translate-x-1"/>
+                                            className={`text-xs transition-transform ${isOpen ? "text-calltoaction1 group-hover:translate-x-0.5" : "text-gray-400"}`}/>
                                     </div>
                                 </div>
                             </div>

@@ -4,6 +4,7 @@ import zipfile
 
 from core import settings
 from core.permission import IsComptableOrClient
+from django.db.models import Count
 from django.http import FileResponse, HttpResponse
 from django.shortcuts import get_object_or_404, get_list_or_404
 from documents.models import SocieteDocument, TypeDocument
@@ -87,6 +88,20 @@ class DocumentsViewSet(viewsets.ViewSet):
             mois_id=mois
         ).order_by("nom")
 
+        # Stats sur le queryset complet AVANT le filtre type
+        stats = {
+            "total": queryset.count(),
+            "par_type": list(
+                queryset.values("type__nom")
+                .annotate(count=Count("id"))
+                .order_by("-count")
+            ),
+            "dernier_depot": queryset.order_by("-date_publication")
+            .values_list("date_publication", flat=True)
+            .first(),
+            "types_distincts": queryset.values("type").distinct().count(),
+        }
+
         type_id = request.query_params.get("type")
         if type_id and type_id != "null":
             queryset = queryset.filter(type_id=type_id)
@@ -96,7 +111,9 @@ class DocumentsViewSet(viewsets.ViewSet):
         page = paginator.paginate_queryset(queryset, request)
         serializer = DocumentsSerializer(page, many=True)
 
-        return paginator.get_paginated_response(serializer.data)
+        response = paginator.get_paginated_response(serializer.data)
+        response.data["stats"] = stats
+        return response
 
     @swagger_auto_schema(
         operation_description="Liste des types de documents disponibles.",

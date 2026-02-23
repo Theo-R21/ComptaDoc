@@ -14,6 +14,7 @@ import {FaArrowLeft, FaRegEye} from "react-icons/fa";
 import {PdfViewerModal} from "@/src/app/documents/societe/[id]/[mois]/PDFViewModal";
 import {SocieteInfo} from "@/src/models/societe/societe.model";
 import {Badge} from "@/src/app/components/ui/badge";
+import {Pie, PieChart, ResponsiveContainer, Sector, Tooltip} from "recharts";
 
 export default function Page() {
     const params = useParams();
@@ -40,6 +41,24 @@ export default function Page() {
     const [selectedIds, setSelectedIds] = useState<number[]>([]);
     const [downloading, setDownloading] = useState(false);
     const [societeData, setSocieteData] = useState<SocieteInfo | null>(null);
+    const [stats, setStats] = useState<{
+        total: number;
+        par_type: { type__nom: string; count: number }[];
+        dernier_depot: string | null;
+        types_distincts: number;
+    } | null>(null);
+
+    interface SectorProps {
+        cx: number;
+        cy: number;
+        innerRadius: number;
+        outerRadius: number;
+        startAngle: number;
+        endAngle: number;
+        index: number;
+    }
+
+    const COLORS = ["#1D3557", "#3A6EA5", "#FBC02D", "#4CAF50", "#9E9E9E"];
 
     const allSelected = useMemo(
         () => (data?.length || 0) > 0 && data.every(d => selectedIds.includes(d.id)),
@@ -105,6 +124,7 @@ export default function Page() {
             if (!res) return;
             const json = await res.json();
             setData(json.results);
+            setStats(json.stats);
             setTotalCount(json.count);
         } catch (err: unknown) {
             if (err instanceof DOMException && err.name === "AbortError") {
@@ -202,6 +222,7 @@ export default function Page() {
         }
     }, [selectedIds, downloading]);
 
+
     return (
         <>
             <main className="flex-1 w-full min-h-screen bg-gray-50 px-6 py-6 space-y-6">
@@ -235,35 +256,101 @@ export default function Page() {
                 <div className="mb-6 h-px w-full bg-gray-200"/>
 
                 <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 w-full">
-                    <div className="bg-white rounded-xl shadow p-6 space-y-4 w-full">
-                        <h2 className="font-medium text-gray-800">
-                            Vue d’ensemble
-                        </h2>
+                    <div className="bg-white rounded-xl shadow border border-primary3/60 p-6 space-y-4">
+                        <h2 className="font-medium text-primary1">Vue d'ensemble</h2>
 
                         <div className="flex justify-between">
                             <div>
                                 <p className="text-gray-500 text-sm">Documents</p>
-                                <p className="text-2xl font-semibold">80</p>
+                                <p className="text-2xl font-semibold text-primary1">{stats?.total ?? "-"}</p>
                             </div>
                             <div>
-                                <p className="text-gray-500 text-sm">Factures</p>
-                                <p className="text-2xl font-semibold">40%</p>
+                                <p className="text-gray-500 text-sm">Types</p>
+                                <p className="text-2xl font-semibold text-primary1">{stats?.types_distincts ?? "-"}</p>
+                            </div>
+                            <div>
+                                <p className="text-gray-500 text-sm">Dernier dépôt</p>
+                                <p className="text-sm font-semibold text-primary1">
+                                    {stats?.dernier_depot
+                                        ? new Date(stats.dernier_depot).toLocaleDateString("fr-FR")
+                                        : "-"}
+                                </p>
                             </div>
                         </div>
 
-                        <div className="h-36 bg-gray-100 rounded-lg flex items-center justify-center text-gray-400">
-                            Graphique circulaire
-                        </div>
+                        {stats?.par_type?.length ? (
+                            <ResponsiveContainer width="100%" height={150}>
+                                <PieChart>
+                                    <Pie
+                                        data={stats.par_type}
+                                        dataKey="count"
+                                        nameKey="type__nom"
+                                        cx="50%"
+                                        cy="50%"
+                                        outerRadius={60}
+                                        innerRadius={35}
+                                        fill="#1D3557"
+                                        shape={(props: SectorProps) => (
+                                            <Sector
+                                                cx={props.cx}
+                                                cy={props.cy}
+                                                innerRadius={props.innerRadius}
+                                                outerRadius={props.outerRadius}
+                                                startAngle={props.startAngle}
+                                                endAngle={props.endAngle}
+                                                fill={COLORS[props.index % COLORS.length]}
+                                            />
+                                        )}
+                                    />
+                                    <Tooltip formatter={(value, name) => [value, name]}/>
+                                </PieChart>
+                            </ResponsiveContainer>
+                        ) : (
+                            <div
+                                className="h-36 bg-gray-50 rounded-lg flex items-center justify-center text-gray-400 text-sm">
+                                Aucun document
+                            </div>
+                        )}
                     </div>
 
-                    <div className="bg-white rounded-xl shadow p-6 xl:col-span-2 w-full">
-                        <h2 className="font-medium text-gray-800 mb-4">
-                            Activité mensuelle
-                        </h2>
+                    <div className="bg-white rounded-xl shadow border border-primary3/60 p-6 xl:col-span-2">
+                        <h2 className="font-medium text-primary1 mb-4">Répartition par type</h2>
 
-                        <div className="h-auto bg-gray-100 rounded-lg flex items-center justify-center text-gray-400">
-                            Graphique barres
-                        </div>
+                        {stats?.par_type?.length ? (
+                            <div className="space-y-3">
+                                {stats.par_type.map((item, index) => (
+                                    <div key={index} className="flex items-center gap-3">
+                                        <div
+                                            className="w-3 h-3 rounded-full flex-shrink-0"
+                                            style={{backgroundColor: ["#1D3557", "#3A6EA5", "#FBC02D", "#4CAF50", "#9E9E9E"][index % 5]}}
+                                        />
+                                        <div className="flex-1">
+                                            <div className="flex justify-between text-sm mb-1">
+                                                <span className="text-secondary1 font-medium">{item.type__nom}</span>
+                                                <span className="text-primary1 font-semibold">{item.count}</span>
+                                            </div>
+                                            <div className="h-1.5 bg-gray-100 rounded-full">
+                                                <div
+                                                    className="h-1.5 rounded-full transition-all duration-500"
+                                                    style={{
+                                                        width: `${Math.round((item.count / (stats?.total || 1)) * 100)}%`,
+                                                        backgroundColor: ["#1D3557", "#3A6EA5", "#FBC02D", "#4CAF50", "#9E9E9E"][index % 5]
+                                                    }}
+                                                />
+                                            </div>
+                                        </div>
+                                        <span className="text-xs text-secondary2 w-8 text-right">
+                                            {Math.round((item.count / (stats?.total || 1)) * 100)}%
+                                        </span>
+                                    </div>
+                                ))}
+                            </div>
+                        ) : (
+                            <div
+                                className="h-36 bg-gray-50 rounded-lg flex items-center justify-center text-gray-400 text-sm">
+                                Aucune donnée
+                            </div>
+                        )}
                     </div>
                 </div>
 
