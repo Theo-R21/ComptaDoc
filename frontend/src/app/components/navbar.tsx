@@ -5,6 +5,9 @@ import UserDropdown from "@/src/app/components/dropdown";
 import {MdOutlineDashboard} from "react-icons/md";
 import {RiFoldersLine, RiGroup2Line} from "react-icons/ri";
 import {hasRole} from "@/src/lib/permissions";
+import Image from "next/image";
+import Logo1 from "@/public/Logo_SimplyLux_Text.svg";
+import Logo2 from "@/public/Logo_SimplyLux.svg";
 
 export default function Navbar() {
     const {user} = useCurrentUser();
@@ -13,8 +16,23 @@ export default function Navbar() {
     return (
 
         <aside className="sticky top-0 h-screen flex flex-col justify-between bg-primary1 shadow-lg w-64">
-            <div className="flex items-center gap-2 border-b border-primary2 p-4 max-md:justify-center">
-                <span className="font-bold text-2xl max-md:hidden">SimplyLux</span>
+            <div className="flex items-center justify-center border-b border-primary2 max-md:justify-center">
+                {/* Logo avec texte — desktop */}
+                <Image
+                    src={Logo1}
+                    alt="SimplyLux"
+                    width={150}
+                    height={40}
+                    className="max-md:hidden"
+                />
+                {/* Logo icône seule — mobile */}
+                <Image
+                    src={Logo2}
+                    alt="SimplyLux"
+                    width={36}
+                    height={36}
+                    className="hidden max-md:block"
+                />
             </div>
 
             <nav className="flex flex-col gap-2 p-4 flex-1">
@@ -24,9 +42,9 @@ export default function Navbar() {
                     <span className="max-md:hidden">Dashboard</span>
                 </Link>
 
-                 <Link href="/documents/societe"
-                    className="flex items-center gap-2 rounded-md px-3 py-2 hover:bg-primary2 cursor-pointer transition max-md:justify-center text-left">
-                    <RiFoldersLine className="text-calltoaction1 text-2xl" />
+                <Link href="/documents/societe"
+                      className="flex items-center gap-2 rounded-md px-3 py-2 hover:bg-primary2 cursor-pointer transition max-md:justify-center text-left">
+                    <RiFoldersLine className="text-calltoaction1 text-2xl"/>
                     <span className="max-md:hidden">Documents</span>
                 </Link>
 
