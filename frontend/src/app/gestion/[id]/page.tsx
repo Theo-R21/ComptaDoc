@@ -146,7 +146,7 @@ export default function Gestion() {
 
 
     const handleToggleChange = async (
-        userId: string,
+        userId: string | Array<string> | undefined,
         actif: boolean
     ) => {
         const previousValue = isActive;
@@ -314,7 +314,7 @@ export default function Gestion() {
                                 checked={isActive}
                                 disabled={updatingToggle}
                                 onCheckedChange={(checked) =>
-                                    handleToggleChange(user.id, checked)
+                                    handleToggleChange(id, checked)
                                 }
                                 className="
                                 data-[state=checked]:bg-calltoaction1

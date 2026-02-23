@@ -78,6 +78,21 @@ class SocieteViewSet(viewsets.ViewSet):
         return paginator.get_paginated_response(serializer.data)
 
     @swagger_auto_schema(
+        operation_description="Détail d'une société.",
+        responses={
+            200: SocieteSerializer,
+            404: "Société non trouvé"
+        }
+    )
+    def retrieve(self, request, pk=None):
+        try:
+            societe = Societe.objects.get(pk=pk)
+        except User.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+        serializer = SocieteSerializer(societe)
+        return Response(serializer.data)
+
+    @swagger_auto_schema(
         operation_description="Liste des mois d'une société pour une année donnée.",
         manual_parameters=[
             openapi.Parameter(

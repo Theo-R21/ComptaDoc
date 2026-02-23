@@ -12,6 +12,7 @@ import Searchbar from "@/src/app/components/searchbar";
 import {TbDownload} from "react-icons/tb";
 import {FaArrowLeft, FaRegEye} from "react-icons/fa";
 import {PdfViewerModal} from "@/src/app/documents/societe/[id]/[mois]/PDFViewModal";
+import {SocieteInfo} from "@/src/models/societe/societe.model";
 
 export default function Page() {
     const params = useParams();
@@ -37,12 +38,12 @@ export default function Page() {
     const [selectedType, setSelectedType] = useState<string | null>(null);
     const [selectedIds, setSelectedIds] = useState<number[]>([]);
     const [downloading, setDownloading] = useState(false);
+    const [societeData, setSocieteData] = useState<SocieteInfo | null>(null);
 
     const allSelected = useMemo(
         () => (data?.length || 0) > 0 && data.every(d => selectedIds.includes(d.id)),
         [data, selectedIds]
     );
-
 
     const toggleAll = useCallback(() => {
         setSelectedIds(allSelected ? [] : data.map(d => d.id));
@@ -122,7 +123,35 @@ export default function Page() {
 
     useEffect(() => {
         fetchDocument(pageIndex, debouncedSearch);
+        fetchSociete()
     }, [pageIndex, debouncedSearch, selectedType]);
+
+    const fetchSociete = async () => {
+        const controller = new AbortController();
+        try {
+
+            const res = await apiFetch(
+                `/societe/${id}/`,
+                {signal: controller.signal},
+                router
+            );
+            if (!res) return;
+            const json = await res.json();
+            setSocieteData(json);
+        } catch (err: unknown) {
+            if (err instanceof DOMException && err.name === "AbortError") {
+                console.error(err.message);
+            } else if (err instanceof Error) {
+                console.error(err.message);
+            } else {
+                console.error("Erreur inconnue", err);
+            }
+        } finally {
+            setLoading(false);
+        }
+        return () => controller.abort();
+
+    }
 
     const downloadPDF = useCallback(async (documentId: number, filename: string) => {
         const res = await apiFetch(`/documents/${documentId}/download/`, {
@@ -176,16 +205,26 @@ export default function Page() {
         <>
             <main className="flex-1 w-full min-h-screen bg-gray-50 px-6 py-6 space-y-6">
                 <header className="mb-8">
-                    <h1 className="text-2xl font-bold text-primary1">
-                        Documents du client {id}
-                    </h1>
-                    <p className="text-sm text-primary2">
-                        Vue du mois : {mois}
+                    <div className="flex items-center gap-2 mb-1">
+                        <h1 className="text-2xl font-bold text-primary1">
+                            {societeData?.nom}
+                        </h1>
+                        <span className="text-xs font-medium px-2 py-1 rounded-full bg-blue-100 text-blue-700">
+                            {societeData?.ID_SCTE}
+                        </span>
+                    </div>
+                    <p className="text-sm text-gray-500">
+                        Propriétaire —{" "}
+                        <span className="font-medium text-gray-700">
+                            {societeData?.user.first_name} {societeData?.user.last_name}
+                        </span>
+                    </p>
+                    <p className="text-sm text-primary2 mt-1">
+                        Vue du mois : <span className="font-medium">{mois}</span>
                     </p>
                     <p
                         onClick={() => router.push(`/documents/societe/${id}/`)}
-                        className="flex items-center mt-2 gap-2 cursor-pointer text-primary2 transition-all duration-300
-                   hover:text-primary1 hover:translate-x-1"
+                        className="flex items-center mt-2 gap-2 cursor-pointer text-primary2 transition-all duration-300 hover:text-primary1 hover:translate-x-1"
                     >
                         <FaArrowLeft className="transition-colors duration-300"/>
                         <span className="hover:underline">retour</span>
