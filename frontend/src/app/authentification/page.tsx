@@ -33,14 +33,21 @@ export default function LoginPage() {
                 body: JSON.stringify({username, password}),
                 credentials: "include",
             })
+            if (!res) return;
             if (res.ok) {
                 refreshCurrentUser()
                 router.push("/dashboard");
             } else {
                 throw new Error("Identifiants invalides");
             }
-        } catch (err: any) {
-            setError(err.message);
+        } catch (err: unknown) {
+            if (err instanceof DOMException && err.name === "AbortError") {
+                console.error(err.message);
+            } else if (err instanceof Error) {
+                console.error(err.message);
+            } else {
+                console.error("Erreur inconnue", err);
+            }
         } finally {
             setLoading(false);
         }
@@ -49,49 +56,58 @@ export default function LoginPage() {
 
     return (
         <>
-            <h2 className="text-primary1 bg-clip-text text-center text-4xl">
-                Connexion
-            </h2>
-            <form onSubmit={handleSubmit} className="flex w-full flex-col items-center gap-6 px-20 py-6">
-                <div className="relative w-full">
-                        <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-orange-400">
-                          <i className="ri-user-line"></i>
-                        </span>
-                    <Input
-                        label="Identifiant"
-                        name="username"
-                        placeholder="Identifiant..."
-                        type="text"
-                        required
-                    />
-                </div>
-                <div className="relative w-full">
-                        <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-orange-400">
-                          <i className="ri-lock-password-line"></i>
-                        </span>
-                    <Input
-                        label="Mot de passe"
-                        name="password"
-                        type="password"
-                        placeholder="Mot de passe..."
-                        required
-                    />
-                </div>
-                <div className="flex flex-col items-start self-start text-primary2">
-                    <Link href="/authentification/password" className="hover:underline">Mot de passe oublié ?</Link>
-                    <Link href="/authentification/register" className="hover:underline">Créer un compte</Link>
+            <div className="mb-8 text-center">
+                <h2 className="text-white text-3xl font-bold tracking-tight">
+                    Connexion
+                </h2>
+                <p className="text-white/50 text-sm mt-2">
+                    Connectez-vous pour continuer
+                </p>
+            </div>
+
+            <form onSubmit={handleSubmit} className="flex w-full flex-col gap-4">
+                <Input
+                    name="username"
+                    label="Identifiant"
+                    placeholder="Identifiant..."
+                    type="text"
+                    required
+                    labelVariant="white"
+                    className="bg-white/10 border-white/20 text-white placeholder:text-white/30 focus:border-white/50"
+                />
+                <Input
+                    name="password"
+                    label="Mot de passe"
+                    type="password"
+                    placeholder="Mot de passe..."
+                    required
+                    labelVariant="white"
+                    className="bg-white/10 border-white/20 text-white placeholder:text-white/30 focus:border-white/50"
+                />
+
+                <div className="flex flex-col items-start text-white/50 text-sm gap-1 mt-1">
+                    <Link href="/authentification/password" className="hover:text-white hover:underline transition">
+                        Mot de passe oublié ?
+                    </Link>
+                    <Link href="/authentification/register" className="hover:text-white hover:underline transition">
+                        Créer un compte
+                    </Link>
                 </div>
 
-                {error && <p className="text-red-400">{error}</p>}
-                    <Button
-                        disabled={loading}
-                        variant="calltoaction1"
-                        className="w-full px-4 py-2 shadow-lg"
-                    >
-                        {loading ? "Connexion..." : "Connexion"}
-                    </Button>
+                {error && (
+                    <p className="text-red-300 text-sm text-center bg-red-500/15 border border-red-400/30 rounded-lg px-3 py-2">
+                        {error}
+                    </p>
+                )}
+
+                <Button
+                    variant="calltoaction1"
+                    disabled={loading}
+                    className="w-full px-4 py-2.5 mt-2 shadow-lg"
+                >
+                    {loading ? "Connexion..." : "Connexion"}
+                </Button>
             </form>
         </>
-
     );
 }

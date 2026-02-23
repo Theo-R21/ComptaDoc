@@ -47,6 +47,8 @@ export default function CodePage() {
                 },
                 body: JSON.stringify({email, code: otp}),
             })
+            if (!res) return;
+
             const resData = await res.json();
 
             if (res.ok) {
@@ -55,26 +57,36 @@ export default function CodePage() {
             } else {
                 throw new Error(resData.message);
             }
-        } catch (err: never) {
-            setError(err.message);
+        } catch (err: unknown) {
+            if (err instanceof DOMException && err.name === "AbortError") {
+                console.error(err.message);
+            } else if (err instanceof Error) {
+                console.error(err.message);
+            } else {
+                console.error("Erreur inconnue", err);
+            }
         } finally {
             setLoading(false);
         }
     }
 
     return (
-        <div className="flex w-full flex-col items-center gap-6 p-8">
-            <h1 className="text-2xl font-semibold text-gray-800">
-                Mot de passe oublié
-            </h1>
+        <>
+            <div className="mb-8 text-center">
+                <h2 className="text-white text-3xl font-bold tracking-tight">
+                    Code de vérification
+                </h2>
+                <p className="text-white/50 text-sm mt-2">
+                    Entrez le code reçu par email
+                </p>
+            </div>
 
-            <form onSubmit={handleSubmit} className="w-full space-y-6">
+            <form onSubmit={handleSubmit} className="flex w-full flex-col gap-6">
                 <div>
-                    <label className="text-gray-700 font-medium text-lg mb-2">
-                        Code d&#39;authentification
+                    <label className="text-white/80 font-medium text-sm mb-3 block">
+                        Code d'authentification
                     </label>
-
-                    <div className="flex justify-center gap-2 py-2 text-primary1">
+                    <div className="flex justify-center items-center gap-2">
                         {code.map((digit, index) => (
                             <>
                                 <input
@@ -86,37 +98,38 @@ export default function CodePage() {
                                     value={digit}
                                     onChange={(e) => handleChange(index, e.target.value)}
                                     onKeyDown={(e) => handleKeyDown(index, e)}
-                                    className="h-14 w-14 rounded-lg border-2 border-gray-300 text-center text-xl font-medium focus:border-gray-400 focus:outline-none"
+                                    className="h-12 w-12 rounded-xl border-2 border-white/20 bg-white/10 text-center text-xl font-bold text-white focus:border-calltoaction1 focus:outline-none transition backdrop-blur-sm"
                                 />
                                 {index < 5 && (
-                                    <span className="mx-2 flex h-14 items-center text-xl text-gray-400">-</span>
+                                    <span className="text-white/30 text-lg">—</span>
                                 )}
                             </>
                         ))}
                     </div>
                 </div>
+
                 {error && (
-                    <p className="text-red-500 text-sm text-left w-full">
+                    <p className="text-red-300 text-sm text-center bg-red-500/15 border border-red-400/30 rounded-lg px-3 py-2">
                         {error}
                     </p>
                 )}
-                <div className="flex flex-col items-start self-start text-primary2">
-                    <Link
-                        href="/authentication/login"
-                        className="hover:underline"
-                    >
-                        Retour à la connexion
-                    </Link>
-                </div>
+
+                <Link
+                    href="/authentification"
+                    className="text-white/50 text-sm hover:text-white hover:underline transition"
+                >
+                    Retour à la connexion
+                </Link>
 
                 <Button
                     type="submit"
                     variant="calltoaction1"
-                    className="w-full py-3 shadow-lg"
+                    disabled={loading}
+                    className="w-full py-2.5 shadow-lg"
                 >
-                    Continuer
+                    {loading ? "Vérification..." : "Continuer"}
                 </Button>
             </form>
-        </div>
-    )
+        </>
+    );
 }

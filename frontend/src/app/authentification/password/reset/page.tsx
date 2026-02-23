@@ -51,14 +51,22 @@ export default function ResetPasswordPage() {
                 headers: {"Content-Type": "application/json"},
                 body: JSON.stringify({reset_token: resetToken, password1: password1, password2: password2}),
             });
+            if (!res) return;
+
             const resData = await res.json();
             if (res.ok) {
                 router.push("/authentification");
             } else {
                 throw new Error(resData.message);
             }
-        } catch (err: any) {
-            console.error(err);
+        } catch (err: unknown) {
+            if (err instanceof DOMException && err.name === "AbortError") {
+                console.error(err.message);
+            } else if (err instanceof Error) {
+                console.error(err.message);
+            } else {
+                console.error("Erreur inconnue", err);
+            }
         } finally {
             setLoading(false);
         }
@@ -66,35 +74,50 @@ export default function ResetPasswordPage() {
 
     return (
         <>
-            <h2 className="text-primary1 bg-clip-text text-center text-4xl">Mot de passe oublié</h2>
-            <form onSubmit={handleSubmit} className="flex w-full flex-col items-center gap-6 px-20 py-6">
-                <div className="relative w-full">
-                    <Input
-                        label="Nouveau mot de passe"
-                        name="password1"
-                        type="password"
-                        placeholder="Nouveau mot de passe..."
-                        error={errors.password1}
-                        required
-                    />
-                </div>
-                <div className="relative w-full">
-                    <Input
-                        label="Re-taper le nouveau mot de passe"
-                        name="password2"
-                        type="password"
-                        placeholder="Nouveau mot de passe..."
-                        error={errors.password2}
-                        required
-                    />
-                </div>
-                <div className="flex flex-col items-start self-start text-primary2">
-                    <Link href="/authentification" className="hover:underline">Retour à la connexion</Link>
-                </div>
-                <Button variant="calltoaction1" className="w-full rounded-md px-4 py-2">
-                    Changer mot de passe
+            <div className="mb-8 text-center">
+                <h2 className="text-white text-3xl font-bold tracking-tight">
+                    Réinitialisation
+                </h2>
+                <p className="text-white/50 text-sm mt-2">
+                    Choisissez votre nouveau mot de passe
+                </p>
+            </div>
+
+            <form onSubmit={handleSubmit} className="flex w-full flex-col gap-5">
+                <Input
+                    label="Nouveau mot de passe"
+                    name="password1"
+                    type="password"
+                    placeholder="Nouveau mot de passe..."
+                    error={errors.password1}
+                    required
+                    labelVariant="white"
+                />
+                <Input
+                    label="Confirmer le mot de passe"
+                    name="password2"
+                    type="password"
+                    placeholder="Confirmation..."
+                    error={errors.password2}
+                    required
+                    labelVariant="white"
+                />
+
+                <Link
+                    href="/authentification"
+                    className="text-white/50 text-sm hover:text-white hover:underline transition"
+                >
+                    Retour à la connexion
+                </Link>
+
+                <Button
+                    variant="calltoaction1"
+                    disabled={loading}
+                    className="w-full px-4 py-2.5 mt-1 shadow-lg"
+                >
+                    {loading ? "Modification..." : "Changer le mot de passe"}
                 </Button>
             </form>
         </>
-    )
+    );
 }

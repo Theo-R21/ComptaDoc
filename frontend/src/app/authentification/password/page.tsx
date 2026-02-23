@@ -5,8 +5,8 @@ import Button from "@/src/app/components/button";
 import {useState} from "react";
 import {useRouter} from "next/navigation";
 import {apiFetch} from "@/src/hook/userRefresh";
-import {societeCreateSchema} from "@/src/lib/validation/societe.schema";
 import {formatZodErrors} from "@/src/lib/validation/helpers";
+import {emailUserSchema} from "@/src/lib/validation/user.schema";
 
 export default function PasswordPage() {
     const router = useRouter();
@@ -15,10 +15,9 @@ export default function PasswordPage() {
         email?: string;
     }>({});
 
+
     const validate = (email: string) => {
-        const result = societeCreateSchema.safeParse({
-            email: email,
-        });
+        const result = emailUserSchema.safeParse({email});
 
         if (!result.success) {
             setErrors(formatZodErrors(result.error));
@@ -48,6 +47,8 @@ export default function PasswordPage() {
                 },
                 body: JSON.stringify({email}),
             })
+            if (!res) return;
+
             const resData = await res.json();
 
             if (res.ok) {
@@ -56,8 +57,14 @@ export default function PasswordPage() {
             } else {
                 throw new Error(resData.message);
             }
-        } catch (err: any) {
-            console.error(err.message);
+        } catch (err: unknown) {
+            if (err instanceof DOMException && err.name === "AbortError") {
+                console.error(err.message);
+            } else if (err instanceof Error) {
+                console.error(err.message);
+            } else {
+                console.error("Erreur inconnue", err);
+            }
         } finally {
             setLoading(false);
         }
@@ -65,25 +72,42 @@ export default function PasswordPage() {
 
     return (
         <>
-            <h2 className="text-primary1 bg-clip-text text-center text-4xl">Mot de passe oublié</h2>
-            <form onSubmit={handleSubmit} className="flex w-full flex-col items-center gap-6 px-20 py-6">
-                <div className="relative w-full">
-                    <Input
-                        label="Adresse mail"
-                        name="email"
-                        type="email"
-                        placeholder="Adresse mail..."
-                        error={errors.email}
-                        required
-                    />
-                </div>
-                <div className="flex flex-col items-start self-start text-primary2">
-                    <Link href="/authentification" className="hover:underline">Retour à la connexion</Link>
-                </div>
-                <Button variant="calltoaction1" className="w-full rounded-md px-4 py-2">
-                    Recevoir un code
+            <div className="mb-8 text-center">
+                <h2 className="text-white text-3xl font-bold tracking-tight">
+                    Mot de passe oublié
+                </h2>
+                <p className="text-white/50 text-sm mt-2">
+                    Entrez votre adresse mail pour recevoir un code de réinitialisation
+                </p>
+            </div>
+
+            <form onSubmit={handleSubmit} className="flex w-full flex-col gap-5">
+                <Input
+                    label="Adresse mail"
+                    name="email"
+                    type="email"
+                    placeholder="Adresse mail..."
+                    error={errors.email}
+                    required
+                    labelVariant="white"
+                />
+
+                <Link
+                    href="/authentification"
+                    className="text-white/50 text-sm hover:text-white hover:underline transition"
+                >
+                    Retour à la connexion
+                </Link>
+
+                <Button
+                    variant="calltoaction1"
+                    disabled={loading}
+                    className="w-full px-4 py-2.5 mt-1 shadow-lg"
+                    type="submit"
+                >
+                    {loading ? "Envoi..." : "Recevoir un code"}
                 </Button>
             </form>
         </>
-    )
+    );
 }
