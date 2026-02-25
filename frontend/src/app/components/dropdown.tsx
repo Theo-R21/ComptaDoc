@@ -10,15 +10,17 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger
 } from "@/src/app/components/ui/dropdown-menu"
+import {useRouter} from "next/navigation";
 
 export default function UserDropdown() {
-    const {user, logout } = useCurrentUser();
+    const {user, logout} = useCurrentUser();
+    const router = useRouter();
 
     if (!user) return null;
 
     return (
         <DropdownMenu>
-            <DropdownMenuTrigger className="flex items-center gap-2 focus:outline-none cursor-pointer">
+            <DropdownMenuTrigger className="flex items-center gap-3 px-2 py-1 rounded-lg hover:bg-primary2 transition-colors focus:outline-none cursor-pointer">
                 <Image
                     src="/avatar.webp"
                     alt="Avatar"
@@ -36,21 +38,34 @@ export default function UserDropdown() {
                 </div>
             </DropdownMenuTrigger>
 
-            <DropdownMenuContent align="end" className="w-48">
-                <DropdownMenuLabel>Mon compte</DropdownMenuLabel>
-                <DropdownMenuSeparator/>
-                <DropdownMenuItem className="cursor-pointer">
-                    <i className="ri-user-line"></i>
-                    Profil
+            <DropdownMenuContent
+                align="end"
+                className="w-56 rounded-xl border border-primary3 bg-white shadow-lg p-2"
+            >
+                <DropdownMenuLabel className="text-primary1 font-semibold">
+                    Mon compte
+                </DropdownMenuLabel>
+
+                <DropdownMenuSeparator className="bg-primary3"/>
+
+                <DropdownMenuItem
+                    className="flex items-center gap-2 rounded-lg px-3 py-2 text-secondary1 hover:bg-primary3 hover:text-primary1 transition-colors cursor-pointer"
+                                        onClick={() => router.push(`/profile/`)}>
+                    <i className="ri-user-line text-primary2"></i>
+                    Profile
                 </DropdownMenuItem>
-                <DropdownMenuItem className="cursor-pointer">
-                    <i className="ri-settings-line"></i>
+
+                <DropdownMenuItem
+                    className="flex items-center gap-2 rounded-lg px-3 py-2 text-secondary1 hover:bg-primary3 hover:text-primary1 transition-colors cursor-pointer">
+                    <i className="ri-settings-line text-primary2"></i>
                     Paramètres
                 </DropdownMenuItem>
-                <DropdownMenuSeparator/>
+
+                <DropdownMenuSeparator className="bg-primary3"/>
+
                 <DropdownMenuItem
                     onClick={logout}
-                    className="text-red-600 cursor-pointer"
+                    className="flex items-center gap-2 rounded-lg px-3 py-2 text-red-500 hover:bg-red-50 hover:text-red-600 transition-colors cursor-pointer"
                 >
                     <i className="ri-logout-box-line"></i>
                     Déconnexion

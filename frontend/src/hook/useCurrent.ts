@@ -1,9 +1,9 @@
 import { createContext, useContext } from "react";
-import {UserModel} from "@/src/models/user/user.model";
+import {UserInfoModel, UserModel} from "@/src/models/user/user.model";
 
 
 export type CurrentUserContextType = {
-  user: UserModel | null;
+  user: UserInfoModel | null;
   refreshCurrentUser: () => void;
   logout: () => void;
 };

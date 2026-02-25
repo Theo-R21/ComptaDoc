@@ -135,7 +135,6 @@ class MeView(APIView):
                         "email": "jdoe@example.com",
                         "is_superuser": False,
                         "role": "client",
-                        "societe_id": 5
                     }
                 }
             )
@@ -143,21 +142,17 @@ class MeView(APIView):
     )
     def get(self, request):
         user = request.user
-        societe = Societe.objects.filter(user=user)
-        if societe:
-            societe_id = societe[0].id
-        else :
-            societe_id = None
 
         return Response({
-            "id": user.id,
+            "id": str(user.id),  # UUID → string
             "username": user.username,
             "first_name": user.first_name,
             "last_name": user.last_name,
             "email": user.email,
+            "phone": user.phone,
+            "last_login": user.last_login,
             "is_superuser": user.is_superuser,
             "role": user.role,
-            "societe_id": societe_id
         })
 
 class ForgotPasswordView(APIView):
