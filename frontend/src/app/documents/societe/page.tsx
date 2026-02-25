@@ -14,6 +14,8 @@ import {FaPlus} from "react-icons/fa6";
 import {SocieteModal} from "@/src/app/components/modal/SocieteModal";
 import {useCurrentUser} from "@/src/hook/useCurrent";
 import {hasRole} from "@/src/lib/permissions";
+import {CiEdit} from "react-icons/ci";
+import {TbTrash} from "react-icons/tb";
 
 
 export default function Documents() {
@@ -26,8 +28,17 @@ export default function Documents() {
     const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
     const [search, setSearch] = useState("");
     const debouncedSearch = useDebounce(search);
-    const [openUpload, setOpenUpload] = useState(false);
     const {user} = useCurrentUser();
+    const [modalState, setModalState] = useState<{
+        open: boolean
+        mode: "create" | "edit" | "delete"
+        societe?: SocieteInfo
+    }>({open: false, mode: "create"})
+
+    const openCreate = () => setModalState({open: true, mode: "create"})
+    const openEdit = (societe: SocieteInfo) => setModalState({open: true, mode: "edit", societe})
+    const openDelete = (societe: SocieteInfo) => setModalState({open: true, mode: "delete", societe})
+
 
     const fetchSocietes = async (page = pageIndex, searchTerm = debouncedSearch) => {
         setLoading(true);
@@ -92,7 +103,7 @@ export default function Documents() {
                             <Button
                                 variant="calltoaction1"
                                 className="flex items-center gap-2 font-medium text-sm px-4 py-2 rounded-lg"
-                                onClick={() => setOpenUpload(true)}
+                                onClick={openCreate}
                             >
                                 <FaPlus className="w-4 h-4"/>
                                 <span>Société</span>
@@ -141,16 +152,39 @@ export default function Documents() {
                                 <div
                                     className="absolute top-0 right-0 w-24 h-24 bg-primary3/30 rounded-full blur-2xl pointer-events-none"/>
 
-                                <div className="flex items-center gap-3 mt-2">
-                                    <div
-                                        className="w-11 h-11 rounded-xl bg-gradient-to-br from-primary1 to-primary2 flex items-center justify-center flex-shrink-0 shadow-sm">
-                                        <span className="text-white font-bold text-sm">
-                                            {item.nom?.charAt(0)}
-                                        </span>
+                                <div className="flex items-center justify-between mt-2">
+
+                                    <div className="flex items-center gap-3">
+                                        <div
+                                            className="w-11 h-11 rounded-xl bg-gradient-to-br from-primary1 to-primary2 flex items-center justify-center flex-shrink-0 shadow-sm">
+                                            <span className="text-white font-bold text-sm">
+                                                {item.nom?.charAt(0)}
+                                            </span>
+                                        </div>
+
+                                        <p className="text-base font-bold tracking-tight text-primary1 leading-tight">
+                                            {item.nom}
+                                        </p>
                                     </div>
-                                    <p className="text-base font-bold tracking-tight text-primary1 leading-tight">
-                                        {item.nom}
-                                    </p>
+                                    {hasRole(user, ["comptable"]) && (
+                                        <div onClick={(e) => e.stopPropagation()} className="flex gap-2">
+                                            <Button
+                                                variant="secondary2"
+                                                className="text-xs px-3 py-1.5"
+                                                onClick={() => openEdit(item)}
+                                            >
+                                                <CiEdit className="text-base"/>
+                                            </Button>
+
+                                            <Button
+                                                variant="danger"
+                                                className="text-xs px-3 py-1.5"
+                                                onClick={() => openDelete(item)}
+                                            >
+                                                <TbTrash className="text-base"/>
+                                            </Button>
+                                        </div>
+                                    )}
                                 </div>
 
                                 <div className="my-3 h-px bg-primary3/60"/>
@@ -185,7 +219,7 @@ export default function Documents() {
                         {data.map((item, index) => (
                             <div
                                 key={index}
-                                className="group relative overflow-hidden bg-white border border-primary3/60 rounded-xl px-4 py-3 flex items-center justify-between hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 cursor-pointer"
+                                className="group relative overflow-hidden bg-white border border-primary3/60 rounded-xl px-4 py-3 flex items-center justify-between hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 cursor-pointer w-full"
                                 onClick={() => router.push(`/documents/societe/${item.id}`)}
                             >
                                 <div className="absolute left-0 top-0 bottom-0 w-1 bg-primary1 rounded-l-xl"/>
@@ -194,7 +228,6 @@ export default function Documents() {
                                     className="absolute right-0 top-0 w-20 h-20 bg-primary3/20 rounded-full blur-2xl pointer-events-none"/>
 
                                 <div className="flex items-center gap-4 pl-2">
-
                                     <div
                                         className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary1 to-primary2 flex items-center justify-center flex-shrink-0 shadow-sm">
                                         <span className="text-white font-bold text-sm">
@@ -212,10 +245,36 @@ export default function Documents() {
                                 </div>
 
                                 <div
-                                    className="flex items-center justify-center w-8 h-8 rounded-full bg-primary1 group-hover:bg-primary2 transition-colors duration-300">
-                                    <FaArrowRight
-                                        className="text-calltoaction1 text-xs group-hover:translate-x-0.5 transition-transform"/>
+                                    className="flex items-center gap-2 z-10"
+                                    onClick={(e) => e.stopPropagation()}
+                                >
+                                    {hasRole(user, ["comptable"]) && (
+                                        <>
+                                            <Button
+                                                variant="secondary2"
+                                                className="text-xs px-3 py-1.5"
+                                                onClick={() => openEdit(item)}
+                                            >
+                                                <CiEdit className="text-base"/>
+                                            </Button>
+
+                                            <Button
+                                                variant="danger"
+                                                className="text-xs px-3 py-1.5"
+                                                onClick={() => openDelete(item)}
+                                            >
+                                                <TbTrash className="text-base"/>
+                                            </Button>
+                                        </>
+                                    )}
+
+                                    <div
+                                        className="flex items-center justify-center w-8 h-8 rounded-full bg-primary1 group-hover:bg-primary2 transition-colors duration-300">
+                                        <FaArrowRight
+                                            className="text-calltoaction1 text-xs group-hover:translate-x-0.5 transition-transform"/>
+                                    </div>
                                 </div>
+
                             </div>
                         ))}
                     </div>
@@ -232,9 +291,10 @@ export default function Documents() {
             </main>
             {hasRole(user, ["comptable"]) && (
                 <SocieteModal
-                    open={openUpload}
-                    onOpenChange={setOpenUpload}
-                    mode="create"
+                    open={modalState.open}
+                    onOpenChange={(open) => setModalState((prev) => ({...prev, open}))}
+                    mode={modalState.mode}
+                    societe={modalState.societe}
                     onSuccess={() => {
                         setPageIndex(0);
                         fetchSocietes(0, debouncedSearch);

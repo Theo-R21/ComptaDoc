@@ -6,7 +6,7 @@ import {SocieteInfo} from "@/src/models/societe/societe.model";
 import {apiFetch} from "@/src/hook/userRefresh";
 import Input from "@/src/app/components/input";
 import {formatZodErrors} from "@/src/lib/validation/helpers";
-import {societeCreateSchema} from "@/src/lib/validation/societe.schema";
+import {societeCreateSchema, societeEditSchema} from "@/src/lib/validation/societe.schema";
 
 type ModalMode = "create" | "edit" | "delete"
 
@@ -26,15 +26,15 @@ const TITLES: Record<ModalMode, string> = {
 }
 
 export function SocieteModal({
-    open,
-    onOpenChange,
-    onSuccess,
-    mode,
-    userId,
-    societe,
-}: SocieteModalProps) {
+                                 open,
+                                 onOpenChange,
+                                 onSuccess,
+                                 mode,
+                                 userId,
+                                 societe,
+                             }: SocieteModalProps) {
     const [users, setUsers] = useState<UserModel[]>([])
-    const [selectedUsers, setSelectedUsers] = useState<string>(userId ?? societe?.user?.id ?? "")
+    const [selectedUsers, setSelectedUsers] = useState<string>("")
     const [societeName, setSocieteName] = useState<string>(societe?.nom ?? "")
     const [scte, setScte] = useState<string>(societe?.ID_SCTE ?? "")
     const [loading, setLoading] = useState(false)
@@ -80,8 +80,9 @@ export function SocieteModal({
     }, [mode, userId])
 
     const validate = () => {
-        const result = societeCreateSchema.safeParse({
-            user_id: selectedUsers,
+        const schema = mode === "create" ? societeCreateSchema : societeEditSchema
+        const result = schema.safeParse({
+            ...(selectedUsers && {user_id: selectedUsers}),
             nom: societeName,
             scte,
         })
@@ -119,7 +120,7 @@ export function SocieteModal({
             const res = await apiFetch(`/societe/${societe.id}/`, {
                 method: "PATCH",
                 headers: {"Content-Type": "application/json"},
-                body: JSON.stringify({nom: societeName, user_id: selectedUsers, ID_SCTE: scte}),
+                body: JSON.stringify({nom: societeName, ...(selectedUsers && {user_id: selectedUsers}), ID_SCTE: scte}),
             })
             if (!res) return
             if (!res.ok) {
