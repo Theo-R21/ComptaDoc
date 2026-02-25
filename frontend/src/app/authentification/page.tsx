@@ -37,12 +37,16 @@ export default function LoginPage() {
             })
             if (!res) return;
             if (res.ok) {
-                refreshCurrentUser()
+                const currentUser = await apiFetch("/auth/users/me/", {credentials: "include"})
+                    .then(res => res?.ok ? res.json() : null);
+
                 showNotification({
                     title: "Succès",
-                    message: `Bienvenue ${user?.first_name ?? ""} ${user?.last_name ?? ""}.`,
+                    message: `Bienvenue ${currentUser?.first_name ?? ""} ${currentUser?.last_name ?? ""}.`,
                     type: "success",
-                })
+                });
+
+                refreshCurrentUser();
                 router.push("/dashboard");
             } else {
                 throw new Error("Identifiants invalides");
