@@ -7,6 +7,7 @@ import {useState} from "react";
 import {apiFetch} from "@/src/hook/userRefresh";
 import {resetPasswordSchema} from "@/src/lib/validation/user.schema";
 import {formatZodErrors} from "@/src/lib/validation/helpers";
+import {useNotification} from "@/src/provider/Notification";
 
 export default function ResetPasswordPage() {
     const router = useRouter();
@@ -15,6 +16,7 @@ export default function ResetPasswordPage() {
         password1?: string;
         password2?: string;
     }>({});
+    const {showNotification} = useNotification()
 
     const validate = (psw1: string, psw2: string) => {
         const result = resetPasswordSchema.safeParse({
@@ -56,17 +58,20 @@ export default function ResetPasswordPage() {
             const resData = await res.json();
             if (res.ok) {
                 router.push("/authentification");
+                showNotification({
+                    title: "Succès",
+                    message: `Mot de passe modifé avec succès.`,
+                    type: "success",
+                })
             } else {
                 throw new Error(resData.message);
             }
         } catch (err: unknown) {
-            if (err instanceof DOMException && err.name === "AbortError") {
-                console.error(err.message);
-            } else if (err instanceof Error) {
-                console.error(err.message);
-            } else {
-                console.error("Erreur inconnue", err);
-            }
+            showNotification({
+                title: "Erreur",
+                message: String(err),
+                type: "error",
+            })
         } finally {
             setLoading(false);
         }

@@ -16,6 +16,7 @@ import {useCurrentUser} from "@/src/hook/useCurrent";
 import {hasRole} from "@/src/lib/permissions";
 import {CiEdit} from "react-icons/ci";
 import {TbTrash} from "react-icons/tb";
+import {useNotification} from "@/src/provider/Notification";
 
 
 export default function Documents() {
@@ -34,6 +35,7 @@ export default function Documents() {
         mode: "create" | "edit" | "delete"
         societe?: SocieteInfo
     }>({open: false, mode: "create"})
+    const {showNotification} = useNotification()
 
     const openCreate = () => setModalState({open: true, mode: "create"})
     const openEdit = (societe: SocieteInfo) => setModalState({open: true, mode: "edit", societe})
@@ -60,7 +62,11 @@ export default function Documents() {
             setTotalCount(json.count);
 
         } catch (err) {
-            console.error("Erreur API :", err);
+            showNotification({
+                title: "Erreur",
+                message: String(err),
+                type: "error",
+            })
         } finally {
             setLoading(false);
         }

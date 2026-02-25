@@ -16,6 +16,7 @@ import Pagination from "@/src/app/components/pagination";
 import {SocieteInfo} from "@/src/models/societe/societe.model";
 import Button from "@/src/app/components/button";
 import {SocieteModal} from "@/src/app/components/modal/SocieteModal";
+import {useNotification} from "@/src/provider/Notification";
 
 export default function Gestion() {
     const params = useParams();
@@ -33,6 +34,7 @@ export default function Gestion() {
     const [societeTotalCount, setSocieteTotalCount] = useState(0);
     const societePageSize = 5;
     const societeTotalPages = Math.ceil(societeTotalCount / societePageSize);
+    const {showNotification} = useNotification()
 
     const [modalState, setModalState] = useState<{
         open: boolean
@@ -103,13 +105,11 @@ export default function Gestion() {
             setSocieteTotalCount(json.societes.count);
 
         } catch (err: unknown) {
-            if (err instanceof DOMException && err.name === "AbortError") {
-                console.error(err.message);
-            } else if (err instanceof Error) {
-                console.error(err.message);
-            } else {
-                console.error("Erreur inconnue", err);
-            }
+            showNotification({
+                title: "Erreur",
+                message: String(err),
+                type: "error",
+            })
         } finally {
             setLoading(false);
         }
@@ -157,8 +157,17 @@ export default function Gestion() {
             });
             setIsEditing(false);
             setErrors({});
+            showNotification({
+                title: "Succès",
+                message: `Utilisateur modifié avec succès.`,
+                type: "success",
+            })
         } catch (err) {
-            console.error(err);
+            showNotification({
+                title: "Erreur",
+                message: String(err),
+                type: "error",
+            })
         } finally {
             setSavingUser(false);
         }
@@ -180,8 +189,17 @@ export default function Gestion() {
             });
             if (!res) return;
             if (!res.ok) throw new Error();
+            showNotification({
+                title: "Succès",
+                message: `Utilisateur ${isActive ? "désactivé" : "activé"} avec succès.`,
+                type: "success",
+            })
         } catch (err) {
-            console.error(err);
+            showNotification({
+                title: "Erreur",
+                message: String(err),
+                type: "error",
+            })
             setIsActive(previousValue);
         } finally {
             setUpdatingToggle(false);

@@ -9,6 +9,7 @@ import {DocumentsList, TypeDocumentList} from "@/src/models/documents/documents.
 import Input from "@/src/app/components/input";
 import {formatZodErrors} from "@/src/lib/validation/helpers";
 import {documentCreateSchema} from "@/src/lib/validation/document.schema";
+import {useNotification} from "@/src/provider/Notification";
 
 type UploadDocumentModalProps = {
     open: boolean
@@ -38,6 +39,7 @@ export function UploadDocumentModal({
         nom?: string;
         date_publication?: string;
     }>({});
+    const {showNotification} = useNotification()
 
     const validate = () => {
         const result = documentCreateSchema.safeParse({
@@ -87,6 +89,12 @@ export function UploadDocumentModal({
                 return
             }
 
+            showNotification({
+                title: "Succès",
+                message: `Document envoyer avec succès.`,
+                type: "success",
+            })
+
             setFile(null)
             setDocName("")
             setDocDate("")
@@ -95,13 +103,11 @@ export function UploadDocumentModal({
             if (onDocumentUploaded) onDocumentUploaded();
 
         } catch (err: unknown) {
-            if (err instanceof DOMException && err.name === "AbortError") {
-                console.error(err.message);
-            } else if (err instanceof Error) {
-                console.error(err.message);
-            } else {
-                console.error("Erreur inconnue", err);
-            }
+            showNotification({
+                title: "Erreur",
+                message: String(err),
+                type: "error",
+            })
         } finally {
             setLoading(false)
         }

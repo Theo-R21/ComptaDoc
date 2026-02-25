@@ -4,6 +4,7 @@ import Link from 'next/link'
 import Button from "@/src/app/components/button";
 import {useRouter} from "next/navigation";
 import {apiFetch} from "@/src/hook/userRefresh";
+import {useNotification} from "@/src/provider/Notification";
 
 export default function CodePage() {
     const router = useRouter();
@@ -11,6 +12,7 @@ export default function CodePage() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
     const inputRefs = useRef<(HTMLInputElement | null)[]>([])
+    const {showNotification} = useNotification()
 
     const handleChange = (index: number, value: string) => {
         if (value.length > 1) return
@@ -58,13 +60,11 @@ export default function CodePage() {
                 throw new Error(resData.message);
             }
         } catch (err: unknown) {
-            if (err instanceof DOMException && err.name === "AbortError") {
-                console.error(err.message);
-            } else if (err instanceof Error) {
-                console.error(err.message);
-            } else {
-                console.error("Erreur inconnue", err);
-            }
+            showNotification({
+                title: "Erreur",
+                message: String(err),
+                type: "error",
+            })
         } finally {
             setLoading(false);
         }
