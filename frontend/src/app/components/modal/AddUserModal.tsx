@@ -5,6 +5,7 @@ import {apiFetch} from "@/src/hook/userRefresh";
 import Input from "@/src/app/components/input";
 import {userCreateSchema} from "@/src/lib/validation/user.schema";
 import {formatZodErrors} from "@/src/lib/validation/helpers";
+import {useNotification} from "@/src/provider/Notification";
 
 
 type AddUserModalProps = {
@@ -19,6 +20,7 @@ export function AddUserModal({
                                  onSocieteCreated
                              }: AddUserModalProps) {
     const [loading, setLoading] = useState(false);
+    const {showNotification} = useNotification()
 
     const [form, setForm] = useState({
         last_name: "",
@@ -83,17 +85,21 @@ export function AddUserModal({
                 return;
             }
 
+            showNotification({
+                title: "Succès",
+                message: `Utilisateur créer avec succès.`,
+                type: "success",
+            })
+
             onOpenChange(false);
             if (onSocieteCreated) onSocieteCreated();
             setErrors({});
         } catch (err: unknown) {
-            if (err instanceof DOMException && err.name === "AbortError") {
-                console.error(err.message);
-            } else if (err instanceof Error) {
-                console.error(err.message);
-            } else {
-                console.error("Erreur inconnue", err);
-            }
+            showNotification({
+                title: "Erreur",
+                message: String(err),
+                type: "error",
+            })
         } finally {
             setLoading(false);
         }

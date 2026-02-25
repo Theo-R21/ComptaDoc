@@ -7,10 +7,12 @@ import {useRouter} from "next/navigation";
 import {apiFetch} from "@/src/hook/userRefresh";
 import {userCreateSchema} from "@/src/lib/validation/user.schema";
 import {formatZodErrors} from "@/src/lib/validation/helpers";
+import {useNotification} from "@/src/provider/Notification";
 
 export default function RegisterPage() {
     const router = useRouter();
     const [loading, setLoading] = useState(false);
+    const {showNotification} = useNotification()
 
     const [form, setForm] = useState({
         last_name: "",
@@ -82,13 +84,11 @@ export default function RegisterPage() {
 
             setErrors({});
         } catch (err: unknown) {
-            if (err instanceof DOMException && err.name === "AbortError") {
-                console.error(err.message);
-            } else if (err instanceof Error) {
-                console.error(err.message);
-            } else {
-                console.error("Erreur inconnue", err);
-            }
+            showNotification({
+                title: "Erreur",
+                message: String(err),
+                type: "error",
+            })
         } finally {
             setLoading(false);
         }

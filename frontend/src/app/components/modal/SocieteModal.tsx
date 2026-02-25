@@ -7,6 +7,7 @@ import {apiFetch} from "@/src/hook/userRefresh";
 import Input from "@/src/app/components/input";
 import {formatZodErrors} from "@/src/lib/validation/helpers";
 import {societeCreateSchema, societeEditSchema} from "@/src/lib/validation/societe.schema";
+import {useNotification} from "@/src/provider/Notification";
 
 type ModalMode = "create" | "edit" | "delete"
 
@@ -43,6 +44,7 @@ export function SocieteModal({
         nom?: string
         scte?: string
     }>({})
+    const {showNotification} = useNotification()
 
     useEffect(() => {
         if (open) {
@@ -64,13 +66,11 @@ export function SocieteModal({
                 const json = await res.json()
                 setUsers(json.results)
             } catch (err: unknown) {
-                if (err instanceof DOMException && err.name === "AbortError") {
-                    console.error(err.message)
-                } else if (err instanceof Error) {
-                    console.error(err.message)
-                } else {
-                    console.error("Erreur inconnue", err)
-                }
+                showNotification({
+                    title: "Erreur",
+                    message: String(err),
+                    type: "error",
+                })
             } finally {
                 setLoading(false)
             }
@@ -108,9 +108,21 @@ export function SocieteModal({
                 setErrors({user_id: json.user_id?.[0], nom: json.nom?.[0], scte: json.scte?.[0]})
                 return
             }
+
+            showNotification({
+                title: "Succès",
+                message: `Société créer avec succès.`,
+                type: "success",
+            })
+
             closeAndRefresh()
         } catch (err) {
             console.error(err)
+            showNotification({
+                title: "Erreur",
+                message: String(err),
+                type: "error",
+            })
         }
     }
 
@@ -128,9 +140,21 @@ export function SocieteModal({
                 setErrors({user_id: json.user_id?.[0], nom: json.nom?.[0], scte: json.scte?.[0]})
                 return
             }
+
+            showNotification({
+                title: "Succès",
+                message: `Société modifié avec succès.`,
+                type: "success",
+            })
+
             closeAndRefresh()
         } catch (err) {
             console.error(err)
+            showNotification({
+                title: "Erreur",
+                message: String(err),
+                type: "error",
+            })
         }
     }
 
@@ -139,9 +163,20 @@ export function SocieteModal({
         try {
             const res = await apiFetch(`/societe/${societe.id}/`, {method: "DELETE"})
             if (!res || !res.ok) return
+
+            showNotification({
+                title: "Succès",
+                message: `Société supprimé avec succès.`,
+                type: "success",
+            })
             closeAndRefresh()
         } catch (err) {
             console.error(err)
+            showNotification({
+                title: "Erreur",
+                message: String(err),
+                type: "error",
+            })
         }
     }
 

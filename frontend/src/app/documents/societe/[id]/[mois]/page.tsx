@@ -15,6 +15,7 @@ import {PdfViewerModal} from "@/src/app/components/modal/PDFViewModal";
 import {SocieteInfo} from "@/src/models/societe/societe.model";
 import {Badge} from "@/src/app/components/ui/badge";
 import {Pie, PieChart, ResponsiveContainer, Sector, Tooltip} from "recharts";
+import {useNotification} from "@/src/provider/Notification";
 
 export default function Page() {
     const params = useParams();
@@ -47,6 +48,7 @@ export default function Page() {
         dernier_depot: string | null;
         types_distincts: number;
     } | null>(null);
+    const {showNotification} = useNotification()
 
     interface SectorProps {
         cx: number;
@@ -127,13 +129,11 @@ export default function Page() {
             setStats(json.stats);
             setTotalCount(json.count);
         } catch (err: unknown) {
-            if (err instanceof DOMException && err.name === "AbortError") {
-                console.error(err.message);
-            } else if (err instanceof Error) {
-                console.error(err.message);
-            } else {
-                console.error("Erreur inconnue", err);
-            }
+            showNotification({
+                title: "Erreur",
+                message: String(err),
+                type: "error",
+            })
         } finally {
             setLoading(false);
         }
@@ -160,13 +160,11 @@ export default function Page() {
             const json = await res.json();
             setSocieteData(json);
         } catch (err: unknown) {
-            if (err instanceof DOMException && err.name === "AbortError") {
-                console.error(err.message);
-            } else if (err instanceof Error) {
-                console.error(err.message);
-            } else {
-                console.error("Erreur inconnue", err);
-            }
+            showNotification({
+                title: "Erreur",
+                message: String(err),
+                type: "error",
+            })
         } finally {
             setLoading(false);
         }

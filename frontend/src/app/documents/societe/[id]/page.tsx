@@ -7,6 +7,7 @@ import {useParams, useRouter} from "next/navigation";
 import {SocieteMonthInfo} from "@/src/models/societe/societe.model";
 import {hasRole} from "@/src/lib/permissions";
 import {useCurrentUser} from "@/src/hook/useCurrent";
+import {useNotification} from "@/src/provider/Notification";
 
 export default function Societe() {
     const {id} = useParams();
@@ -16,6 +17,7 @@ export default function Societe() {
     const [selectedYear, setSelectedYear] = useState<number | null>(null);
     const router = useRouter();
     const {user} = useCurrentUser();
+    const {showNotification} = useNotification()
 
     useEffect(() => {
         const fetchDataYear = async () => {
@@ -97,14 +99,17 @@ export default function Societe() {
                     item.month === updatedMonth.month ? updatedMonth : item
                 )
             );
+            showNotification({
+                title: "Succès",
+                message: `Status du mois modifié avec succès.`,
+                type: "success",
+            })
         } catch (err: unknown) {
-            if (err instanceof DOMException && err.name === "AbortError") {
-                console.error(err.message);
-            } else if (err instanceof Error) {
-                console.error(err.message);
-            } else {
-                console.error("Erreur inconnue", err);
-            }
+            showNotification({
+                title: "Erreur",
+                message: String(err),
+                type: "error",
+            })
         }
     };
 

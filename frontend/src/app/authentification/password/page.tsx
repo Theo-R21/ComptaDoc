@@ -7,6 +7,8 @@ import {useRouter} from "next/navigation";
 import {apiFetch} from "@/src/hook/userRefresh";
 import {formatZodErrors} from "@/src/lib/validation/helpers";
 import {emailUserSchema} from "@/src/lib/validation/user.schema";
+import {useNotification} from "@/src/provider/Notification";
+import {useCurrentUser} from "@/src/hook/useCurrent";
 
 export default function PasswordPage() {
     const router = useRouter();
@@ -14,6 +16,7 @@ export default function PasswordPage() {
     const [errors, setErrors] = useState<{
         email?: string;
     }>({});
+    const {showNotification} = useNotification()
 
 
     const validate = (email: string) => {
@@ -58,13 +61,11 @@ export default function PasswordPage() {
                 throw new Error(resData.message);
             }
         } catch (err: unknown) {
-            if (err instanceof DOMException && err.name === "AbortError") {
-                console.error(err.message);
-            } else if (err instanceof Error) {
-                console.error(err.message);
-            } else {
-                console.error("Erreur inconnue", err);
-            }
+            showNotification({
+                title: "Erreur",
+                message: String(err),
+                type: "error",
+            })
         } finally {
             setLoading(false);
         }

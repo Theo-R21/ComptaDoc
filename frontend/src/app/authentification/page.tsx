@@ -7,13 +7,15 @@ import {apiFetch} from "@/src/hook/userRefresh";
 import Input from "@/src/app/components/input";
 import Link from "next/link";
 import Button from "@/src/app/components/button";
+import {useNotification} from "@/src/provider/Notification";
 
 
 export default function LoginPage() {
     const router = useRouter();
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
-    const {refreshCurrentUser} = useCurrentUser();
+    const {refreshCurrentUser, user} = useCurrentUser();
+    const {showNotification} = useNotification()
 
     async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
         e.preventDefault();
@@ -35,19 +37,26 @@ export default function LoginPage() {
             })
             if (!res) return;
             if (res.ok) {
-                refreshCurrentUser()
+                const currentUser = await apiFetch("/auth/users/me/", {credentials: "include"})
+                    .then(res => res?.ok ? res.json() : null);
+
+                showNotification({
+                    title: "Succès",
+                    message: `Bienvenue ${currentUser?.first_name ?? ""} ${currentUser?.last_name ?? ""}.`,
+                    type: "success",
+                });
+
+                refreshCurrentUser();
                 router.push("/dashboard");
             } else {
                 throw new Error("Identifiants invalides");
             }
         } catch (err: unknown) {
-            if (err instanceof DOMException && err.name === "AbortError") {
-                console.error(err.message);
-            } else if (err instanceof Error) {
-                console.error(err.message);
-            } else {
-                console.error("Erreur inconnue", err);
-            }
+            showNotification({
+                title: "Erreur",
+                message: String(err),
+                type: "error",
+            })
         } finally {
             setLoading(false);
         }

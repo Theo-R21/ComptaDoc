@@ -8,6 +8,7 @@ import Button from "@/src/app/components/button"
 import {resetPasswordSchema, userEditSchema} from "@/src/lib/validation/user.schema"
 import {formatZodErrors} from "@/src/lib/validation/helpers"
 import {apiFetch} from "@/src/hook/userRefresh";
+import {useNotification} from "@/src/provider/Notification";
 
 type Tab = "info" | "security"
 
@@ -28,6 +29,7 @@ export default function Profile() {
         password1: "",
         password2: "",
     })
+    const {showNotification} = useNotification()
 
     const [errors, setErrors] = useState<Partial<typeof form>>({})
     const [passwordError, setPasswordError] = useState<string | null>(null)
@@ -79,8 +81,17 @@ export default function Profile() {
             setSaved(true)
             setIsEditing(false)
             setErrors({});
+            showNotification({
+                title: "Succès",
+                message: `Profile modifié avec succès.`,
+                type: "success",
+            })
         } catch (err) {
-            console.error(err);
+            showNotification({
+                title: "Erreur",
+                message: String(err),
+                type: "error",
+            })
         } finally {
             setSaving(false)
         }
@@ -109,8 +120,18 @@ export default function Profile() {
             refreshCurrentUser()
             setPasswords({current_password: "", password1: "", password2: ""})
             setSaved(true)
-        } catch {
+             showNotification({
+                title: "Succès",
+                message: `Mot de passe mis à jour avec succès.`,
+                type: "success",
+            })
+        } catch(err) {
             setPasswordError("Mot de passe actuel incorrect.")
+            showNotification({
+                title: "Erreur",
+                message: String(err),
+                type: "error",
+            })
         } finally {
             setSaving(false)
         }
