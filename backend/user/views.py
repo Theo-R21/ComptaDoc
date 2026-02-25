@@ -1,21 +1,20 @@
 from core.permission import IsComptable
+from drf_yasg import openapi
+from drf_yasg.utils import swagger_auto_schema
 from rest_framework import viewsets, filters, status, permissions
 from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
-from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from user.models import User
-
-from user.serializers.list import UserListSerializer
-from user.serializers.action import UserDetailsSerializer
-from user.serializers.create import UserCreateSerializer
-from user.serializers.update import UserUpdateSerializer
-from drf_yasg import openapi
-from drf_yasg.utils import swagger_auto_schema
-
 from societe.models import Societe
 from societe.serializers.base import BaseSocieteSerializer
+from user.models import User
+from user.serializers.action import UserDetailsSerializer
+from user.serializers.create import UserCreateSerializer
+from user.serializers.list import UserListSerializer
+from user.serializers.password import ChangePasswordSerializer
+from user.serializers.update import UserUpdateSerializer
 
 
 class UserPagination(PageNumberPagination):
@@ -23,10 +22,12 @@ class UserPagination(PageNumberPagination):
     page_size_query_param = "page_size"
     max_page_size = 100
 
+
 class SocietePagination(PageNumberPagination):
     page_size = 5
     page_size_query_param = "page_size"
     max_page_size = 50
+
 
 class UserViewSet(viewsets.ViewSet):
     serializer_class = UserListSerializer
@@ -104,13 +105,11 @@ class UserViewSet(viewsets.ViewSet):
         except User.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
 
-        # Paginer les sociétés du user, pas le user lui-même
         societes = Societe.objects.filter(user=user).order_by("nom")
         paginator = SocietePagination()
         page = paginator.paginate_queryset(societes, request)
         societes_serialized = BaseSocieteSerializer(page, many=True)
 
-        # Sérialiser le user séparément
         user_serializer = UserDetailsSerializer(user)
 
         data = user_serializer.data
@@ -152,7 +151,6 @@ class UserViewSet(viewsets.ViewSet):
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
-        print(serializer.errors)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     @swagger_auto_schema(
@@ -225,3 +223,19 @@ class UserViewSet(viewsets.ViewSet):
         user.save()
 
         return Response({"id": user.id, "actif": user.is_active}, status=status.HTTP_200_OK)
+
+    @action(detail=False, methods=["post"], url_path="change-password", permission_classes=[IsAuthenticated])
+    def change_password(self, request, pk=None):
+        serializer = ChangePasswordSerializer(
+            data=request.data,
+            context={"request": request}
+        )
+
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        request.user.set_password(serializer.validated_data["password1"])
+        request.user.save()
+
+        return Response({"message": "Mot de passe mis à jour avec succès."})
+

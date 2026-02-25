@@ -1,6 +1,5 @@
 import {redirect} from "next/navigation";
 import {getCurrentUser} from "@/src/lib/auth";
-import {cookies} from "next/headers";
 
 
 export default async function GestionLayout({
@@ -9,7 +8,6 @@ export default async function GestionLayout({
     children: React.ReactNode;
 }) {
     const user = await getCurrentUser();
-    console.log(user)
     if (!user) {
         redirect("/authentification");
     }
