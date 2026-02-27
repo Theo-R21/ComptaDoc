@@ -1,0 +1,261 @@
+"use client";
+import {FaArrowLeft, FaArrowRight, FaLock, FaLockOpen} from "react-icons/fa";
+import {Switch} from "@/src/app/components/ui/switch";
+import {useEffect, useState} from "react";
+import {apiFetch} from "@/src/hook/userRefresh";
+import {useParams, useRouter} from "next/navigation";
+import {SocieteMonthInfo} from "@/src/models/societe/societe.model";
+import {hasRole} from "@/src/lib/permissions";
+import {useCurrentUser} from "@/src/hook/useCurrent";
+import {useNotification} from "@/src/provider/Notification";
+
+export default function Societe() {
+    const {id} = useParams();
+    const [date, setDate] = useState<SocieteMonthInfo[]>([]);
+    const [years, setYears] = useState<number[]>([]);
+    const [statusFilter, setStatusFilter] = useState<string>("ALL");
+    const [selectedYear, setSelectedYear] = useState<number | null>(null);
+    const router = useRouter();
+    const {user} = useCurrentUser();
+    const {showNotification} = useNotification()
+
+    useEffect(() => {
+        const fetchDataYear = async () => {
+            try {
+                const res = await apiFetch(`/societe/${id}/year`);
+                if (!res) return
+                const json: number[] = await res.json();
+
+                setYears(json);
+                if (json.length > 0) {
+                    setSelectedYear(json[0]);
+                }
+            } catch (error) {
+                console.error("Erreur API:", error);
+            }
+        };
+
+        fetchDataYear();
+    }, [id]);
+
+    useEffect(() => {
+        if (!selectedYear) return;
+
+        const fetchMonths = async () => {
+            try {
+                let url = `/societe/${id}/months/?year=${selectedYear}`;
+
+                if (statusFilter !== "ALL") {
+                    url += `&status=${statusFilter}`;
+                }
+
+                const res = await apiFetch(url, {}, router);
+                if (!res) return;
+
+                const json = await res.json();
+                setDate(json);
+            } catch (err: unknown) {
+                if (err instanceof DOMException && err.name === "AbortError") {
+                    console.error(err.message);
+                } else if (err instanceof Error) {
+                    console.error(err.message);
+                } else {
+                    console.error("Erreur inconnue", err);
+                }
+            }
+        };
+
+        fetchMonths();
+    }, [id, selectedYear, statusFilter]);
+
+    const handleChange = async (
+        monthItem: SocieteMonthInfo,
+        checked: boolean
+    ) => {
+        const newStatus = checked ? "OPEN" : "CLOSED";
+
+        try {
+            const url = new URL(
+                `/societe/${id}/months/${monthItem.month}/`,
+                window.location.origin
+            );
+
+            const res = await apiFetch(url.pathname, {
+                method: "PATCH",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                credentials: "include",
+                body: JSON.stringify({status: newStatus}),
+            });
+            if (!res) return
+
+            if (!res.ok) throw new Error("Erreur lors de la mise à jour");
+
+            const updatedMonth = await res.json();
+
+            setDate((prev) =>
+                prev.map((item) =>
+                    item.month === updatedMonth.month ? updatedMonth : item
+                )
+            );
+            showNotification({
+                title: "Succès",
+                message: `Status du mois modifié avec succès.`,
+                type: "success",
+            })
+        } catch (err: unknown) {
+            showNotification({
+                title: "Erreur",
+                message: String(err),
+                type: "error",
+            })
+        }
+    };
+
+    const goToMonth = (item: SocieteMonthInfo) => {
+        if (item.status !== "OPEN") return;
+
+        router.push(
+            `/documents/societe/${id}/${item.month_name}?monthId=${item.id}`
+        );
+    };
+
+    return (
+        <main className="flex-1 p-8 overflow-auto bg-gray-50">
+            <header className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                    <h1 className="text-2xl font-bold text-primary1">Gestion des périodes</h1>
+                    <p className="text-sm text-primary2">Année fiscale & statut des mois</p>
+                    <p
+                        onClick={() => router.push(`/documents/societe`)}
+                        className="flex items-center mt-2 gap-2 cursor-pointer text-primary2 transition-all duration-300 hover:text-primary1 hover:translate-x-1"
+                    >
+                        <FaArrowLeft/>
+                        retour
+                    </p>
+                </div>
+
+                <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-3 py-2">
+                        <span className="text-sm text-secondary2">Année</span>
+                        <select
+                            className="bg-transparent text-sm font-medium text-secondary1 focus:outline-none"
+                            value={selectedYear ?? ""}
+                            onChange={(e) => setSelectedYear(Number(e.target.value))}
+                        >
+                            {years.map((year) => (
+                                <option key={year} value={year}>
+                                    {year}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+
+                    <div className="flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-3 py-2">
+                        <span className="text-sm text-secondary2">Statut</span>
+                        <select
+                            className="bg-transparent text-sm font-medium text-secondary1 focus:outline-none"
+                            value={statusFilter}
+                            onChange={(e) => setStatusFilter(e.target.value)}
+                        >
+                            <option value="ALL">Tous</option>
+                            <option value="OPEN">Ouverts</option>
+                            <option value="CLOSED">Fermés</option>
+                        </select>
+                    </div>
+                </div>
+            </header>
+
+            <div className="mb-6 h-px w-full bg-gray-200"/>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
+                {date?.length > 0 ? (
+                    date.map((item) => {
+                        const isOpen = item.status === "OPEN";
+
+                        return (
+                            <div
+                                key={item.id}
+                                role="button"
+                                tabIndex={0}
+                                onClick={isOpen ? () => goToMonth(item) : undefined}
+                                onKeyDown={(e) => {
+                                    if (!isOpen) return;
+                                    if (e.key === "Enter" || e.key === " ") {
+                                        e.preventDefault();
+                                        goToMonth(item);
+                                    }
+                                }}
+                                className={`group relative rounded-xl border p-5 transition-all
+                                    ${isOpen
+                                    ? "bg-white border-primary2 shadow-md hover:shadow-lg cursor-pointer"
+                                    : "bg-gray-100 border-gray-200 opacity-80 cursor-default"
+                                } hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-primary1`}
+                            >
+                                {isOpen && (
+                                    <span className="absolute left-0 top-4 h-12 w-1 rounded-r bg-primary1"/>
+                                )}
+
+                                <div>
+                                    <p className="text-lg font-semibold tracking-tight text-primary1">
+                                        {item.month_name} {item.year}
+                                    </p>
+                                    <p
+                                        className={`mt-1 text-sm font-medium ${
+                                            isOpen ? "text-calltoactionsuccess" : "text-red-700"
+                                        }`}
+                                    >
+                                        {isOpen ? "Période ouverte" : "Période fermée"}
+                                    </p>
+                                </div>
+
+                                <div className="flex items-center mt-6">
+                                    {hasRole(user, ["comptable"]) && (
+                                        <div
+                                            className="flex items-center gap-3 bg-primary3/60 rounded-full px-3 py-1"
+                                            onClick={(e) => e.stopPropagation()}
+                                        >
+                                            <div
+                                                className="flex items-center justify-center w-6 h-6 rounded-full bg-calltoaction1/20">
+                                                <FaLock
+                                                    className={`text-xs ${
+                                                        isOpen ? "text-secondary2/40" : "text-calltoaction2"
+                                                    }`}
+                                                />
+                                            </div>
+
+                                            <Switch
+                                                checked={isOpen}
+                                                onCheckedChange={(checked) => handleChange(item, checked)}
+                                                onClick={(e) => e.stopPropagation()}
+                                                className="data-[state=checked]:bg-calltoaction1 data-[state=unchecked]:bg-secondary2 transition-colors"
+                                            />
+
+                                            <div
+                                                className="flex items-center justify-center w-6 h-6 rounded-full bg-primary1/40">
+                                                <FaLockOpen
+                                                    className={`text-sm ${
+                                                        isOpen ? "text-primary1" : "text-primary1/60"
+                                                    }`}
+                                                />
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    <div className={`ml-auto flex items-center justify-center w-8 h-8 rounded-full transition-colors duration-300
+            ${isOpen ? "bg-primary1 group-hover:bg-primary2" : "bg-gray-200 cursor-not-allowed opacity-50"}`}>
+                                        <FaArrowRight
+                                            className={`text-xs transition-transform ${isOpen ? "text-calltoaction1 group-hover:translate-x-0.5" : "text-gray-400"}`}/>
+                                    </div>
+                                </div>
+                            </div>
+                        );
+                    })) : (
+                    <p className="col-span-full text-center text-gray-500">Aucune donnée disponible</p>
+                )}
+            </div>
+        </main>
+
+    );
+}
