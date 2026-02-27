@@ -1,21 +1,6 @@
-import {redirect} from "next/navigation";
-import {getCurrentUser} from "@/src/lib/auth";
+import {AuthGuard} from "@/src/provider/AuthGuard";
 
 
-export default async function DocumentLayout({
-                                                children,
-                                            }: {
-    children: React.ReactNode;
-}) {
-    const user = await getCurrentUser();
-
-    if (!user) {
-        redirect("/authentification");
-    }
-
-    if (user.is_superuser) {
-        return <>{children}</>;
-    }
-
-    return <>{children}</>;
+export default function DocumentLayout({ children }: { children: React.ReactNode }) {
+  return <AuthGuard allowedRoles={["comptable", "client"]}>{children}</AuthGuard>;
 }

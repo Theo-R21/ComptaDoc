@@ -1,13 +1,5 @@
-import { cookies } from "next/headers";
-
 export async function getCurrentUser() {
-    const cookieStore = cookies();
-    const cookieHeader = cookieStore.toString();
-
-    const res = await fetch(`${process.env.API_URL}/auth/users/me/`, {
-        headers: {
-            Cookie: cookieHeader,
-        },
+    const res = await fetch(`${process.env.API_URL}/api/auth/me`, {
         cache: "no-store",
     });
 
