@@ -49,16 +49,16 @@ class CustomTokenObtainPairView(TokenObtainPairView):
                 key="access",
                 value=data["access"],
                 httponly=True,
-                secure=False,
-                samesite="Lax",
+                secure=True,
+                samesite="None",
                 path="/",
             )
             res.set_cookie(
                 key="refresh",
                 value=data["refresh"],
                 httponly=True,
-                secure=False,
-                samesite="Lax",
+                secure=True,
+                samesite = "None",
                 path="/",
             )
             return res
@@ -93,8 +93,8 @@ class CustomTokenRefreshView(TokenRefreshView):
             key="access",
             value=data["access"],
             httponly=True,
-            secure=False,
-            samesite="Lax",
+            secure=True,
+            samesite="None",
             path="/",
         )
         return res

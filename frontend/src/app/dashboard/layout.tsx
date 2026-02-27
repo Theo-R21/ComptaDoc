@@ -1,21 +1,11 @@
-import {redirect} from "next/navigation";
-import {getCurrentUser} from "@/src/lib/auth";
+import {AuthGuard} from "@/src/provider/AuthGuard";
 
 
 export default async function DashboardLayout({
-                                                children,
-                                            }: {
+                                                  children,
+                                              }: {
     children: React.ReactNode;
 }) {
-    const user = await getCurrentUser();
+    return <AuthGuard allowedRoles={["comptable", "client"]}>{children}</AuthGuard>;
 
-    if (!user) {
-        redirect("/authentification");
-    }
-
-    if (user.is_superuser) {
-        return <>{children}</>;
-    }
-
-    return <>{children}</>;
 }
