@@ -1,14 +1,17 @@
-import type {NextConfig} from "next";
+import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-    webpackDevMiddleware: (config: { watchOptions: { poll: number; aggregateTimeout: number; }; }) => {
-        config.watchOptions = {
-            poll: 1000,
-            aggregateTimeout: 300,
-        }
-        return config
-    },
+  output: "standalone",
 
+  webpack: (config, { dev, isServer }) => {
+    if (dev && !isServer) {
+      config.watchOptions = {
+        poll: 500,
+        aggregateTimeout: 300,
+      };
+    }
+    return config;
+  },
 };
 
 export default nextConfig;
