@@ -35,6 +35,7 @@ export default function LoginPage() {
                 body: JSON.stringify({username, password}),
                 credentials: "include",
             })
+
             if (!res) return;
             if (res.ok) {
                 const currentUser = await apiFetch("/auth/users/me/", {credentials: "include"})
