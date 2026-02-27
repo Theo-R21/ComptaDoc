@@ -139,31 +139,32 @@ jobs:
 
   deploy:
     name: Deploy to Production
-    runs-on: self-hosted        # ← tourne sur ta VM directement
+    runs-on: self-hosted
     needs: [ build-backend, build-frontend ]
     environment:
       name: production
       url: http://192.168.199.128:3000
     steps:
-      - name: Deploy via SSH
-        uses: appleboy/ssh-action@v1
-        with:
-          host: ${{ secrets.DEPLOY_HOST }}
-          username: ${{ secrets.DEPLOY_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          script: |
-            cd ~/app/ComptaDoc
-            echo ${{ secrets.REGISTRY_TOKEN }} | docker login ghcr.io -u ${{ secrets.REGISTRY_USERNAME }} --password-stdin
-            export REGISTRY_IMAGE=ghcr.io/$(echo ${{ secrets.REGISTRY_USERNAME }} | tr '[:upper:]' '[:lower:]')/comptadoc
-            export IMAGE_TAG=${{ github.sha }}
-            export MARIADB_ROOT_PASSWORD=${{ secrets.MARIADB_ROOT_PASSWORD }}
-            export MARIADB_DATABASE=${{ secrets.MARIADB_DATABASE }}
-            export MARIADB_USER=${{ secrets.MARIADB_USER }}
-            export MARIADB_PASSWORD=${{ secrets.MARIADB_PASSWORD }}
-            export DJANGO_SECRET_KEY=${{ secrets.DJANGO_SECRET_KEY }}
-            export DJANGO_ALLOWED_HOSTS=${{ secrets.DJANGO_ALLOWED_HOSTS }}
-            export DATABASE_URL=${{ secrets.DATABASE_URL }}
-            export NEXT_PUBLIC_API_URL=${{ secrets.NEXT_PUBLIC_API_URL }}
-            docker compose -f docker-compose.prod.yml pull
-            docker compose -f docker-compose.prod.yml up -d --remove-orphans
-            docker image prune -f
+      - name: Deploy
+        run: |
+          cd ~/app/ComptaDoc
+          
+          # Écrire les variables dans un .env sur la VM
+          cat > .env << EOF
+          REGISTRY_IMAGE=ghcr.io/$(echo ${{ secrets.REGISTRY_USERNAME }} | tr '[:upper:]' '[:lower:]')/comptadoc
+          IMAGE_TAG=${{ github.sha }}
+          MARIADB_ROOT_PASSWORD=${{ secrets.MARIADB_ROOT_PASSWORD }}
+          MARIADB_DATABASE=${{ secrets.MARIADB_DATABASE }}
+          MARIADB_USER=${{ secrets.MARIADB_USER }}
+          MARIADB_PASSWORD=${{ secrets.MARIADB_PASSWORD }}
+          DJANGO_SECRET_KEY=${{ secrets.DJANGO_SECRET_KEY }}
+          DJANGO_ALLOWED_HOSTS=${{ secrets.DJANGO_ALLOWED_HOSTS }}
+          DATABASE_URL=${{ secrets.DATABASE_URL }}
+          NEXT_PUBLIC_API_URL=${{ secrets.NEXT_PUBLIC_API_URL }}
+          EOF
+          
+          # Login et déploiement
+          echo ${{ secrets.REGISTRY_TOKEN }} | docker login ghcr.io -u ${{ secrets.REGISTRY_USERNAME }} --password-stdin
+          docker compose -f docker-compose.prod.yml pull
+          docker compose -f docker-compose.prod.yml up -d --remove-orphans
+          docker image prune -f
