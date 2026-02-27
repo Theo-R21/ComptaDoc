@@ -130,6 +130,8 @@ jobs:
           context: ./frontend
           file: ./frontend/Dockerfile
           target: prod
+          build-args: |
+            NEXT_PUBLIC_API_URL=${{ secrets.NEXT_PUBLIC_API_URL }}
           push: true
           tags: |
             ${{ steps.image.outputs.name }}/frontend:latest
