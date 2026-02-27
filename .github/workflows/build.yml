@@ -8,7 +8,7 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  REGISTRY_IMAGE: ghcr.io/${{ github.repository_owner }}/comptadoc
+  REGISTRY_IMAGE: ghcr.io/${{ github.repository_owner | lower }}/comptadoc
 
 jobs:
   build-backend:
