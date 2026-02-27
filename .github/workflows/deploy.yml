@@ -1,78 +1,78 @@
-name: Deploy
-
-on:
-  workflow_run:
-    workflows: ["Build & Push Docker Images"]
-    branches: [main, staging]
-    types:
-      - completed
-  workflow_dispatch:
-
-jobs:
-  deploy-staging:
-    name: Deploy Staging
-    runs-on: ubuntu-latest
-    if: ${{ github.event.workflow_run.conclusion == 'success' && github.ref == 'refs/heads/staging' }}
-    environment:
-      name: staging
-      url: http://192.168.199.128:3000
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Deploy via SSH
-        uses: appleboy/ssh-action@v1
-        with:
-          host: ${{ secrets.DEPLOY_HOST }}
-          username: ${{ secrets.DEPLOY_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          script: |
-            cd ~/app/ComptaDoc
-            echo ${{ secrets.REGISTRY_TOKEN }} | docker login ghcr.io -u ${{ secrets.REGISTRY_USERNAME }} --password-stdin
-            export IMAGE_TAG=${{ github.sha }}
-            export MARIADB_ROOT_PASSWORD=${{ secrets.MARIADB_ROOT_PASSWORD }}
-            export MARIADB_DATABASE=${{ secrets.MARIADB_DATABASE }}
-            export MARIADB_USER=${{ secrets.MARIADB_USER }}
-            export MARIADB_PASSWORD=${{ secrets.MARIADB_PASSWORD }}
-            export DJANGO_SECRET_KEY=${{ secrets.DJANGO_SECRET_KEY }}
-            export DJANGO_ALLOWED_HOSTS=${{ secrets.DJANGO_ALLOWED_HOSTS }}
-            export DATABASE_URL=${{ secrets.DATABASE_URL }}
-            export NEXT_PUBLIC_API_URL=${{ secrets.NEXT_PUBLIC_API_URL }}
-            docker compose -f docker-compose.prod.yml pull
-            docker compose -f docker-compose.prod.yml up -d --remove-orphans
-            docker image prune -f
-
-  deploy-production:
-    name: Deploy Production
-    runs-on: ubuntu-latest
-    if: ${{ github.event.workflow_run.conclusion == 'success' && github.ref == 'refs/heads/main' }}
-    environment:
-      name: production
-      url: http://192.168.199.128:3000
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Deploy via SSH
-        uses: appleboy/ssh-action@v1
-        with:
-          host: ${{ secrets.DEPLOY_HOST }}
-          username: ${{ secrets.DEPLOY_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          script: |
-            cd ~/app/ComptaDoc
-            echo ${{ secrets.REGISTRY_TOKEN }} | docker login ghcr.io -u ${{ secrets.REGISTRY_USERNAME }} --password-stdin
-            export IMAGE_TAG=${{ github.sha }}
-            export MARIADB_ROOT_PASSWORD=${{ secrets.MARIADB_ROOT_PASSWORD }}
-            export MARIADB_DATABASE=${{ secrets.MARIADB_DATABASE }}
-            export MARIADB_USER=${{ secrets.MARIADB_USER }}
-            export MARIADB_PASSWORD=${{ secrets.MARIADB_PASSWORD }}
-            export DJANGO_SECRET_KEY=${{ secrets.DJANGO_SECRET_KEY }}
-            export DJANGO_ALLOWED_HOSTS=${{ secrets.DJANGO_ALLOWED_HOSTS }}
-            export DATABASE_URL=${{ secrets.DATABASE_URL }}
-            export NEXT_PUBLIC_API_URL=${{ secrets.NEXT_PUBLIC_API_URL }}
-            docker compose -f docker-compose.prod.yml pull
-            docker compose -f docker-compose.prod.yml up -d --remove-orphans
-            docker image prune -f
+#name: Deploy
+#
+#on:
+#  workflow_run:
+#    workflows: ["Build & Push Docker Images"]
+#    branches: [main, staging]
+#    types:
+#      - completed
+#  workflow_dispatch:
+#
+#jobs:
+#  deploy-staging:
+#    name: Deploy Staging
+#    runs-on: ubuntu-latest
+#    if: ${{ github.event.workflow_run.conclusion == 'success' && github.ref == 'refs/heads/staging' }}
+#    environment:
+#      name: staging
+#      url: http://192.168.199.128:3000
+#
+#    steps:
+#      - name: Checkout
+#        uses: actions/checkout@v4
+#
+#      - name: Deploy via SSH
+#        uses: appleboy/ssh-action@v1
+#        with:
+#          host: ${{ secrets.DEPLOY_HOST }}
+#          username: ${{ secrets.DEPLOY_USER }}
+#          key: ${{ secrets.SSH_PRIVATE_KEY }}
+#          script: |
+#            cd ~/app/ComptaDoc
+#            echo ${{ secrets.REGISTRY_TOKEN }} | docker login ghcr.io -u ${{ secrets.REGISTRY_USERNAME }} --password-stdin
+#            export IMAGE_TAG=${{ github.sha }}
+#            export MARIADB_ROOT_PASSWORD=${{ secrets.MARIADB_ROOT_PASSWORD }}
+#            export MARIADB_DATABASE=${{ secrets.MARIADB_DATABASE }}
+#            export MARIADB_USER=${{ secrets.MARIADB_USER }}
+#            export MARIADB_PASSWORD=${{ secrets.MARIADB_PASSWORD }}
+#            export DJANGO_SECRET_KEY=${{ secrets.DJANGO_SECRET_KEY }}
+#            export DJANGO_ALLOWED_HOSTS=${{ secrets.DJANGO_ALLOWED_HOSTS }}
+#            export DATABASE_URL=${{ secrets.DATABASE_URL }}
+#            export NEXT_PUBLIC_API_URL=${{ secrets.NEXT_PUBLIC_API_URL }}
+#            docker compose -f docker-compose.prod.yml pull
+#            docker compose -f docker-compose.prod.yml up -d --remove-orphans
+#            docker image prune -f
+#
+#  deploy-production:
+#    name: Deploy Production
+#    runs-on: ubuntu-latest
+#    if: ${{ github.event.workflow_run.conclusion == 'success' && github.ref == 'refs/heads/main' }}
+#    environment:
+#      name: production
+#      url: http://192.168.199.128:3000
+#
+#    steps:
+#      - name: Checkout
+#        uses: actions/checkout@v4
+#
+#      - name: Deploy via SSH
+#        uses: appleboy/ssh-action@v1
+#        with:
+#          host: ${{ secrets.DEPLOY_HOST }}
+#          username: ${{ secrets.DEPLOY_USER }}
+#          key: ${{ secrets.SSH_PRIVATE_KEY }}
+#          script: |
+#            cd ~/app/ComptaDoc
+#            echo ${{ secrets.REGISTRY_TOKEN }} | docker login ghcr.io -u ${{ secrets.REGISTRY_USERNAME }} --password-stdin
+#            export IMAGE_TAG=${{ github.sha }}
+#            export MARIADB_ROOT_PASSWORD=${{ secrets.MARIADB_ROOT_PASSWORD }}
+#            export MARIADB_DATABASE=${{ secrets.MARIADB_DATABASE }}
+#            export MARIADB_USER=${{ secrets.MARIADB_USER }}
+#            export MARIADB_PASSWORD=${{ secrets.MARIADB_PASSWORD }}
+#            export DJANGO_SECRET_KEY=${{ secrets.DJANGO_SECRET_KEY }}
+#            export DJANGO_ALLOWED_HOSTS=${{ secrets.DJANGO_ALLOWED_HOSTS }}
+#            export DATABASE_URL=${{ secrets.DATABASE_URL }}
+#            export NEXT_PUBLIC_API_URL=${{ secrets.NEXT_PUBLIC_API_URL }}
+#            docker compose -f docker-compose.prod.yml pull
+#            docker compose -f docker-compose.prod.yml up -d --remove-orphans
+#            docker image prune -f
