@@ -31,15 +31,15 @@ SECRET_KEY = 'django-insecure-cef+zka@8gz^0bbj7!id8-nw^7z3euj3cpvc*f@pho3j542u*t
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-CSRF_TRUSTED_ORIGINS = [
-    "http://localhost:3000",
-]
+
 
 X_FRAME_OPTIONS = "ALLOWALL"
 
-ALLOWED_HOSTS = ["host.docker.internal", "localhost"]
 environ.Env.read_env(os.path.join(BASE_DIR, '../.env'))
 # Application definition
+ALLOWED_HOSTS = env.list('DJANGO_ALLOWED_HOSTS', default=['localhost', '127.0.0.1'])
+CSRF_TRUSTED_ORIGINS = env.list('CSRF_TRUSTED_ORIGINS', default=['http://localhost:3000'])
+CORS_ALLOWED_ORIGINS = env.list('CORS_ALLOWED_ORIGINS', default=['http://localhost:3000'])
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -68,10 +68,6 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-]
-
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",
 ]
 
 REST_FRAMEWORK = {
