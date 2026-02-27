@@ -8,6 +8,8 @@ services:
       MARIADB_DATABASE: ${MARIADB_DATABASE}
       MARIADB_USER: ${MARIADB_USER}
       MARIADB_PASSWORD: ${MARIADB_PASSWORD}
+    ports:
+      - "3306:3306"
     volumes:
       - mariadb_data_simplylux:/var/lib/mysql
     healthcheck:
