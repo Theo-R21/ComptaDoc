@@ -31,7 +31,7 @@ jobs:
       - name: Run tests
         env:
           DJANGO_SECRET_KEY: ${{ secrets.DJANGO_SECRET_KEY }}
-          DJANGO_SETTINGS_MODULE: myproject.settings.test
+          DJANGO_SETTINGS_MODULE: core.settings.test
           DATABASE_URL: sqlite:///test_db.sqlite3
         run: |
           cd backend
