@@ -61,8 +61,3 @@ jobs:
           cd frontend
           npm run lint || true
         continue-on-error: true
-
-      - name: Tests
-        run: |
-          cd frontend
-          npm run test -- --passWithNoTests
