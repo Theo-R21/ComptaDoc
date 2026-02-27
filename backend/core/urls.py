@@ -30,7 +30,6 @@ urlpatterns = [
 ]
 
 
-
 if settings.DEBUG:
     urlpatterns += static(
         settings.MEDIA_URL,
