@@ -480,7 +480,7 @@ export default function Page() {
             <UploadDocumentModal
                 open={openUpload}
                 onOpenChange={setOpenUpload}
-                societeId={id}
+                societeId={id as string}
                 monthId={monthId}
                 types={types}
                 onDocumentUploaded={() => {
