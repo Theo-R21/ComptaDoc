@@ -1,7 +1,7 @@
 "use client";
 
 import {useEffect, useState} from "react";
-import {UserModel} from "@/src/models/user/user.model";
+import {UserInfoModel, UserModel} from "@/src/models/user/user.model";
 import {apiFetch} from "@/src/hook/userRefresh";
 import {CurrentUserContext} from "../hook/useCurrent";
 import {useRouter} from "next/navigation";
@@ -47,7 +47,7 @@ export function UserProvider({children}: { children: React.ReactNode }) {
     if (user === undefined) return null;
 
     return (
-        <CurrentUserContext.Provider value={{user, refreshCurrentUser, logout}}>
+        <CurrentUserContext.Provider value={{user: user as unknown as UserInfoModel, refreshCurrentUser, logout}}>
             {children}
         </CurrentUserContext.Provider>
     );
