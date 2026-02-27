@@ -21,7 +21,7 @@ services:
     image: ${REGISTRY_IMAGE}/backend:${IMAGE_TAG:-latest}
     restart: unless-stopped
     command: >
-      sh -c "python manage.py makemigration &&
+      sh -c "python manage.py makemigrations &&
              python manage.py migrate &&
              gunicorn core.wsgi:application
              --bind 0.0.0.0:8000
