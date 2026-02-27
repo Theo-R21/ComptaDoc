@@ -28,8 +28,14 @@ services:
              --timeout 120"
     ports:
       - "8000:8000"
-    env_file:
-      - .env
+    environment:
+      - DB_NAME=${MARIADB_DATABASE}
+      - DB_USER=${MARIADB_USER}
+      - DB_PASSWORD=${MARIADB_PASSWORD}
+      - DB_HOST=db
+      - DB_PORT=3306
+      - DJANGO_SECRET_KEY=${DJANGO_SECRET_KEY}
+      - DJANGO_ALLOWED_HOSTS=${DJANGO_ALLOWED_HOSTS}
     depends_on:
       db:
         condition: service_healthy
