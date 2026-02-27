@@ -27,7 +27,8 @@ services:
     container_name: django_backend_simplylux
     restart: unless-stopped
     command: >
-      sh -c "python manage.py migrate &&
+      sh -c "python makemigrations &&
+             python manage.py migrate &&
              python manage.py runserver 0.0.0.0:8000"
     volumes:
       - ./backend:/app
