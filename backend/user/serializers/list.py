@@ -1,8 +1,10 @@
 from rest_framework import serializers
 from user.models import User
+from user.serializers.role import RoleSerializer
 
 
 class UserListSerializer(serializers.ModelSerializer):
+    roles = RoleSerializer(many=True, read_only=True)
 
     class Meta:
         model = User
@@ -17,6 +19,6 @@ class UserListSerializer(serializers.ModelSerializer):
             'username',
             'is_active',
             'email',
-            'role'
+            'roles',
         ]
         read_only_fields = fields

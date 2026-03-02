@@ -12,11 +12,12 @@ class User(AbstractUser):
     reset_code = models.CharField(max_length=6, null=True, blank=True)
     reset_code_expires_at = models.DateTimeField(null=True, blank=True)
     reset_password_token = models.CharField(max_length=255, null=True, blank=True)
-    ROLE_CHOICES = (
-        ('comptable', 'Comptable'),
-        ('client', 'Client'),
+
+    roles = models.ManyToManyField(
+        "Role",
+        blank=True,
+        related_name="users"
     )
-    role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='client')
 
     def is_reset_code_valid(self, code):
         if not self.reset_code or not self.reset_code_expires_at:
@@ -26,4 +27,17 @@ class User(AbstractUser):
         return self.reset_code == code
 
     def has_role(self, role_name):
-        return self.role == role_name
+        return self.roles.filter(name=role_name).exists()
+
+
+class Role(models.Model):
+    ROLE_CHOICES = (
+        ('comptable', 'Comptable'),
+        ('client', 'Client'),
+    )
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    name = models.CharField(max_length=20, choices=ROLE_CHOICES, unique=True)
+    label = models.CharField(max_length=50)
+
+    def __str__(self):
+        return self.label

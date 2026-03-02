@@ -5,7 +5,7 @@ import {useParams, useRouter} from "next/navigation";
 import {CiEdit} from "react-icons/ci";
 
 import {apiFetch} from "@/src/hook/userRefresh";
-import {UserInfoModel} from "@/src/models/user/user.model";
+import {RoleInfo, UserInfoModel} from "@/src/models/user/user.model";
 import Input from "@/src/app/components/input";
 import {Switch} from "@/src/app/components/ui/switch";
 import {FaArrowLeft} from "react-icons/fa";
@@ -23,6 +23,7 @@ export default function Gestion() {
     const id = params.id;
     const router = useRouter();
 
+    const [roles, setRoles] = useState<RoleInfo[]>([]);
     const [loading, setLoading] = useState(false);
     const [user, setUser] = useState<UserInfoModel | null>(null);
     const [isEditing, setIsEditing] = useState(false);
@@ -34,23 +35,24 @@ export default function Gestion() {
     const [societeTotalCount, setSocieteTotalCount] = useState(0);
     const societePageSize = 5;
     const societeTotalPages = Math.ceil(societeTotalCount / societePageSize);
-    const {showNotification} = useNotification()
+    const {showNotification} = useNotification();
 
     const [modalState, setModalState] = useState<{
-        open: boolean
-        mode: "create" | "edit" | "delete"
-        societe?: SocieteInfo
-    }>({open: false, mode: "create"})
+        open: boolean;
+        mode: "create" | "edit" | "delete";
+        societe?: SocieteInfo;
+    }>({open: false, mode: "create"});
 
-    const openCreate = () => setModalState({open: true, mode: "create"})
-    const openEdit = (societe: SocieteInfo) => setModalState({open: true, mode: "edit", societe})
-    const openDelete = (societe: SocieteInfo) => setModalState({open: true, mode: "delete", societe})
+    const openCreate = () => setModalState({open: true, mode: "create"});
+    const openEdit = (societe: SocieteInfo) => setModalState({open: true, mode: "edit", societe});
+    const openDelete = (societe: SocieteInfo) => setModalState({open: true, mode: "delete", societe});
 
     const [form, setForm] = useState({
         first_name: "",
         last_name: "",
         email: "",
         phone: "",
+        roles: [] as string[],
     });
 
     const [errors, setErrors] = useState<{
@@ -58,6 +60,7 @@ export default function Gestion() {
         last_name?: string;
         email?: string;
         phone?: string;
+        roles?: string;
     }>({});
 
     const validate = () => {
@@ -67,6 +70,21 @@ export default function Gestion() {
             return false;
         }
         return true;
+    };
+
+    const fetchRoles = async () => {
+        try {
+            const res = await apiFetch(`/user/roles/`, {}, router);
+            if (!res) return;
+            const json = await res.json();
+            setRoles(json);
+        } catch (err) {
+            showNotification({
+                title: "Erreur",
+                message: "Impossible de charger les rôles.",
+                type: "error",
+            });
+        }
     };
 
     const fetchUser = async (page = societePageIndex, signal?: AbortSignal) => {
@@ -100,6 +118,7 @@ export default function Gestion() {
                 last_name: json.last_name ?? "",
                 email: json.email ?? "",
                 phone: json.phone ?? "",
+                roles: json.roles?.map((r: RoleInfo) => r.id) ?? [],
             });
             setSocietes(json.societes.results);
             setSocieteTotalCount(json.societes.count);
@@ -109,11 +128,15 @@ export default function Gestion() {
                 title: "Erreur",
                 message: String(err),
                 type: "error",
-            })
+            });
         } finally {
             setLoading(false);
         }
     };
+
+    useEffect(() => {
+        fetchRoles();
+    }, []);
 
     useEffect(() => {
         fetchUser(societePageIndex);
@@ -122,6 +145,15 @@ export default function Gestion() {
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const {name, value} = e.target;
         setForm((prev) => ({...prev, [name]: value}));
+    };
+
+    const handleRoleToggle = (roleId: string) => {
+        setForm((prev) => ({
+            ...prev,
+            roles: prev.roles.includes(roleId)
+                ? prev.roles.filter((r) => r !== roleId)
+                : [...prev.roles, roleId],
+        }));
     };
 
     const handleSaveUser = async () => {
@@ -133,7 +165,7 @@ export default function Gestion() {
             const res = await apiFetch(`/user/${id}/`, {
                 method: "PUT",
                 headers: {"Content-Type": "application/json"},
-                body: JSON.stringify(form),
+                body: JSON.stringify({...form, roles_ids: form.roles}),
             });
             if (!res) return;
             const json = await res.json();
@@ -144,6 +176,7 @@ export default function Gestion() {
                     last_name: json.last_name?.[0],
                     email: json.email?.[0],
                     phone: json.phone?.[0],
+                    roles: json.roles?.[0],
                 });
                 return;
             }
@@ -154,6 +187,7 @@ export default function Gestion() {
                 last_name: json.last_name ?? "",
                 email: json.email ?? "",
                 phone: json.phone ?? "",
+                roles: json.roles?.map((r: RoleInfo) => r.id) ?? [],
             });
             setIsEditing(false);
             setErrors({});
@@ -161,13 +195,13 @@ export default function Gestion() {
                 title: "Succès",
                 message: `Utilisateur modifié avec succès.`,
                 type: "success",
-            })
+            });
         } catch (err) {
             showNotification({
                 title: "Erreur",
                 message: String(err),
                 type: "error",
-            })
+            });
         } finally {
             setSavingUser(false);
         }
@@ -191,15 +225,15 @@ export default function Gestion() {
             if (!res.ok) throw new Error();
             showNotification({
                 title: "Succès",
-                message: `Utilisateur ${isActive ? "désactivé" : "activé"} avec succès.`,
+                message: `Utilisateur ${actif ? "activé" : "désactivé"} avec succès.`,
                 type: "success",
-            })
+            });
         } catch (err) {
             showNotification({
                 title: "Erreur",
                 message: String(err),
                 type: "error",
-            })
+            });
             setIsActive(previousValue);
         } finally {
             setUpdatingToggle(false);
@@ -257,6 +291,24 @@ export default function Gestion() {
                                         <ReadOnlyField label="Prénom" value={user?.first_name}/>
                                         <ReadOnlyField label="Adresse email" value={user?.email}/>
                                         <ReadOnlyField label="Téléphone" value={user?.phone}/>
+
+                                        <div className="flex flex-col gap-1">
+                                            <span className="text-gray-500 font-medium text-sm">Rôles</span>
+                                            <div className="flex flex-wrap gap-2">
+                                                {user?.roles?.length ? (
+                                                    user.roles.map((role: RoleInfo) => (
+                                                        <span
+                                                            key={role.id}
+                                                            className="px-2 py-0.5 rounded-full text-xs font-medium bg-primary1/10 text-primary1 border border-primary1/20"
+                                                        >
+                                                            {role.label}
+                                                        </span>
+                                                    ))
+                                                ) : (
+                                                    <span className="text-primary1 font-semibold">-</span>
+                                                )}
+                                            </div>
+                                        </div>
                                     </>
                                 ) : (
                                     <>
@@ -303,6 +355,36 @@ export default function Gestion() {
                                             required
                                             className="text-primary1"
                                         />
+
+                                        <div className="flex flex-col gap-2">
+                                            <span className="text-gray-500 font-medium text-sm">Rôles</span>
+                                            {roles.length === 0 ? (
+                                                <p className="text-xs text-gray-400">Chargement des rôles...</p>
+                                            ) : (
+                                                <div className="flex flex-col gap-2">
+                                                    {roles.map((role) => (
+                                                        <label
+                                                            key={role.id}
+                                                            className="flex items-center gap-2 cursor-pointer group"
+                                                        >
+                                                            <input
+                                                                type="checkbox"
+                                                                checked={form.roles.includes(role.id)}
+                                                                onChange={() => handleRoleToggle(role.id)}
+                                                                className="accent-primary1 w-4 h-4"
+                                                            />
+                                                            <span
+                                                                className="text-sm text-primary1 group-hover:font-medium transition-all">
+                                                                {role.label}
+                                                            </span>
+                                                        </label>
+                                                    ))}
+                                                </div>
+                                            )}
+                                            {errors.roles && (
+                                                <span className="text-red-400 text-xs">{errors.roles}</span>
+                                            )}
+                                        </div>
                                     </>
                                 )}
                             </div>
@@ -432,18 +514,17 @@ export default function Gestion() {
                 </div>
             </main>
 
-                <SocieteModal
-                    open={modalState.open}
-                    onOpenChange={(open) => setModalState((prev) => ({...prev, open}))}
-                    mode={modalState.mode}
-                    societe={modalState.societe}
-                    userId={typeof id === "string" ? id : undefined}
-                    onSuccess={() => {
-                        setSocietePageIndex(0);
-                        fetchUser(0);
-                    }}
-                />
-
+            <SocieteModal
+                open={modalState.open}
+                onOpenChange={(open) => setModalState((prev) => ({...prev, open}))}
+                mode={modalState.mode}
+                societe={modalState.societe}
+                userId={typeof id === "string" ? id : undefined}
+                onSuccess={() => {
+                    setSocietePageIndex(0);
+                    fetchUser(0);
+                }}
+            />
         </>
     );
 }

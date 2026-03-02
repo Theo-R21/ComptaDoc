@@ -10,6 +10,7 @@ class UserUpdateSerializer(BaseUserSerializer):
         fields = BaseUserSerializer.Meta.fields + [
             "username",
             "last_login",
+            "roles_ids",
         ]
 
     def validate(self, attrs):
@@ -20,5 +21,4 @@ class UserUpdateSerializer(BaseUserSerializer):
             raise serializers.ValidationError(
                 "L'email ou le téléphone doit être renseigné."
             )
-
         return attrs

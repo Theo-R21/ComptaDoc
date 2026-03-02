@@ -4,6 +4,7 @@ import { useCurrentUser } from "@/src/hook/useCurrent";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { hasRole } from "@/src/lib/permissions";
+import {RoleInfo} from "@/src/models/user/user.model";
 
 type RoleGuardProps = {
     allowedRoles?: string[];
@@ -24,7 +25,7 @@ export default function RoleGuard({
 
         if (user.is_superuser) return;
 
-        if (forbiddenRoles?.includes(user.role)) {
+       if (forbiddenRoles?.some(role => user.roles?.some((r: RoleInfo) => r.label === role))) {
             router.replace("/403");
             return;
         }

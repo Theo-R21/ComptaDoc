@@ -20,6 +20,8 @@ from societe.models import Societe
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 
+from user.serializers.role import RoleSerializer
+
 
 class CustomTokenObtainPairView(TokenObtainPairView):
     serializer_class = CustomTokenObtainPairSerializer
@@ -152,7 +154,7 @@ class MeView(APIView):
             "phone": user.phone,
             "last_login": user.last_login,
             "is_superuser": user.is_superuser,
-            "role": user.role,
+            "roles": RoleSerializer(user.roles.all(), many=True).data,
         })
 
 class ForgotPasswordView(APIView):
