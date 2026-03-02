@@ -304,7 +304,7 @@ export default function Profile() {
                                 </p>
                                 <div className="mt-4 space-y-3">
                                     <ReadOnlyField label="Rôle"
-                                                   value={user?.role === "comptable" ? "Comptable" : "Client"}/>
+                                                   value={user?.roles?.map(r => r.label).join(", ")}/>
                                     <ReadOnlyField label="Nom d'utilisateur" value={user?.username}/>
                                     <ReadOnlyField label="Adresse email" value={user?.email}/>
                                     <ReadOnlyField label="Téléphone" value={user?.phone}/>
