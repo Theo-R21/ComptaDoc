@@ -77,7 +77,7 @@ export default function Profile() {
                 email: json.email ?? "",
                 phone: json.phone ?? "",
             });
-            refreshCurrentUser()
+            await refreshCurrentUser()
             setSaved(true)
             setIsEditing(false)
             setErrors({});
@@ -117,7 +117,7 @@ export default function Profile() {
             })
 
             if (!res) return;
-            refreshCurrentUser()
+            await refreshCurrentUser()
             setPasswords({current_password: "", password1: "", password2: ""})
             setSaved(true)
              showNotification({

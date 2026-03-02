@@ -47,7 +47,7 @@ export default function LoginPage() {
                     type: "success",
                 });
 
-                refreshCurrentUser();
+                await refreshCurrentUser();
                 router.push("/dashboard");
             } else {
                 throw new Error("Identifiants invalides");
