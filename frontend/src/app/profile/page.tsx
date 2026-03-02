@@ -77,7 +77,7 @@ export default function Profile() {
                 email: json.email ?? "",
                 phone: json.phone ?? "",
             });
-            refreshCurrentUser()
+            await refreshCurrentUser()
             setSaved(true)
             setIsEditing(false)
             setErrors({});
@@ -117,7 +117,7 @@ export default function Profile() {
             })
 
             if (!res) return;
-            refreshCurrentUser()
+            await refreshCurrentUser()
             setPasswords({current_password: "", password1: "", password2: ""})
             setSaved(true)
              showNotification({
@@ -304,7 +304,7 @@ export default function Profile() {
                                 </p>
                                 <div className="mt-4 space-y-3">
                                     <ReadOnlyField label="Rôle"
-                                                   value={user?.role === "comptable" ? "Comptable" : "Client"}/>
+                                                   value={user?.roles?.map(r => r.label).join(", ")}/>
                                     <ReadOnlyField label="Nom d'utilisateur" value={user?.username}/>
                                     <ReadOnlyField label="Adresse email" value={user?.email}/>
                                     <ReadOnlyField label="Téléphone" value={user?.phone}/>

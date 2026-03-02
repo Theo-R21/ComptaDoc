@@ -40,8 +40,8 @@ export function UserProvider({children}: { children: React.ReactNode }) {
         fetchUser();
     }, []);
 
-    function refreshCurrentUser() {
-        fetchUser();
+    async function refreshCurrentUser() {
+        await fetchUser();
     }
 
     if (user === undefined) return null;
