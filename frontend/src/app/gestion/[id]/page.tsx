@@ -17,6 +17,7 @@ import {SocieteInfo} from "@/src/models/societe/societe.model";
 import Button from "@/src/app/components/button";
 import {SocieteModal} from "@/src/app/components/modal/SocieteModal";
 import {useNotification} from "@/src/provider/Notification";
+import {Badge} from "@/src/app/components/ui/badge";
 
 export default function Gestion() {
     const params = useParams();
@@ -297,12 +298,9 @@ export default function Gestion() {
                                             <div className="flex flex-wrap gap-2">
                                                 {user?.roles?.length ? (
                                                     user.roles.map((role: RoleInfo) => (
-                                                        <span
-                                                            key={role.id}
-                                                            className="px-2 py-0.5 rounded-full text-xs font-medium bg-primary1/10 text-primary1 border border-primary1/20"
-                                                        >
+                                                        <Badge key={role.id} variant="info">
                                                             {role.label}
-                                                        </span>
+                                                        </Badge>
                                                     ))
                                                 ) : (
                                                     <span className="text-primary1 font-semibold">-</span>
