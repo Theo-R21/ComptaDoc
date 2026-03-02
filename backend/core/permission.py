@@ -2,7 +2,7 @@ from rest_framework.permissions import BasePermission
 
 
 class HasRole(BasePermission):
-    allowed_roles = set()   # plus performant que list
+    allowed_roles = set()
 
     def has_permission(self, request, view):
         user = request.user
@@ -13,7 +13,8 @@ class HasRole(BasePermission):
         if user.is_superuser:
             return True
 
-        return getattr(user, "role", None) in self.allowed_roles
+        user_roles = set(user.roles.values_list("name", flat=True))
+        return bool(user_roles & self.allowed_roles)
 
 
 class IsComptable(HasRole):

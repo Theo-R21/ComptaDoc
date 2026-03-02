@@ -1,12 +1,17 @@
 import {SocieteInfo} from "@/src/models/societe/societe.model";
 
+export interface RoleInfo {
+    id: string;
+    label: string;
+}
+
 export interface UserModel {
     id: string;
     first_name: string;
     last_name: string;
     email: string;
     phone: string;
-    role: string;
+    roles: RoleInfo[];
     is_superuser: boolean;
 }
 

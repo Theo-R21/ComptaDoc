@@ -1,4 +1,4 @@
-from core.permission import IsComptable
+from core.permission import IsComptable, IsClient
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import viewsets, filters, status, permissions
@@ -9,12 +9,14 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from societe.models import Societe
 from societe.serializers.base import BaseSocieteSerializer
-from user.models import User
+from user.models import User, Role
 from user.serializers.action import UserDetailsSerializer
 from user.serializers.create import UserCreateSerializer
 from user.serializers.list import UserListSerializer
 from user.serializers.password import ChangePasswordSerializer
 from user.serializers.update import UserUpdateSerializer
+
+from user.serializers.role import RoleSerializer
 
 
 class UserPagination(PageNumberPagination):
@@ -39,6 +41,9 @@ class UserViewSet(viewsets.ViewSet):
     def get_permissions(self):
         if self.action == "create":
             return [permissions.AllowAny()]
+        elif self.action == "update":
+            return [IsClient(), IsAuthenticated()]
+
         return [permission() for permission in self.permission_classes]
 
     def filter_queryset(self, queryset, request):
@@ -99,23 +104,15 @@ class UserViewSet(viewsets.ViewSet):
 
         return Response(data)
 
-    def retrieve(self, request, pk=None):
-        try:
-            user = User.objects.get(pk=pk)
-        except User.DoesNotExist:
-            return Response(status=status.HTTP_404_NOT_FOUND)
-
-        societes = Societe.objects.filter(user=user).order_by("nom")
-        paginator = SocietePagination()
-        page = paginator.paginate_queryset(societes, request)
-        societes_serialized = BaseSocieteSerializer(page, many=True)
-
-        user_serializer = UserDetailsSerializer(user)
-
-        data = user_serializer.data
-        data["societes"] = paginator.get_paginated_response(societes_serialized.data).data
-
-        return Response(data)
+    @swagger_auto_schema(
+        operation_description="Récupère tous les rôles disponibles.",
+        responses={200: RoleSerializer(many=True)}
+    )
+    @action(detail=False, methods=["get"], url_path="roles", permission_classes=[IsAuthenticated, IsComptable])
+    def list_roles(self, request):
+        roles = Role.objects.all()
+        serializer = RoleSerializer(roles, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
     @swagger_auto_schema(
         operation_description="Création d'un nouvel utilisateur.",
@@ -238,4 +235,3 @@ class UserViewSet(viewsets.ViewSet):
         request.user.save()
 
         return Response({"message": "Mot de passe mis à jour avec succès."})
-
