@@ -1,3 +1,6 @@
+import os
+import uuid
+
 from django.test import TestCase
 from django.urls import reverse
 from rest_framework import status
@@ -6,9 +9,9 @@ from societe.models import Societe
 from user.models import User, Role
 from user.views import UserViewSet
 
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "core.settings_test")
 
 def make_comptable(**kwargs):
-    """Crée un user avec le rôle comptable."""
     user = User.objects.create_user(
         username=kwargs.get("username", "comptable"),
         email=kwargs.get("email", "comptable@test.com"),
@@ -16,13 +19,11 @@ def make_comptable(**kwargs):
         is_active=True,
     )
     role, _ = Role.objects.get_or_create(name="comptable")
-    user.role = role
-    user.save()
+    user.roles.add(role)
     return user
 
 
 def make_client_user(**kwargs):
-    """Crée un user avec le rôle client."""
     user = User.objects.create_user(
         username=kwargs.get("username", "client"),
         email=kwargs.get("email", "client@test.com"),
@@ -30,8 +31,7 @@ def make_client_user(**kwargs):
         is_active=True,
     )
     role, _ = Role.objects.get_or_create(name="client")
-    user.role = role
-    user.save()
+    user.roles.add(role)
     return user
 
 class UserListTests(TestCase):
@@ -78,12 +78,13 @@ class UserRetrieveTests(TestCase):
         self.comptable = make_comptable()
         self.client.force_authenticate(user=self.comptable)
         self.target = User.objects.create_user(username="target", password="pass")
-        self.url = reverse("user-detail", kwargs={"pk": self.target.pk})
+        self.url = reverse("user-detail", kwargs={"pk": str(self.target.pk)})
 
     def test_retrieve_existing_user_returns_200(self):
         response = self.client.get(self.url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data["id"], self.target.pk)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["username"], self.target.username)
 
     def test_retrieve_includes_societes(self):
         Societe.objects.create(user=self.target, nom="Société A")
@@ -91,7 +92,7 @@ class UserRetrieveTests(TestCase):
         self.assertIn("societes", response.data)
 
     def test_retrieve_unknown_user_returns_404(self):
-        url = reverse("user-detail", kwargs={"pk": 99999})
+        url = reverse("user-detail", kwargs={"pk": str(uuid.uuid4())})
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
@@ -104,10 +105,13 @@ class UserCreateTests(TestCase):
 
     def test_create_user_returns_201(self):
         data = {
-            "username": "newuser",
+            "first_name": "ADMIN",
+            "last_name": "user",
             "email": "newuser@test.com",
-            "password1": "StrongPass123!",
+            "phone": "0707070707",
+            "password": "StrongPass123!",
             "password2": "StrongPass123!",
+            "roles": "cllient",
         }
         response = self.client.post(self.url, data, format="json")
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
@@ -137,7 +141,6 @@ class UserCreateTests(TestCase):
             "password2": "StrongPass123!",
         }
         response = self.client.post(self.url, data, format="json")
-        # Soit 201, soit 400 si validation échoue — pas 401/403
         self.assertNotIn(response.status_code, [status.HTTP_401_UNAUTHORIZED, status.HTTP_403_FORBIDDEN])
 
 
@@ -147,19 +150,19 @@ class UserUpdateTests(TestCase):
         self.client = APIClient()
         self.user = make_client_user()
         self.client.force_authenticate(user=self.user)
-        self.url = reverse("user-detail", kwargs={"pk": self.user.pk})
+        self.url = reverse("user-detail", kwargs={"pk": str(self.user.pk)})
 
     def test_update_own_user_returns_200(self):
-        response = self.client.patch(self.url, {"first_name": "Jean"}, format="json")
+        response = self.client.put(self.url, {"first_name": "Jean"}, format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_update_unknown_user_returns_404(self):
-        url = reverse("user-detail", kwargs={"pk": 99999})
-        response = self.client.patch(url, {"first_name": "Jean"}, format="json")
+        url = reverse("user-detail", kwargs={"pk": str(uuid.uuid4())})
+        response = self.client.put(url, {"first_name": "Jean"}, format="json")
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_update_with_invalid_email_returns_400(self):
-        response = self.client.patch(self.url, {"email": "not-an-email"}, format="json")
+        response = self.client.put(self.url, {"email": "not-an-email"}, format="json")
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
 class UserDestroyTests(TestCase):
@@ -177,7 +180,7 @@ class UserDestroyTests(TestCase):
         self.assertFalse(User.objects.filter(pk=target.pk).exists())
 
     def test_destroy_unknown_user_returns_404(self):
-        url = reverse("user-detail", kwargs={"pk": 99999})
+        url = reverse("user-detail", kwargs={"pk": str(uuid.uuid4())})
         response = self.client.delete(url)
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
@@ -217,7 +220,7 @@ class UserToggleActifTests(TestCase):
         self.assertIn("actif", response.data["detail"])
 
     def test_unknown_user_returns_404(self):
-        url = reverse("user-toggle-actif", kwargs={"pk": 99999})
+        url = reverse("user-toggle-actif", kwargs={"pk": str(uuid.uuid4())})
         response = self.client.patch(url, {"actif": True}, format="json")
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
@@ -272,7 +275,7 @@ class ChangePasswordTests(TestCase):
 
     def test_change_password_success(self):
         data = {
-            "old_password": "OldPassword123!",
+            "current_password": "OldPassword123!",
             "password1": "NewPassword456!",
             "password2": "NewPassword456!",
         }
@@ -282,7 +285,7 @@ class ChangePasswordTests(TestCase):
 
     def test_change_password_mismatch_returns_400(self):
         data = {
-            "old_password": "OldPassword123!",
+            "current_password": "OldPassword123!",
             "password1": "NewPassword456!",
             "password2": "DifferentPassword789!",
         }
@@ -291,7 +294,7 @@ class ChangePasswordTests(TestCase):
 
     def test_change_password_wrong_old_password_returns_400(self):
         data = {
-            "old_password": "WrongOldPassword!",
+            "current_password": "WrongOldPassword!",
             "password1": "NewPassword456!",
             "password2": "NewPassword456!",
         }

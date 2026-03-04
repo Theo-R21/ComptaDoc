@@ -31,7 +31,7 @@ class SocieteViewSet(viewsets.ViewSet):
     month_status_enum = ["OPEN", "CLOSED"]
 
     def get_permissions(self):
-        if self.action == "update_month":
+        if self.action in ["create", "destroy", "update", "partial_update", "update_month"]:
             return [IsComptable()]
 
         return [permission() for permission in self.permission_classes]
@@ -87,7 +87,7 @@ class SocieteViewSet(viewsets.ViewSet):
     def retrieve(self, request, pk=None):
         try:
             societe = Societe.objects.get(pk=pk)
-        except User.DoesNotExist:
+        except Societe.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
         serializer = SocieteSerializer(societe)
         return Response(serializer.data)
@@ -278,7 +278,7 @@ class SocieteViewSet(viewsets.ViewSet):
             societe = Societe.objects.get(pk=pk)
         except Societe.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
-        print(request.data)
+
         serializer = SocieteSerializer(societe, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         serializer.save()

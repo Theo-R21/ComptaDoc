@@ -41,8 +41,8 @@ class UserViewSet(viewsets.ViewSet):
     def get_permissions(self):
         if self.action == "create":
             return [permissions.AllowAny()]
-        elif self.action == "update":
-            return [IsClient(), IsAuthenticated()]
+        elif self.action in ["update", "partial_update"]:
+            return [IsClient()]
 
         return [permission() for permission in self.permission_classes]
 
