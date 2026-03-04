@@ -1,4 +1,4 @@
-DJANGO_SETTINGS_MODULE=core.settings_test python -m pytest -qfrom .settings import *
+from .settings import *
 
 # Override de la base de données pour les tests
 DATABASES = {
