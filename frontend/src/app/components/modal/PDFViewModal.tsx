@@ -12,6 +12,8 @@ type PdfViewerModalProps = {
     title?: string;
 };
 
+const isImage = (url: string) => /\.(png|jpe?g)(\?.*)?$/i.test(url)
+
 export function PdfViewerModal({
                                    open,
                                    onOpenChange,
@@ -20,20 +22,28 @@ export function PdfViewerModal({
                                }: PdfViewerModalProps) {
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent
-                 className="!max-w-[min(95vw,1400px)] w-[95vw] h-[95vh] p-0 flex flex-col"
-            >
+            <DialogContent className="!max-w-[min(95vw,1400px)] w-[95vw] h-[95vh] p-0 flex flex-col">
                 <DialogHeader className="px-6 py-4 border-b shrink-0">
                     <DialogTitle>{title}</DialogTitle>
                 </DialogHeader>
 
                 <div className="flex-1 overflow-hidden">
                     {pdfUrl ? (
-                        <iframe
-                            src={pdfUrl}
-                            title="PDF Viewer"
-                            className="w-full h-full border-0"
-                        />
+                        isImage(pdfUrl) ? (
+                            <div className="w-full h-full overflow-auto flex items-center justify-center bg-gray-50 p-4">
+                                <img
+                                    src={pdfUrl}
+                                    alt="Aperçu du document"
+                                    className="max-w-full max-h-full object-contain rounded shadow"
+                                />
+                            </div>
+                        ) : (
+                            <iframe
+                                src={pdfUrl}
+                                title="PDF Viewer"
+                                className="w-full h-full border-0"
+                            />
+                        )
                     ) : (
                         <div className="flex items-center justify-center h-full text-gray-500">
                             Aucun document à afficher
@@ -42,7 +52,5 @@ export function PdfViewerModal({
                 </div>
             </DialogContent>
         </Dialog>
-
-
-    );
+    )
 }
