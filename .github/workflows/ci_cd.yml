@@ -2,12 +2,17 @@ name: CI/CD
 
 on:
   push:
-    branches: [main]
+    branches: ["**"]
+  pull_request:
+    branches: [dev, main]
 
 env:
   REGISTRY: ghcr.io
 
 jobs:
+  # -------------------------------------------------------------------------
+  # TESTS — tournent sur TOUTES les branches et PR
+  # -------------------------------------------------------------------------
   test-backend:
     name: Test Django
     runs-on: ubuntu-latest
@@ -33,8 +38,8 @@ jobs:
           DJANGO_SETTINGS_MODULE: core.settings_test
         run: |
           cd backend
-          coverage run -m pytest --co -q || true
-          coverage report || true
+          coverage run -m pytest -q
+          coverage report
 
   test-frontend:
     name: Test Next.js
@@ -58,13 +63,16 @@ jobs:
       - name: Lint
         run: |
           cd frontend
-          npm run lint || true
-        continue-on-error: true
+          npm run lint
 
+  # -------------------------------------------------------------------------
+  # BUILD + DEPLOY — uniquement sur push main (après merge)
+  # -------------------------------------------------------------------------
   build-backend:
     name: Build Backend
     runs-on: ubuntu-latest
-    needs: [test-backend]       # ← attend que les tests passent
+    needs: [test-backend]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     permissions:
       contents: read
       packages: write
@@ -103,6 +111,7 @@ jobs:
     name: Build Frontend
     runs-on: ubuntu-latest
     needs: [test-frontend]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     permissions:
       contents: read
       packages: write
@@ -142,7 +151,8 @@ jobs:
   deploy:
     name: Deploy to Production
     runs-on: self-hosted
-    needs: [ build-backend, build-frontend ]
+    needs: [build-backend, build-frontend]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     environment:
       name: production
       url: http://192.168.199.128:3000
@@ -150,8 +160,7 @@ jobs:
       - name: Deploy
         run: |
           cd ~/app/ComptaDoc
-          
-          # Écrire les variables dans un .env sur la VM
+
           cat > .env << EOF
           REGISTRY_IMAGE=ghcr.io/$(echo ${{ secrets.REGISTRY_USERNAME }} | tr '[:upper:]' '[:lower:]')/comptadoc
           IMAGE_TAG=${{ github.sha }}
@@ -166,8 +175,7 @@ jobs:
           CORS_ALLOWED_ORIGINS=${{ secrets.CORS_ALLOWED_ORIGINS }}
           CSRF_TRUSTED_ORIGINS=${{ secrets.CSRF_TRUSTED_ORIGINS }}
           EOF
-          
-          # Login et déploiement
+
           echo ${{ secrets.REGISTRY_TOKEN }} | docker login ghcr.io -u ${{ secrets.REGISTRY_USERNAME }} --password-stdin
           docker compose -f docker-compose.prod.yml pull
           docker compose -f docker-compose.prod.yml up -d --remove-orphans
