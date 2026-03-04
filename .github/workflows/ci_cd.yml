@@ -36,6 +36,12 @@ jobs:
       - name: Run tests
         env:
           DJANGO_SETTINGS_MODULE: core.settings_test
+          DJANGO_ALLOWED_HOSTS: localhost
+          DJANGO_SECRET_KEY: test-secret-key-not-for-production
+          DATABASE_URL:
+            sqlite://:memory:
+          CORS_ALLOWED_ORIGINS: http://localhost:3000
+          CSRF_TRUSTED_ORIGINS: http://localhost:3000
         run: |
           cd backend
           coverage run -m pytest -q
