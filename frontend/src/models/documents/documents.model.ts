@@ -4,6 +4,7 @@ export interface DocumentsList {
     type: TypeDocumentList;
     path: string;
     date_publication: Date;
+    format: string;
 }
 
 export interface TypeDocumentList{
