@@ -69,6 +69,7 @@ jobs:
         run: |
           cd frontend
           npm run test:run
+          npm vitest run --coverage
 
   # -------------------------------------------------------------------------
   # BUILD + DEPLOY — uniquement sur push main (après merge)
