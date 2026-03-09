@@ -86,7 +86,7 @@ export default function RegisterPage() {
         } catch (err: unknown) {
             showNotification({
                 title: "Erreur",
-                message: String(err),
+                message: "Erreur lors de la création du compte",
                 type: "error",
             })
         } finally {

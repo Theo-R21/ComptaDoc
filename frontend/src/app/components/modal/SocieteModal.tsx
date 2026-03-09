@@ -117,10 +117,9 @@ export function SocieteModal({
 
             closeAndRefresh()
         } catch (err) {
-            console.error(err)
             showNotification({
                 title: "Erreur",
-                message: String(err),
+                message: "La société n'a pas pu être créé",
                 type: "error",
             })
         }
@@ -152,7 +151,7 @@ export function SocieteModal({
             console.error(err)
             showNotification({
                 title: "Erreur",
-                message: String(err),
+                message: "La société n'a pas pu être modifié",
                 type: "error",
             })
         }
@@ -174,7 +173,7 @@ export function SocieteModal({
             console.error(err)
             showNotification({
                 title: "Erreur",
-                message: String(err),
+                message: "La société n'a pas pu être supprimé",
                 type: "error",
             })
         }

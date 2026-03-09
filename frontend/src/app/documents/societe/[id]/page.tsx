@@ -31,7 +31,11 @@ export default function Societe() {
                     setSelectedYear(json[0]);
                 }
             } catch (error) {
-                console.error("Erreur API:", error);
+                showNotification({
+                    title: "Erreur",
+                    message: "Le filtre n'a pas pu être appliqué",
+                    type: "error",
+                })
             }
         };
 
@@ -54,14 +58,12 @@ export default function Societe() {
 
                 const json = await res.json();
                 setDate(json);
-            } catch (err: unknown) {
-                if (err instanceof DOMException && err.name === "AbortError") {
-                    console.error(err.message);
-                } else if (err instanceof Error) {
-                    console.error(err.message);
-                } else {
-                    console.error("Erreur inconnue", err);
-                }
+            } catch (err) {
+                showNotification({
+                    title: "Erreur",
+                    message: "Le filtre n'a pas pu être appliqué",
+                    type: "error",
+                })
             }
         };
 
@@ -107,7 +109,7 @@ export default function Societe() {
         } catch (err: unknown) {
             showNotification({
                 title: "Erreur",
-                message: String(err),
+                message: "Le status du mois n'a pas pu être modifié",
                 type: "error",
             })
         }

@@ -62,7 +62,7 @@ export default function CodePage() {
         } catch (err: unknown) {
             showNotification({
                 title: "Erreur",
-                message: String(err),
+                message: "Erreur lors de l'envoie du code d'autehntification",
                 type: "error",
             })
         } finally {

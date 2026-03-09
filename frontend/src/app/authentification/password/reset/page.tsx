@@ -69,7 +69,7 @@ export default function ResetPasswordPage() {
         } catch (err: unknown) {
             showNotification({
                 title: "Erreur",
-                message: String(err),
+                message: "Erreur lors de la modification du mot de passe",
                 type: "error",
             })
         } finally {

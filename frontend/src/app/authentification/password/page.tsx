@@ -63,7 +63,7 @@ export default function PasswordPage() {
         } catch (err: unknown) {
             showNotification({
                 title: "Erreur",
-                message: String(err),
+                message: "Impossible d'envoyer l'adresse mail",
                 type: "error",
             })
         } finally {

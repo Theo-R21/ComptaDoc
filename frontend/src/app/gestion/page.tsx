@@ -12,6 +12,7 @@ import Button from "@/src/app/components/button";
 import {FaPlus} from "react-icons/fa6";
 import {AddUserModal} from "@/src/app/components/modal/AddUserModal";
 import {Badge} from "@/src/app/components/ui/badge";
+import {useNotification} from "@/src/provider/Notification";
 
 export default function Gestion() {
     const router = useRouter();
@@ -19,6 +20,7 @@ export default function Gestion() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
     const [search, setSearch] = useState("");
+    const {showNotification} = useNotification();
 
     const [users, setUsers] = useState<UserInfoModel[]>([]);
     const [pageIndex, setPageIndex] = useState(0);
@@ -43,14 +45,12 @@ export default function Gestion() {
 
             setUsers(json.results);
             setTotalCount(json.count);
-        } catch (err: unknown) {
-            if (err instanceof DOMException && err.name === "AbortError") {
-                console.error(err.message);
-            } else if (err instanceof Error) {
-                console.error(err.message);
-            } else {
-                console.error("Erreur inconnue", err);
-            }
+        } catch (err) {
+              showNotification({
+                title: "Erreur",
+                message: "Erreur lors du chargement des utilisateurs",
+                type: "error",
+            });
         } finally {
             setLoading(false);
         }

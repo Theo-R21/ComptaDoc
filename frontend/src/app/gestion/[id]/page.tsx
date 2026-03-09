@@ -127,7 +127,7 @@ export default function Gestion() {
         } catch (err: unknown) {
             showNotification({
                 title: "Erreur",
-                message: String(err),
+                message: "Erreur lors de la récupération des utilisateurs",
                 type: "error",
             });
         } finally {
@@ -200,7 +200,7 @@ export default function Gestion() {
         } catch (err) {
             showNotification({
                 title: "Erreur",
-                message: String(err),
+                message: "Erreur lors de la modification de l'utilisateur",
                 type: "error",
             });
         } finally {
@@ -232,7 +232,7 @@ export default function Gestion() {
         } catch (err) {
             showNotification({
                 title: "Erreur",
-                message: String(err),
+                message: "Erreur lors du changement d'état de l'utilisateur",
                 type: "error",
             });
             setIsActive(previousValue);

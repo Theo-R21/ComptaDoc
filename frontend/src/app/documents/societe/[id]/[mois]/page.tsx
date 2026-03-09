@@ -131,7 +131,7 @@ export default function Page() {
         } catch (err: unknown) {
             showNotification({
                 title: "Erreur",
-                message: String(err),
+                message: "Les documents n'ont pas pu être récupéré",
                 type: "error",
             })
         } finally {
@@ -162,7 +162,7 @@ export default function Page() {
         } catch (err: unknown) {
             showNotification({
                 title: "Erreur",
-                message: String(err),
+                message: "Les société n'ont pas pu être récuperé",
                 type: "error",
             })
         } finally {

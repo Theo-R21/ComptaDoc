@@ -64,7 +64,7 @@ export default function Documents() {
         } catch (err) {
             showNotification({
                 title: "Erreur",
-                message: String(err),
+                message: "Erreur lors de la récupération des sociétés",
                 type: "error",
             })
         } finally {

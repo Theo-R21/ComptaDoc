@@ -97,7 +97,7 @@ export function AddUserModal({
         } catch (err: unknown) {
             showNotification({
                 title: "Erreur",
-                message: String(err),
+                message: "L'utilisateur n'a pas pu être créé",
                 type: "error",
             })
         } finally {
