@@ -167,6 +167,12 @@ class DocumentsViewSet(viewsets.ViewSet):
     def download(self, request, pk=None):
         document = get_object_or_404(SocieteDocument, pk=pk)
 
+        is_comptable = request.user.roles.filter(name="comptable").exists()
+        is_owner = document.societe.user == request.user
+
+        if not is_comptable and not is_owner:
+            raise PermissionDenied()
+
         return FileResponse(
             document.path.open("rb"),
             as_attachment=True,
