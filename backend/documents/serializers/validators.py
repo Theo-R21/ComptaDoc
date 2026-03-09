@@ -4,6 +4,8 @@ MAX_FILE_SIZE = 10 * 1024 * 1024
 
 ALLOWED_TYPES = {
     "application/pdf",
+    "application/zip",
+    "application/x-zip-compressed",
     "image/png",
     "image/jpeg",
 }
@@ -20,7 +22,7 @@ def validate_file(file):
 
     if file.content_type not in ALLOWED_TYPES:
         raise serializers.ValidationError(
-            "Format non autorisé. PDF, PNG ou JPEG uniquement."
+            "Format non autorisé. PDF, ZIP, PNG ou JPEG uniquement."
         )
 
     return file

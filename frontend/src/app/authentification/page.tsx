@@ -55,7 +55,7 @@ export default function LoginPage() {
         } catch (err: unknown) {
             showNotification({
                 title: "Erreur",
-                message: String(err),
+                message: "Erreur lors de l'authentificaiton",
                 type: "error",
             })
         } finally {

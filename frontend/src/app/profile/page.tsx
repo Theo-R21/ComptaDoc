@@ -89,7 +89,7 @@ export default function Profile() {
         } catch (err) {
             showNotification({
                 title: "Erreur",
-                message: String(err),
+                message: "Erreur lors de la modification du profile",
                 type: "error",
             })
         } finally {
@@ -129,7 +129,7 @@ export default function Profile() {
             setPasswordError("Mot de passe actuel incorrect.")
             showNotification({
                 title: "Erreur",
-                message: String(err),
+                message: "Erreur lors de la modification du mot de passe",
                 type: "error",
             })
         } finally {

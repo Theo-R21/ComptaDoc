@@ -131,7 +131,7 @@ export default function Page() {
         } catch (err: unknown) {
             showNotification({
                 title: "Erreur",
-                message: String(err),
+                message: "Les documents n'ont pas pu être récupéré",
                 type: "error",
             })
         } finally {
@@ -162,7 +162,7 @@ export default function Page() {
         } catch (err: unknown) {
             showNotification({
                 title: "Erreur",
-                message: String(err),
+                message: "Les société n'ont pas pu être récuperé",
                 type: "error",
             })
         } finally {
@@ -240,7 +240,7 @@ export default function Page() {
                         </span>
                     </p>
                     <p className="text-sm text-primary2 mt-1">
-                        Vue du mois : <span className="font-medium">{mois}</span>
+                        Vue du mois : <span className="font-medium">{decodeURIComponent(mois)}</span>
                     </p>
                     <p
                         onClick={() => router.push(`/documents/societe/${id}/`)}
@@ -413,6 +413,7 @@ export default function Page() {
                                 />
                             </th>
                             <th className="px-6 py-4 text-left">Nom du document</th>
+                            <th className="px-6 py-4 text-left">Format</th>
                             <th className="px-6 py-4 text-left">Type</th>
                             <th className="px-6 py-4 text-left">Date de publication</th>
                             <th className="px-6 py-4 text-left">Actions</th>
@@ -438,6 +439,11 @@ export default function Page() {
                                     <td className="px-6 py-4 text-gray-700">{item.nom}</td>
                                     <td className="px-6 py-4 ">
                                         <Badge variant="calltoaction">
+                                            {item.format}
+                                        </Badge>
+                                    </td>
+                                    <td className="px-6 py-4 ">
+                                        <Badge variant="calltoaction">
                                             {item.type.nom}
                                         </Badge>
                                     </td>
@@ -447,12 +453,15 @@ export default function Page() {
                                             : "-"}
                                     </td>
                                     <td className="px-6 py-4 space-x-2 text-xl">
-                                        <button
-                                            className="hover:text-black cursor-pointer text-primary2"
-                                            onClick={() => openPdf(item.path)}
-                                        >
-                                            <FaRegEye/>
-                                        </button>
+                                        {item.format !== "ZIP" && (
+                                            <button
+                                                className="hover:text-black cursor-pointer text-primary2"
+                                                onClick={() => openPdf(item.path)}
+                                            >
+                                                <FaRegEye/>
+                                            </button>
+                                        )}
+
                                         <button
                                             className="hover:text-black cursor-pointer text-primary2"
                                             onClick={() => downloadPDF(item.id, item.nom)}

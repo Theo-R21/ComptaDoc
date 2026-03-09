@@ -52,14 +52,14 @@ export function UploadDocumentModal({
     const fileInputRef = useRef<HTMLInputElement>(null)
     const {showNotification} = useNotification()
 
-    const ALLOWED_TYPES = ["application/pdf", "image/png", "image/jpeg"]
+    const ALLOWED_TYPES = ["application/pdf", "image/png", "image/jpeg", "application/zip", "application/x-zip-compressed"]
     const today = new Date().toISOString().split("T")[0]
 
     const createEntry = useCallback((file: File): FileEntry => ({
         id: `${file.name}-${Date.now()}-${Math.random()}`,
         file,
         typeId: types[0]?.id?.toString() ?? "",
-        nom: file.name.replace(/\.(pdf|png|jpe?g)$/i, ""),
+        nom: file.name.replace(/\.(pdf|png|jpe?g|zip)$/i, ""),
         date_publication: today,
         status: "pending",
         progress: 0,
@@ -239,13 +239,13 @@ export function UploadDocumentModal({
                         <p className="text-xs text-gray-400 mt-1">
                             ou{" "}
                             <span className="text-primary2 underline">cliquez pour parcourir</span>
-                            {" "}— PDF, PNG, JPEG — 10 Mo max.
+                            {" "}— PDF, PNG, JPEG, ZIP — 10 Mo max.
                         </p>
                         <input
                             ref={fileInputRef}
                             type="file"
                             multiple
-                            accept="application/pdf,image/png,image/jpeg"
+                            accept="application/pdf,image/png,image/jpeg,.zip"
                             className="hidden"
                             onChange={handleFileInput}
                         />
@@ -355,7 +355,6 @@ export function UploadDocumentModal({
                                             )}
                                         </div>
 
-                                        {/* Remove button */}
                                         {entry.status !== "uploading" && entry.status !== "success" && (
                                             <button
                                                 onClick={() => removeEntry(entry.id)}
