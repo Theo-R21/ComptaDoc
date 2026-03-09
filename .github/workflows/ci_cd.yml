@@ -65,6 +65,11 @@ jobs:
           cd frontend
           npm run lint
 
+      - name: Tests unitaires
+        run: |
+          cd frontend
+          npm run test:run
+
   # -------------------------------------------------------------------------
   # BUILD + DEPLOY — uniquement sur push main (après merge)
   # -------------------------------------------------------------------------
